@@ -1,0 +1,68 @@
+/* Minimal CSS for Tailwind-styled home page */
+
+:host {
+  display: block;
+}
+
+/* Animation pour pulse */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Support pour carousel */
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-animate {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.footer-brand p {
+  color: #94a3b8;
+  max-width: 300px;
+}
+
+.footer h4 {
+  font-weight: 700;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.footer ul { list-style: none; padding: 0; }
+.footer ul li { margin-bottom: 12px; }
+.footer ul li a {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer ul li a:hover { color: white; }
+
+.footer-bottom {
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .slide-title { font-size: 2.8rem; }
+  .footer-grid { grid-template-columns: 1fr; gap: 40px; }
+}

@@ -1,0 +1,164 @@
+<div class="page-container">
+  <div class="auth-container">
+
+    <div class="brand">
+      <h1>Stagiaire <span>DXC</span></h1>
+      <p>Reconnaissance faciale biométrique</p>
+    </div>
+
+    <div class="glass-card" style="padding: 36px;">
+      <h2 class="form-title">
+        {{ mode === 'register' ? 'Configuration FaceID' : 'Connexion biométrique' }}
+      </h2>
+      <p class="form-subtitle">
+        {{ mode === 'register' ? 'Placez votre visage au centre du cercle pour l\'enregistrer.' : 'Notre IA analysera votre visage pour vous identifier.' }}
+      </p>
+
+      <div *ngIf="error" class="alert alert-error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
+
+      <div *ngIf="result" [class]="result.verified ? 'alert alert-success' : 'alert alert-error'">
+        <i [class]="result.verified ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i> {{ result.message }}
+        <div *ngIf="result.verified" style="margin-top: 12px;">
+          <a routerLink="/dashboard" style="color: #0089B6; text-decoration: underline;">
+            Accéder au tableau de bord <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Camera Preview -->
+      <div style="margin: 20px 0; text-align: center; position: relative;">
+        <div class="camera-viewport">
+          <video #videoEl [style.display]="cameraOn ? 'block' : 'none'"
+                 autoplay playsinline muted></video>
+          <!-- MediaPipe overlay canvas (bounding boxes drawn here) -->
+          <canvas #overlayCanvas *ngIf="cameraOn" class="detection-overlay"></canvas>
+          <div *ngIf="!cameraOn" style="color: var(--text-muted); text-align: center; padding: 40px;">
+            <div style="font-size: 48px; margin-bottom: 12px;"><i class="fa-solid fa-camera"></i></div>
+            <p>Caméra inactive</p>
+          </div>
+        </div>
+        <canvas #canvas style="display: none;"></canvas>
+
+        <!-- Laser Scan Line when loading -->
+        <div *ngIf="cameraOn && loading" class="scanner-container">
+          <div class="laser-line"></div>
+        </div>
+
+        <!-- MediaPipe Face Detection Status -->
+        <div *ngIf="cameraOn" class="detection-status" [class.detected]="faceDetected" [class.warning]="faceCount > 1">
+          <span class="status-dot" [class.active]="faceDetected"></span>
+          {{ detectionStatus }}
+        </div>
+      </div>
+
+      <style>
+        .camera-viewport {
+          border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.3);
+          border: 1px solid var(--glass-border); min-height: 240px;
+          display: flex; align-items: center; justify-content: center;
+          position: relative;
+        }
+        .camera-viewport video {
+          width: 100%; border-radius: 12px; display: block;
+        }
+        .detection-overlay {
+          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          pointer-events: none; border-radius: 12px;
+        }
+        .scanner-container {
+          position: absolute;
+          top: 0; left: 0; width: 100%; height: 100%;
+          display: flex; align-items: center; justify-content: center;
+          pointer-events: none;
+        }
+        .laser-line {
+          position: absolute; width: 80%; height: 3px;
+          background: linear-gradient(90deg, transparent, var(--accent-secondary), transparent);
+          box-shadow: 0 0 15px var(--accent-secondary);
+          animation: laser-scan 2s ease-in-out infinite;
+          z-index: 10;
+        }
+        @keyframes laser-scan {
+          0% { top: 25%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 75%; opacity: 0; }
+        }
+        .detection-status {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          margin-top: 10px; padding: 8px 16px;
+          border-radius: 20px; font-size: 13px; font-weight: 600;
+          background: rgba(255,255,255,0.08); color: var(--text-secondary);
+          border: 1px solid rgba(255,255,255,0.1);
+          transition: all 0.3s ease;
+        }
+        .detection-status.detected {
+          background: rgba(16, 185, 129, 0.15); color: #10b981;
+          border-color: rgba(16, 185, 129, 0.3);
+        }
+        .detection-status.warning {
+          background: rgba(236, 201, 75, 0.15); color: #ecc94b;
+          border-color: rgba(236, 201, 75, 0.3);
+        }
+        .status-dot {
+          width: 8px; height: 8px; border-radius: 50%;
+          background: #718096;
+          transition: all 0.3s ease;
+        }
+        .status-dot.active {
+          background: #10b981;
+          box-shadow: 0 0 8px #10b981;
+          animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+          50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        }
+      </style>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Buttons when camera is OFF -->
+        <ng-container *ngIf="!cameraOn">
+          <ng-container *ngIf="mode === 'register'">
+            <button class="btn-primary" (click)="startCamera('register')">
+              <i class="fa-solid fa-id-card"></i> Register FaceID
+            </button>
+            <button class="btn-outline" (click)="skipForNow()">
+              <i class="fa-solid fa-forward"></i> Skip for now
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="mode === 'verify'">
+            <button class="btn-primary" (click)="startCamera('verify')">
+              <i class="fa-solid fa-user-shield"></i> Vérifier mon identité
+            </button>
+            <button class="btn-outline" (click)="startCamera('register')">
+              <i class="fa-solid fa-id-card"></i> Configurer mon visage
+            </button>
+          </ng-container>
+        </ng-container>
+
+        <!-- Buttons when camera is ON -->
+        <ng-container *ngIf="cameraOn && !loading">
+          <button class="btn-primary" *ngIf="mode === 'register'" (click)="captureAndRegister()">
+            <i class="fa-solid fa-camera-retro"></i> Capturer et Enregistrer
+          </button>
+          <button class="btn-primary" *ngIf="mode === 'verify'" (click)="captureAndVerify()">
+            <i class="fa-solid fa-expand"></i> Analyser le visage
+          </button>
+          <button class="btn-outline" (click)="stopCamera()">
+            Annuler
+          </button>
+        </ng-container>
+
+        <div *ngIf="loading" style="text-align: center; color: var(--text-secondary);">
+          <span class="spinner"></span> Analyse en cours...
+        </div>
+      </div>
+
+      <p class="auth-link">
+        <a routerLink="/login"><i class="fa-solid fa-arrow-left"></i> Retour à la connexion classique</a>
+      </p>
+    </div>
+  </div>
+</div>

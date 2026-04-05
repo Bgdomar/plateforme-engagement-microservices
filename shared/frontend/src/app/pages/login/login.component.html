@@ -1,0 +1,124 @@
+<section class="login-section">
+  <div class="login-wrapper">
+    <div class="login-illustration">
+      <div class="illustration-content">
+        <div class="illustration-icon" aria-hidden="true">
+          <div class="site-logo-placeholder">DXC</div>
+        </div>
+        <h3 class="illustration-title">Plateforme DXC Stagiaires</h3>
+        <p class="illustration-text">
+          Suivez vos missions, déposez vos livrables et progressez dans un environnement interactif et motivant.
+        </p>
+
+        <div class="platform-features">
+          <div class="feature">
+            <span>Suivi personnalisé des missions</span>
+          </div>
+          <div class="feature">
+            <span>Système de points et badges</span>
+          </div>
+          <div class="feature">
+            <span>Authentification faciale sécurisée</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-form-container">
+      <div class="form-header">
+        <h1 class="form-title">Connexion</h1>
+        <p class="form-subtitle">Accédez à votre espace personnel</p>
+      </div>
+
+      <div class="form-card">
+        <div class="auth-method-selector">
+          <button
+            type="button"
+            class="method-btn"
+            [class.active]="authMethod === 'email'"
+            (click)="authMethod = 'email'; resetForm()">
+            Email / Mot de passe
+          </button>
+          <button
+            type="button"
+            class="method-btn"
+            [class.active]="authMethod === 'facial'"
+            (click)="authMethod = 'facial'; resetForm()">
+            Reconnaissance faciale
+          </button>
+        </div>
+
+        <div *ngIf="authMethod === 'email'" class="email-login-form">
+          <form (submit)="onSubmitEmail($event)" class="form">
+            <div class="form-group">
+              <label for="email" class="form-label">Email professionnel</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="prenom.nom@dxc.com"
+                [(ngModel)]="email"
+                name="email"
+                class="form-input"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password" class="form-label">Mot de passe</label>
+              <div class="password-container">
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  placeholder="••••••••"
+                  [(ngModel)]="password"
+                  name="password"
+                  class="form-input"
+                  required
+                />
+                <button type="button" class="password-toggle" (click)="showPassword = !showPassword">
+                  {{ showPassword ? 'Masquer' : 'Afficher' }}
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="error" class="alert-error" [ngClass]="{
+              'error-credentials': errorType === 'credentials',
+              'error-pending': errorType === 'pending',
+              'error-disabled': errorType === 'disabled',
+              'error-suspended': errorType === 'suspended'
+            }">
+              {{ error }}
+            </div>
+
+            <button type="submit" class="submit-button primary-btn" [disabled]="loading">
+              <span *ngIf="loading" class="spinner"></span>
+              {{ loading ? 'Connexion en cours...' : 'Se connecter' }}
+            </button>
+          </form>
+        </div>
+
+        <div *ngIf="authMethod === 'facial'" class="facial-login-form">
+          <div class="facial-card">
+            <h3 class="facial-title">Connexion biométrique</h3>
+            <p class="facial-text">
+              Utilisez la reconnaissance faciale pour accéder rapidement à votre espace.
+            </p>
+            <a class="submit-button primary-btn" routerLink="/face-auth">
+              Continuer
+            </a>
+            <button type="button" class="submit-button secondary-btn" (click)="authMethod = 'email'">
+              Utiliser email
+            </button>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <p class="footer-text">
+            Vous n'avez pas encore de compte ?
+            <a routerLink="/register" class="footer-link">Créer un compte</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

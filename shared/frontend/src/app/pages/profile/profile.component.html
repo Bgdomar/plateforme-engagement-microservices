@@ -1,0 +1,232 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900">Mon Profil</h1>
+      <p class="text-slate-600 mt-2">Gérez vos informations personnelles</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <!-- Sidebar - User Card -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
+          <!-- Logo -->
+          <div class="flex items-center gap-2 mb-8">
+            <div class="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center">
+              <span class="text-white font-bold text-lg">D</span>
+            </div>
+            <span class="font-bold text-xl text-slate-900">DXC</span>
+          </div>
+
+          <!-- Role Badge -->
+          <div class="bg-red-50 border border-red-200 rounded-full px-4 py-2 mb-6 text-center">
+            <span class="text-red-600 font-bold text-sm">{{ role }}</span>
+          </div>
+
+          <!-- Navigation Items -->
+          <nav class="space-y-2 mb-6">
+            <!-- Mon Profil - Active -->
+            <button 
+              (click)="true"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-100 text-cyan-600 font-medium transition">
+              <i class="fas fa-user text-lg"></i>
+              <span>Mon Profil</span>
+            </button>
+
+            <!-- Biométrie -->
+            <button 
+              routerLink="/dashboard"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 font-medium transition">
+              <i class="fas fa-fingerprint text-lg"></i>
+              <span>Biométrie</span>
+            </button>
+
+            <!-- Gestion Admin -->
+            <button 
+              routerLink="/dashboard"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 font-medium transition">
+              <i class="fas fa-users text-lg"></i>
+              <span>Gestion Admin</span>
+            </button>
+          </nav>
+
+          <!-- User Info -->
+          <div class="border-t pt-6 mb-6">
+            <p class="text-xs text-slate-500 uppercase mb-2">Connecté en tant que</p>
+            <p class="text-sm font-medium text-slate-900">{{ email }}</p>
+          </div>
+
+          <!-- Logout -->
+          <button 
+            (click)="true"
+            class="w-full flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="lg:col-span-3">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <!-- Header with Edit Button -->
+          <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-8 py-8 flex justify-between items-center">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900">Profil Personnel</h2>
+              <p class="text-slate-600 text-sm mt-1">Gérez vos informations personnelles</p>
+            </div>
+            <button 
+              *ngIf="!isEditingProfile"
+              (click)="isEditingProfile = true"
+              class="btn-primary">
+              <i class="fas fa-edit mr-2"></i>Modifier
+            </button>
+          </div>
+
+          <!-- Profile Content -->
+          <div class="p-8">
+            <!-- Update Messages -->
+            <div *ngIf="updateError" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+              <i class="fas fa-exclamation-circle mr-2"></i>{{ updateError }}
+            </div>
+            <div *ngIf="updateSuccess" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+              <i class="fas fa-check-circle mr-2"></i>{{ updateSuccess }}
+            </div>
+
+            <div class="space-y-8">
+              <!-- Avatar Section -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-bold text-slate-900">Photo de profil</h3>
+                  <span class="text-xs text-slate-500">JPG/PNG, max 5MB</span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center gap-6">
+                  <div class="relative">
+                    <div *ngIf="profileImage" class="w-28 h-28 rounded-full overflow-hidden border-4 border-[#00ABE4] shadow-lg">
+                      <img [src]="profileImage" alt="Profile" class="w-full h-full object-cover">
+                    </div>
+                    <div *ngIf="!profileImage" class="w-28 h-28 rounded-full bg-gradient-to-br from-[#00ABE4] to-blue-500 flex items-center justify-center border-4 border-[#00ABE4] shadow-lg">
+                      <span class="text-white text-4xl font-bold">{{ getInitials() }}</span>
+                    </div>
+
+                    <label *ngIf="isEditingProfile" class="absolute bottom-0 right-0 bg-[#00ABE4] hover:bg-[#0099cc] text-white rounded-full p-3 cursor-pointer shadow-lg transition">
+                      <i class="fas fa-camera"></i>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        (change)="onImageSelected($event)"
+                        class="hidden">
+                    </label>
+                  </div>
+
+                  <div class="text-center sm:text-left">
+                    <p class="text-slate-900 font-semibold">{{ firstName }} {{ lastName }}</p>
+                    <p class="text-slate-600 text-sm">{{ email }}</p>
+                    <p class="text-slate-500 text-xs mt-1">Clique sur l’icône caméra pour changer la photo.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Personal Information -->
+              <div class="bg-white border border-slate-200 rounded-xl p-6">
+                <h3 class="text-lg font-bold text-slate-900 mb-6">Informations personnelles</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Adresse email</label>
+                    <input
+                      [(ngModel)]="email"
+                      [disabled]="!isEditingProfile"
+                      type="email"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ABE4] focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Prénom</label>
+                    <input
+                      [(ngModel)]="firstName"
+                      [disabled]="!isEditingProfile"
+                      type="text"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ABE4] focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Nom</label>
+                    <input
+                      [(ngModel)]="lastName"
+                      [disabled]="!isEditingProfile"
+                      type="text"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ABE4] focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Téléphone</label>
+                    <input
+                      [(ngModel)]="phone"
+                      [disabled]="!isEditingProfile"
+                      type="tel"
+                      placeholder="+216 ..."
+                      class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ABE4] focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Professional Information -->
+              <div class="bg-white border border-slate-200 rounded-xl p-6">
+                <h3 class="text-lg font-bold text-slate-900 mb-6">Informations professionnelles</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Poste</label>
+                    <input
+                      [(ngModel)]="position"
+                      [disabled]="!isEditingProfile"
+                      type="text"
+                      placeholder="Intern, Developer..."
+                      class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ABE4] focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Département</label>
+                    <input
+                      [(ngModel)]="department"
+                      [disabled]="!isEditingProfile"
+                      type="text"
+                      placeholder="Engineering, HR..."
+                      class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ABE4] focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600">
+                  </div>
+
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Adresse</label>
+                    <textarea
+                      [(ngModel)]="address"
+                      [disabled]="!isEditingProfile"
+                      rows="3"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ABE4] focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Save/Cancel Buttons (Edit Mode) -->
+            <div *ngIf="isEditingProfile" class="border-t pt-8 flex gap-4">
+              <button 
+                (click)="saveProfileChanges()"
+                [disabled]="isSaving"
+                class="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                <span *ngIf="!isSaving"><i class="fas fa-save mr-2"></i>Sauvegarder</span>
+                <span *ngIf="isSaving"><i class="fas fa-spinner fa-spin mr-2"></i>Enregistrement...</span>
+              </button>
+              <button 
+                (click)="cancelEdit()"
+                class="flex-1 px-6 py-4 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition">
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

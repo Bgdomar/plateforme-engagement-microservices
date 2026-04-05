@@ -1,0 +1,347 @@
+<!-- SECTION HERO PROFESSIONNEL -->
+<section class="relative w-full min-h-screen bg-brand-light overflow-hidden pt-16">
+  
+  <!-- ARRIÈRE-PLAN AVEC IMAGE & OVERLAY -->
+  <div class="absolute inset-0 h-full">
+    <!-- Gradient overlay -->
+    <div class="absolute inset-0 bg-gradient-to-r from-white/85 via-white/55 to-white/75 z-10"></div>
+    <!-- Image de fond (biometric styling) -->
+    <div class="absolute inset-0 bg-cover bg-center z-0 transition-all duration-700"
+         [ngStyle]="{ 'background-image': 'url(assets/' + slides[currentSlide].image + ')' }">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-white/20 via-white/60 to-brand-light z-0"></div>
+    <!-- Accent glow -->
+    <div class="absolute top-1/4 right-0 w-96 h-96 bg-primary-500/15 rounded-full blur-3xl z-0"></div>
+    <div class="absolute -bottom-24 -left-24 w-[520px] h-[520px] bg-primary-500/15 rounded-full blur-3xl z-0"></div>
+  </div>
+
+  <!-- CONTENU HERO -->
+  <div class="relative z-20 max-w-7xl mx-auto px-6 h-screen flex items-center">
+    
+    <!-- COLONNE GAUCHE: TEXTE & ACTIONS -->
+    <div class="flex-1 mr-12">
+      <div class="space-y-8">
+        <!-- Titre Principal -->
+        <div class="space-y-4">
+          <h1 class="text-6xl lg:text-7xl font-black text-brand-dark leading-tight">
+            Suivi D'Engagement<br>
+            <span class="bg-gradient-to-r from-primary-400 to-primary-500 bg-clip-text text-transparent">Interactif</span>
+          </h1>
+          <p class="text-lg text-brand-gray max-w-xl leading-relaxed">
+            DXC Technology accompagne les organisations dans leur transformation digitale avec des solutions innovantes, sécurisées et orientées performance.
+            Découvrez notre Plateforme de Suivi d'Engagement avec Gamification et Authentification Faciale.
+          </p>
+        </div>
+
+        <!-- BOUTONS D'ACTION -->
+        <div class="flex gap-4 pt-6">
+          <!-- Bouton Primaire (Bleu) -->
+          <a routerLink="/register" 
+             class="px-10 py-4 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-600 hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300 hover:-translate-y-1">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-rocket"></i>
+              Commencer l'Aventure
+            </span>
+          </a>
+          
+          <!-- Bouton Secondaire (Dark) -->
+          <a routerLink="/face-auth" 
+             class="px-10 py-4 bg-white border border-primary-200 text-brand-dark font-bold rounded-xl hover:bg-primary-50 transition-all duration-300">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-face-smile"></i>
+              Essayer FaceID
+            </span>
+          </a>
+        </div>
+
+        <!-- CAROUSEL INDICATEURS -->
+        <div class="flex gap-3 pt-4">
+          <span *ngFor="let slide of slides; let i = index"
+                (click)="setSlide(i)"
+                class="h-1 rounded-full transition-all duration-300 cursor-pointer"
+                [ngClass]="currentSlide === i ? 'w-12 bg-primary-500' : 'w-2 bg-slate-300 hover:bg-slate-400'">
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLONNE DROITE: VIDEO + CONTEXTE (STYLE SCREENSHOT) -->
+    <div class="hidden lg:block w-[520px]">
+      <div class="bg-white/80 backdrop-blur-xl border border-primary-100 rounded-2xl p-6 shadow-sm">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+          <div class="rounded-2xl overflow-hidden border border-primary-100 bg-white">
+            <div class="relative w-full" style="padding-top: 56.25%;">
+              <iframe
+                class="absolute inset-0 w-full h-full"
+                [src]="getSafeYoutubeUrl('https://www.youtube.com/embed/e30Vpub8QgQ?start=42&rel=0')"
+                title="Présentation DXC"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+                referrerpolicy="strict-origin-when-cross-origin"
+              ></iframe>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="text-brand-dark text-3xl font-black leading-tight">
+              Un peu d'histoire<br />
+              <span class="italic">et de contexte</span>
+            </div>
+            <p class="text-brand-gray text-sm leading-relaxed">
+              DXC Technology accompagne les organisations dans leur transformation digitale avec des solutions innovantes, sécurisées et orientées performance.
+            </p>
+            <p class="text-brand-gray text-sm leading-relaxed">
+              Notre plateforme met l'accent sur le suivi, la gamification et l'authentification pour offrir une expérience moderne aux stagiaires et aux encadrants.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION CAROUSEL -->
+  <button class="absolute left-6 top-1/2 -translate-y-1/2 z-30 lg:top-1/3 w-12 h-12 bg-white/80 backdrop-blur hover:bg-white rounded-full flex items-center justify-center text-brand-dark border border-primary-100 transition-all duration-300"
+          (click)="prevSlide()">
+    <i class="fa-solid fa-chevron-left text-lg"></i>
+  </button>
+  <button class="absolute right-6 top-1/2 -translate-y-1/2 z-30 lg:top-1/3 w-12 h-12 bg-white/80 backdrop-blur hover:bg-white rounded-full flex items-center justify-center text-brand-dark border border-primary-100 transition-all duration-300"
+          (click)="nextSlide()">
+    <i class="fa-solid fa-chevron-right text-lg"></i>
+  </button>
+</section>
+
+<!-- SECTION FEATURES -->
+<section class="w-full py-24 bg-brand-light">
+  <div class="max-w-7xl mx-auto px-6">
+    <!-- Header -->
+    <div class="text-center space-y-4 mb-16">
+      <h2 class="text-4xl lg:text-5xl font-black text-brand-dark">
+        Une Solution Interactive <span class="text-primary-600">&</span> Complète
+      </h2>
+      <p class="text-lg text-brand-gray max-w-2xl mx-auto">
+        Découvrez comment nous dynamisons l'engagement de nos collaborateurs avec des outils modernes et performants.
+      </p>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Feature 1 -->
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-clipboard-check text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Suivi Automatisé</h3>
+        <p class="text-brand-gray">Automatisation complète du cycle de vie des missions, de la création à la validation finale.</p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-gamepad text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Gamification</h3>
+        <p class="text-brand-gray">Boostez la motivation via des points, des badges exclusifs et des classements en temps réel.</p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-user-shield text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Sécurité FaceID</h3>
+        <p class="text-brand-gray">Accès ultra-sécurisé par reconnaissance faciale 1:N avec détection de vivacité intégrée.</p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-chart-line text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Dashboards Analytiques</h3>
+        <p class="text-brand-gray">Visions 360° en temps réel pour les stagiaires, les encadrants et les administrateurs.</p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-comments text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Messagerie Temps Réel</h3>
+        <p class="text-brand-gray">Chat interne fluide avec notifications instantanées pour une collaboration sans friction.</p>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-folder-open text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Espace Livrables</h3>
+        <p class="text-brand-gray">Stockage sécurisé de vos fichiers projets avec un historique complet des versions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION NOS SERVICES -->
+<section class="w-full py-24 bg-brand-light">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center space-y-4 mb-16">
+      <h2 class="text-4xl lg:text-5xl font-black text-brand-dark">Nos Services</h2>
+      <p class="text-lg text-brand-gray max-w-3xl mx-auto">
+        Des Solutions Complètes, une Couverture en 24/7 et un Support en 9 Langues
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-server text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Data Center</h3>
+        <p class="text-brand-gray">Hébergez vos Données en toute sécurité</p>
+        <p class="text-brand-gray mt-3">Hébergement, Support & Supervision Technique, Cloud privé/ public</p>
+      </div>
+
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-cloud text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Cloud Infrastructure & ITO</h3>
+        <p class="text-brand-gray">Pilotez vos Infrastructures</p>
+        <p class="text-brand-gray mt-3">Cloud Privé, Public, Plateforme Traditionnelle</p>
+      </div>
+
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-brain text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Consulting, DATA & AI</h3>
+        <p class="text-brand-gray">Maximisez vos Insights & Anticipez</p>
+        <p class="text-brand-gray mt-3">Plateformes Analytiques sur Site, Cloud</p>
+      </div>
+
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-code text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Custom Apps & EAS</h3>
+        <p class="text-brand-gray">Digitalisez et Modernisez votre Patrimoine</p>
+        <p class="text-brand-gray mt-3">Intégration, Modernisation, Migration, TMA/ TRA</p>
+      </div>
+
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-file-shield text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Insurance Software & BPS</h3>
+        <p class="text-brand-gray">Gérez l'ensemble du cycle de vie de l'assurance.</p>
+        <p class="text-brand-gray mt-3">
+          Protégez, étendez et transformez votre paysage applicatif grâce à une suite globale complète de logiciels d'assurance,
+          de processus métiers optimisés et de services complémentaires.
+        </p>
+      </div>
+
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300">
+        <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
+          <i class="fa-solid fa-laptop-code text-2xl text-primary-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Modern Workplace</h3>
+        <p class="text-brand-gray">Libérez le Potentiel de Vos Utilisateurs</p>
+        <p class="text-brand-gray mt-3">Digital Worplace/ Automation, User-Centric, Business Desk</p>
+      </div>
+
+      <div class="bg-white border border-primary-100 rounded-xl p-8 hover:shadow-md transition-all duration-300 lg:col-span-3">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-primary-500/10 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-shield text-2xl text-primary-600"></i>
+              </div>
+              <h3 class="text-xl font-bold text-brand-dark">Sécurité</h3>
+            </div>
+            <p class="text-brand-gray mt-3">Assurez & Sécurisez votre Performance</p>
+            <p class="text-brand-gray mt-2">Données, Applications, Infrastructure, Endpoints</p>
+            <div class="text-brand-dark font-bold mt-3">SOC Information</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-16">
+      <h3 class="text-2xl font-black text-brand-dark text-center">Ils nous font confiance</h3>
+      <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="h-16 rounded-xl bg-white border border-primary-100 flex items-center justify-center text-brand-dark font-bold">Client 1</div>
+        <div class="h-16 rounded-xl bg-white border border-primary-100 flex items-center justify-center text-brand-dark font-bold">Client 2</div>
+        <div class="h-16 rounded-xl bg-white border border-primary-100 flex items-center justify-center text-brand-dark font-bold">Client 3</div>
+        <div class="h-16 rounded-xl bg-white border border-primary-100 flex items-center justify-center text-brand-dark font-bold">Client 4</div>
+      </div>
+      <p class="text-brand-gray text-sm text-center mt-4">Tu peux remplacer ces blocs par des logos (PNG/SVG) dans <span class="font-bold">assets/</span>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION CTA FOOTER -->
+<section class="w-full py-20 bg-gradient-to-b from-[#1E3A5F] to-[#162F4D]">
+  <div class="max-w-4xl mx-auto px-6 text-center space-y-8">
+    <h2 class="text-4xl font-black text-white">Prêt à Rejoindre l'Aventure ?</h2>
+    <p class="text-lg text-white/90">Commencez votre suivi d'engagement interactif dès maintenant avec notre plateforme révolutionnaire.</p>
+    <a routerLink="/register" class="inline-block px-12 py-4 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-600 hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300">
+      Créer un Compte Maintenant
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="bg-white border-t border-primary-100">
+    <div class="max-w-7xl mx-auto px-6 py-14">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
+        <div class="md:col-span-5 space-y-4">
+          <div class="text-brand-dark font-black text-2xl tracking-tight">
+            Stagiaire<span class="text-primary-400">DXC</span>
+          </div>
+          <p class="text-brand-gray max-w-md">
+            L'excellence au service de l'engagement et de la réussite de nos talents.
+          </p>
+          <div class="flex items-center gap-3 text-brand-gray">
+            <span class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-primary-50 border border-primary-100 hover:bg-primary-100 transition">
+              <i class="fa-brands fa-linkedin-in"></i>
+            </span>
+            <span class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-primary-50 border border-primary-100 hover:bg-primary-100 transition">
+              <i class="fa-brands fa-github"></i>
+            </span>
+            <span class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-primary-50 border border-primary-100 hover:bg-primary-100 transition">
+              <i class="fa-solid fa-globe"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="md:col-span-3 space-y-3">
+          <h4 class="text-brand-dark font-bold tracking-wide">Navigation</h4>
+          <ul class="space-y-2 text-brand-gray">
+            <li><a class="hover:text-brand-dark transition" routerLink="/">Accueil</a></li>
+            <li><a class="hover:text-brand-dark transition" routerLink="/login">Connexion</a></li>
+            <li><a class="hover:text-brand-dark transition" routerLink="/register">Inscription</a></li>
+          </ul>
+        </div>
+
+        <div class="md:col-span-4 space-y-3">
+          <h4 class="text-brand-dark font-bold tracking-wide">Technologie</h4>
+          <ul class="space-y-2 text-brand-gray">
+            <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary-400"></span>FastAPI (IA)</li>
+            <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary-400"></span>Spring Boot (Microservices)</li>
+            <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary-400"></span>Angular (Dashboard)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-12 pt-6 border-t border-primary-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <p class="text-brand-gray text-sm">© 2026 DXC Technology Platform. Tous droits réservés.</p>
+        <div class="flex gap-5 text-sm text-brand-gray">
+          <a class="hover:text-brand-dark transition" routerLink="/">Mentions légales</a>
+          <a class="hover:text-brand-dark transition" routerLink="/">Politique de confidentialité</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

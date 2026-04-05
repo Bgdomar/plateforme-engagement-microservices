@@ -1,0 +1,76 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      codecs:
+        max-in-memory-size: 5MB
+
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - "http://localhost:4200"
+              - "http://127.0.0.1:4200"
+            allowed-methods:
+              - "*"
+            allowed-headers:
+              - "*"
+            allow-credentials: true
+            max-age: 3600
+
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+
+      routes:
+        - id: iam-service
+          uri: lb://iam-service
+          predicates:
+            - Path=/auth/**,/admin/**,/users/**
+
+        - id: face-recognition-service
+          uri: lb://face-recognition-service
+          predicates:
+            - Path=/api/v1/faces/**
+
+        - id: mission-service
+          uri: lb://mission-service
+          predicates:
+            - Path=/api/v1/missions/**
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
+
+  instance:
+    prefer-ip-address: true
+
+
+# 🔥 IMPORTANT (fix healthcheck Docker)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  endpoint:
+    health:
+      show-details: always
+
+  health:
+    defaults:
+      enabled: true

@@ -1,0 +1,224 @@
+services:
+
+  # ===== KAFKA (KRaft) =====
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka
+    restart: always
+    ports:
+      - "29092:29092"
+    environment:
+      CLUSTER_ID: r4zt_wrqT6e0YJ2k2eQ6cA
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  # ===== DATABASES =====
+  postgres-iam:
+    image: postgres:16
+    container_name: postgres-iam
+    restart: always
+    environment:
+      POSTGRES_DB: iam_db
+      POSTGRES_USER: iam_user
+      POSTGRES_PASSWORD: iam_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_iam_data:/var/lib/postgresql/data
+
+  postgres-mission:
+    image: postgres:16
+    container_name: postgres-mission
+    restart: always
+    environment:
+      POSTGRES_DB: mission_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_mission_data:/var/lib/postgresql/data
+
+
+  # ===== MINIO (S3) =====
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: minio-init
+    depends_on:
+      - minio
+    entrypoint: ["/bin/sh", "-lc"]
+    command: >
+      "mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin} &&
+       mc mb -p local/profile-images || true &&
+       mc anonymous set download local/profile-images || true"
+
+
+  # ===== DISCOVERY SERVICE =====
+  discovery-service:
+    build:
+      context: ./infrastructure/discovery-service
+      dockerfile: Dockerfile
+    container_name: discovery-service
+    restart: always
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_APPLICATION_NAME: discovery-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+
+  # ===== IAM SERVICE =====
+  iam-service:
+    build:
+      context: ./epic-1-authentication/backend/iam-service
+      dockerfile: Dockerfile
+    container_name: iam-service
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_APPLICATION_NAME: iam-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-iam:5432/iam_db
+      SPRING_DATASOURCE_USERNAME: iam_user
+      SPRING_DATASOURCE_PASSWORD: iam_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
+      IAM_AUTO_APPROVE: "true"
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET: profile-images
+      MINIO_PUBLIC_URL: http://localhost:9000
+    depends_on:
+      postgres-iam:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_started
+
+
+  # ===== MISSION SERVICE ===
+  mission-service:
+    build:
+      context: ./epic-3-missions/backend/mission-service
+      dockerfile: Dockerfile
+    container_name: mission-service
+    restart: always
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_APPLICATION_NAME: mission-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-mission:5432/mission_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
+    depends_on:
+      postgres-mission:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
+
+
+  # ===== FACE RECOGNITION SERVICE ===
+  face-recognition-service:
+    build:
+      context: ./epic-1-authentication/backend/facial-ai-service
+      dockerfile: Dockerfile
+    container_name: face-recognition-service
+    restart: always
+    ports:
+      - "8082:8082"
+    environment:
+      EUREKA_SERVER: http://discovery-service:8761/eureka/
+      SERVICE_NAME: face-recognition-service
+      SERVICE_PORT: 8082
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+
+
+  # ===== API GATEWAY ===
+  api-gateway:
+    build:
+      context: ./infrastructure/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_APPLICATION_NAME: api-gateway
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      iam-service:
+        condition: service_started
+      mission-service:
+        condition: service_started
+      face-recognition-service:
+        condition: service_started
+
+
+  # ===== FRONTEND =====
+  frontend:
+    build:
+      context: ./shared/frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    ports:
+      - "4200:4200"
+    depends_on:
+      - api-gateway
+    environment:
+      API_URL: http://localhost:8080
+
+
+volumes:
+  pg_iam_data:
+  pg_mission_data:
+  kafka_data:
+  minio_data:
+
+
+networks:
+  default:
+    name: plateforme-engagement-network
+    external: true

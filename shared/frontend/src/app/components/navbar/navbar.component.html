@@ -1,0 +1,114 @@
+<!-- NAVBAR PROFESSIONNEL TAILWIND -->
+<nav class="fixed top-4 left-4 right-4 z-50 bg-black/20 backdrop-blur-lg border border-white/10 h-24 transition-all duration-300 rounded-2xl"
+     [ngClass]="{ 'h-16': isScrolled }">
+  
+  <div class="max-w-7xl mx-auto px-6 h-full flex justify-between items-center">
+    
+    <!-- LOGO & BRANDING (LEFT) -->
+    <div class="flex items-center gap-4 min-w-fit">
+      <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center">
+        <img src="assets/logo.png" alt="Logo StagiaireDXC" class="w-full h-full object-contain" />
+      </div>
+      <div class="hidden">
+        <app-logo [size]="48"></app-logo>
+      </div>
+      <div class="hidden sm:flex flex-col leading-tight">
+        <span class="text-white font-bold text-lg">Stagiaire<span class="text-primary-400">DXC</span></span>
+        <span class="text-xs text-slate-300 font-semibold uppercase tracking-wider">Engagement Biométrique</span>
+      </div>
+    </div>
+
+    <!-- CENTER NAV -->
+    <div class="hidden lg:flex gap-12 flex-1 justify-center items-center">
+      <a routerLink="/" class="text-white hover:text-primary-400 font-semibold text-base transition-colors duration-300">
+        Accueil
+      </a>
+      <a routerLink="/face-auth" class="text-white hover:text-primary-400 font-semibold text-base transition-colors duration-300 flex items-center gap-2">
+        <span>Essayer</span>
+        <span class="text-primary-400">FaceID</span>
+      </a>
+    </div>
+
+    <!-- RIGHT SECTION -->
+    <div class="flex items-center gap-6">
+      
+      <!-- USER INFO (afficher si authentifié) -->
+      <div *ngIf="isAuthenticated" class="hidden md:flex items-center gap-3 text-white">
+        <span class="text-sm font-semibold">
+          <span class="text-slate-400">USER:</span>
+          <span class="ml-2 text-white">{{ userName }}</span>
+        </span>
+      </div>
+
+      <!-- AUTH BUTTONS -->
+      <div *ngIf="!isAuthenticated" class="flex gap-4">
+        <a routerLink="/login" class="px-6 py-2 text-white font-semibold hover:bg-white/10 rounded-lg transition-all duration-300 border border-white/20">
+          Connexion
+        </a>
+        <a routerLink="/register" class="px-8 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold rounded-full hover:shadow-lg hover:shadow-primary-500/50 transition-all duration-300">
+          Nous Rejoindre
+        </a>
+      </div>
+
+      <!-- USER DROPDOWN (si authentifié) -->
+      <div *ngIf="isAuthenticated" class="relative">
+        <button class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition-all duration-300"
+                (click)="toggleUserMenu()">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-sm font-bold">
+            {{ getInitials() }}
+          </div>
+          <i class="fa-solid fa-chevron-down text-white text-xs transition-transform duration-300" [ngClass]="isUserMenuOpen ? 'rotate-180' : ''"></i>
+        </button>
+
+        <!-- DROPDOWN MENU -->
+        <div *ngIf="isUserMenuOpen" 
+             class="absolute top-full right-0 mt-2 w-72 bg-slate-900/95 backdrop-blur-xl rounded-lg border border-white/10 shadow-2xl overflow-hidden z-50">
+          
+          <!-- Header -->
+          <div class="px-6 py-4 bg-gradient-to-r from-primary-500/20 to-primary-600/20 border-b border-white/10">
+            <p class="text-white font-bold">{{ userName }}</p>
+            <p class="text-slate-400 text-sm">{{ userEmail }}</p>
+          </div>
+
+          <!-- Menu Items -->
+          <a routerLink="/dashboard" class="block px-6 py-3 text-slate-200 hover:bg-white/10 transition-colors duration-200" (click)="closeUserMenu()">
+            <i class="fa-solid fa-chart-line mr-3 text-primary-400"></i> Dashboard
+          </a>
+          <a routerLink="/profile" class="block px-6 py-3 text-slate-200 hover:bg-white/10 transition-colors duration-200" (click)="closeUserMenu()">
+            <i class="fa-solid fa-user-gear mr-3 text-primary-400"></i> Mon Profil
+          </a>
+          <div class="border-t border-white/10"></div>
+          <button class="w-full text-left px-6 py-3 text-red-400 hover:bg-red-500/10 transition-colors duration-200" (click)="logout()">
+            <i class="fa-solid fa-sign-out-alt mr-3"></i> Déconnexion
+          </button>
+        </div>
+      </div>
+
+      <!-- MOBILE MENU TOGGLE -->
+      <button class="lg:hidden flex flex-col gap-1 bg-none border-none cursor-pointer" (click)="toggleMobileMenu()">
+        <span class="w-6 h-0.5 bg-white rounded transition-all duration-300" [ngClass]="isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''"></span>
+        <span class="w-6 h-0.5 bg-white rounded transition-all duration-300" [ngClass]="isMobileMenuOpen ? 'opacity-0' : ''"></span>
+        <span class="w-6 h-0.5 bg-white rounded transition-all duration-300" [ngClass]="isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MOBILE MENU -->
+  <div *ngIf="isMobileMenuOpen" class="absolute top-24 left-4 right-4 mx-auto bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col lg:hidden">
+    <a routerLink="/" class="px-6 py-3 text-white hover:bg-white/10 transition-colors duration-200" (click)="closeMobileMenu()">
+      Accueil
+    </a>
+    <a routerLink="/face-auth" class="px-6 py-3 text-white hover:bg-white/10 transition-colors duration-200" (click)="closeMobileMenu()">
+      Essayer FaceID
+    </a>
+    <div class="border-t border-white/10"></div>
+    <div *ngIf="!isAuthenticated" class="flex flex-col gap-2 p-4">
+      <a routerLink="/login" class="px-6 py-2 text-white font-semibold border border-white/20 rounded-lg text-center" (click)="closeMobileMenu()">
+        Connexion
+      </a>
+      <a routerLink="/register" class="px-6 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold rounded-full text-center" (click)="closeMobileMenu()">
+        Nous Rejoindre
+      </a>
+    </div>
+  </div>
+</nav>

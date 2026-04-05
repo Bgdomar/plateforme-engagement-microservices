@@ -1,0 +1,297 @@
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <app-logo [size]="45"></app-logo>
+      <span style="font-weight: 800; font-size: 1.2rem; color: #1e293b; margin-left: 8px;">DXC</span>
+    </div>
+
+    <!-- Role Badge -->
+    <div style="padding: 0 20px 20px;">
+      <span [class]="'role-badge ' + userRole.toLowerCase()">
+        <i class="fa-solid fa-shield-halved"></i> {{ userRole }}
+      </span>
+    </div>
+
+    <button class="nav-item" [class.active]="activeTab === 'profile'" (click)="activeTab = 'profile'">
+      <i class="fa-solid fa-user nav-icon"></i> Mon Profil
+    </button>
+    <button class="nav-item" [class.active]="activeTab === 'face'" (click)="activeTab = 'face'">
+      <i class="fa-solid fa-camera nav-icon"></i> Biométrie
+    </button>
+
+    <!-- Role Specific Items -->
+    <ng-container *ngIf="userRole === 'ADMIN'">
+      <button class="nav-item" [class.active]="activeTab === 'admin'" (click)="activeTab = 'admin'">
+        <i class="fa-solid fa-user-gear nav-icon"></i> Gestion Admin
+      </button>
+      <a class="nav-item" routerLink="/admin/users">
+        <i class="fa-solid fa-users-gear nav-icon"></i> User Management
+      </a>
+    </ng-container>
+
+    <ng-container *ngIf="userRole === 'ORGANIZATION'">
+      <button class="nav-item" [class.active]="activeTab === 'org'" (click)="activeTab = 'org'">
+        <i class="fa-solid fa-building-user nav-icon"></i> Équipes & Missions
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="userRole === 'USER'">
+      <button class="nav-item" [class.active]="activeTab === 'user'" (click)="activeTab = 'user'">
+        <i class="fa-solid fa-briefcase nav-icon"></i> Mes Missions
+      </button>
+    </ng-container>
+
+    <div class="nav-spacer"></div>
+
+    <div style="padding: 12px; border-radius: 10px; background: var(--glass-bg); border: 1px solid var(--glass-border); margin-bottom: 12px;">
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Connecté en tant que</p>
+      <p style="font-size: 13px; font-weight: 500; color: var(--text-secondary); word-break: break-all;">{{ userEmail }}</p>
+    </div>
+
+    <button class="nav-item" (click)="logout()" style="color: #f87171;">
+      <i class="fa-solid fa-right-from-bracket nav-icon"></i> Déconnexion
+    </button>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Profile Tab -->
+    <div *ngIf="activeTab === 'profile'">
+      <div class="page-header">
+        <h2>Mon Profil</h2>
+        <p>Gérez vos informations personnelles</p>
+      </div>
+
+      <div class="glass-card" style="padding: 36px; max-width: 500px;">
+        <div *ngIf="updateError" class="alert alert-error">⚠️ {{ updateError }}</div>
+        <div *ngIf="updateSuccess" class="alert alert-success">✅ {{ updateSuccess }}</div>
+
+        <div class="form-group">
+          <label>Adresse email</label>
+          <input type="email" [value]="userEmail" disabled style="opacity: 0.6; cursor: not-allowed;">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">Prénom</label>
+            <input id="firstName" type="text" [(ngModel)]="firstName" placeholder="Prénom">
+          </div>
+          <div class="form-group">
+            <label for="lastName">Nom</label>
+            <input id="lastName" type="text" [(ngModel)]="lastName" placeholder="Nom">
+          </div>
+        </div>
+
+        <div style="margin-top: 8px;">
+          <button class="btn-primary" (click)="saveProfile()" [disabled]="saveLoading">
+            <span *ngIf="!saveLoading">Sauvegarder <i class="fa-solid fa-floppy-disk"></i></span>
+            <span *ngIf="saveLoading" class="spinner"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Tab -->
+    <div *ngIf="activeTab === 'admin'">
+      <div class="page-header">
+        <h2>Gestion des Utilisateurs</h2>
+        <p>Administration globale des accès et profils</p>
+      </div>
+      
+      <div class="glass-card" style="padding: 24px; overflow-x: auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of users">
+              <td>
+                <div style="font-weight: 600;">{{ u.firstName }} {{ u.lastName }}</div>
+              </td>
+              <td style="color: var(--text-secondary);">{{ u.email }}</td>
+              <td>
+                <span [class]="'role-badge ' + u.role.toLowerCase()">
+                  {{ u.role }}
+                </span>
+              </td>
+              <td>
+                <span [class]="'status-pill ' + u.status.toLowerCase()">
+                  <i class="fa-solid fa-circle" style="font-size: 8px; margin-right: 4px;"></i>
+                  {{ u.status }}
+                </span>
+              </td>
+              <td>
+                <div class="action-group">
+                  <button *ngIf="u.status === 'PENDING' || u.status === 'REJECTED'" (click)="approveUser(u.id)" class="btn-icon approve" title="Approuver">
+                    <i class="fa-solid fa-user-check"></i>
+                  </button>
+                  <button *ngIf="u.status === 'APPROVED'" (click)="rejectUser(u.id)" class="btn-icon reject" title="Bloquer">
+                    <i class="fa-solid fa-user-slash"></i>
+                  </button>
+                  <button (click)="deleteUser(u.id)" class="btn-icon delete" title="Supprimer">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="users.length === 0">
+              <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                Aucune demande en attente.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Organization Tab (Manager) -->
+    <div *ngIf="activeTab === 'org'">
+      <div class="page-header">
+        <h2>Gestion des Équipes & Missions</h2>
+        <p>Organisez vos stagiaires et suivez leur progression.</p>
+      </div>
+
+      <div class="grid-layout" style="display: grid; grid-template-columns: 1fr 340px; gap: 24px;">
+        <div class="main-side">
+          <!-- Create Team Form (Existing) -->
+          <div class="glass-card" style="padding: 24px; margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px; font-size: 1.1rem; color: #1e293b;">Nouvelle Équipe</h3>
+            <div style="display: flex; gap: 12px; align-items: flex-end;">
+              <div class="form-group" style="flex: 1; margin:0;">
+                <label>Nom de l'équipe</label>
+                <input type="text" [(ngModel)]="newTeamName" placeholder="Ex: Team Alpha">
+              </div>
+              <button class="btn-primary" (click)="createTeam()" style="height: 44px;">
+                Créer <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Teams Grid (Existing) -->
+          <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+            <div *ngFor="let team of teams" class="glass-card team-card" style="padding: 16px;">
+              <h4 style="color: var(--accent-primary); margin-bottom: 8px;">{{ team.name }} (ID: {{team.id}})</h4>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">{{ team.members?.length || 0 }} membres</p>
+              <div *ngFor="let m of team.members" style="font-size: 0.85rem; padding: 4px 0;">
+                • {{ m.firstName }} {{ m.lastName }}
+              </div>
+            </div>
+          </div>
+
+          <!-- NEW: Missions Section for Manager -->
+          <div class="glass-card" style="margin-top: 24px; padding: 24px;">
+            <h3 style="margin-bottom: 20px; color: #1e293b;">Suivi des Missions</h3>
+            <div style="background: rgba(0,0,0,0.02); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+              <div style="display: grid; grid-template-columns: 1.5fr 2fr 1fr 1fr auto; gap: 10px; align-items: flex-end;">
+                <div class="form-group" style="margin:0;"><label>Titre</label><input type="text" [(ngModel)]="newMission.title"></div>
+                <div class="form-group" style="margin:0;"><label>Desc</label><input type="text" [(ngModel)]="newMission.description"></div>
+                <div class="form-group" style="margin:0;"><label>Équipe</label>
+                  <select [(ngModel)]="newMission.teamId">
+                    <option *ngFor="let t of teams" [value]="t.id">{{ t.name }}</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;"><label>Échéance</label><input type="date" [(ngModel)]="newMission.deadline"></div>
+                <button class="btn-primary" (click)="createMission()" style="height: 42px;">Attribuer</button>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <tr *ngFor="let m of allMissions" style="border-bottom: 1px solid #f1f5f9;">
+                  <td style="padding: 10px;"><b>{{ m.title }}</b></td>
+                  <td style="padding: 10px;">Team {{ m.teamId }}</td>
+                  <td style="padding: 10px;"><span class="badge" [ngClass]="m.status.toLowerCase()">{{ m.status }}</span></td>
+                  <td style="padding: 10px;">{{ m.deadline }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-panel">
+          <div class="glass-card" style="padding: 24px;">
+            <h3 style="margin-bottom: 16px; font-size: 1.1rem;">Stagiaires Libres</h3>
+            <div *ngFor="let s of availableStagiaires" style="padding: 10px; border-bottom: 1px solid #eee;">
+              <div style="font-weight: 500; font-size: 0.9rem;">{{ s.firstName }} {{ s.lastName }}</div>
+              <div style="display: flex; gap: 5px; margin-top: 5px;">
+                <select #tSelect style="flex: 1; font-size: 0.8rem;">
+                  <option *ngFor="let t of teams" [value]="t.id">{{ t.name }}</option>
+                </select>
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 0.7rem;" (click)="addMemberToTeam(+tSelect.value, s.id)">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mes Missions Tab (Stagiaire) -->
+    <div *ngIf="activeTab === 'user'">
+      <div class="page-header">
+        <h2>Mes Missions</h2>
+        <p>Suivez vos objectifs et votre progression en temps réel.</p>
+      </div>
+
+      <div class="grid-layout" style="display: grid; grid-template-columns: 1fr 340px; gap: 24px;">
+        <div class="main-side">
+          <div class="mission-list" style="display: flex; flex-direction: column; gap: 16px;">
+            <div *ngFor="let m of myMissions" class="glass-card" style="padding: 20px; border-left: 4px solid var(--accent-primary);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="font-size: 1.1rem; color: #1e293b;">{{ m.title }}</h4>
+                <span class="badge" [ngClass]="m.status.toLowerCase()">{{ m.status }}</span>
+              </div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">{{ m.description }}</p>
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Deadline: {{ m.deadline }}</span>
+                <div style="display: flex; gap: 8px;">
+                  <button *ngIf="m.status === 'PENDING'" (click)="updateMissionStatus(m.id, 'IN_PROGRESS')" class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem; background: #f59e0b; border:none;">Démarrer</button>
+                  <button *ngIf="m.status === 'IN_PROGRESS'" (click)="updateMissionStatus(m.id, 'DONE')" class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981; border:none;">Terminer</button>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="myMissions.length === 0" class="glass-card" style="padding: 20px; text-align: center;">
+               <p style="color: var(--text-muted);">Aucune mission assignée.</p>
+            </div>
+          </div>
+        </div>
+        <div class="side-panel">
+          <div class="glass-card" style="padding: 24px;">
+            <h3 style="font-size: 1rem; margin-bottom: 12px;">Niveau & Points</h3>
+            <div style="text-align: center; padding: 20px;">
+               <div style="font-size: 2.5rem; font-weight: 800; color: var(--accent-primary);">450</div>
+               <div style="font-size: 0.8rem; color: var(--text-muted);">Points cumulés</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Biometrics Tab -->
+    <div *ngIf="activeTab === 'face'">
+      <div class="page-header">
+        <h2>Authentification Biométrique</h2>
+        <p>Enregistrez ou vérifiez votre visage</p>
+      </div>
+      <div class="glass-card" style="padding: 36px; max-width: 400px; text-align: center;">
+        <div style="font-size: 64px; margin-bottom: 16px; color: var(--accent-primary);">
+          <i class="fa-solid fa-face-viewfinder"></i>
+        </div>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">
+          Accédez à la page de reconnaissance faciale pour enregistrer ou vérifier votre identité biométrique.
+        </p>
+        <a routerLink="/face-auth" class="btn-primary" style="display: inline-block; text-decoration: none; padding: 12px 24px;">
+          Ouvrir la caméra <i class="fa-solid fa-video"></i>
+        </a>
+      </div>
+    </div>
+
+  </main>
+</div>
