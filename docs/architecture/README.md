@@ -23,7 +23,7 @@ The **Plateforme d'Engagement** is a microservices-based platform built with:
       ▼
 [API Gateway :8080]  ──── Eureka Discovery :8761
       │
-      ├── iam-service :8081          (PostgreSQL)
+      ├── com.engagement.iam-service :8081          (PostgreSQL)
       ├── facial-ai-service :8082    (SQLite)
       ├── mission-service :8083      (PostgreSQL)
       ├── team-service (planned)
@@ -37,7 +37,7 @@ The **Plateforme d'Engagement** is a microservices-based platform built with:
 
 | Epic | Domain | Backend | Frontend | Status |
 |------|--------|---------|----------|--------|
-| 1 | Authentication | iam-service, facial-ai-service | auth-ui | ✅ Active |
+| 1 | Authentication | com.engagement.iam-service, facial-ai-service | auth-ui | ✅ Active |
 | 2 | Team Management | team-service | team-ui | 📋 Planned |
 | 3 | Missions | mission-service | mission-ui | ✅ Active |
 | 4 | Gamification | gamification-service | gamification-ui | 📋 Planned |

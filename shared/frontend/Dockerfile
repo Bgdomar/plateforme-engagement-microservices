@@ -1,46 +1,41 @@
-# Build stage
-FROM node:20-alpine AS builder
+# shared/frontend/Dockerfile
+FROM node:20-alpine AS build
+
 WORKDIR /app
-COPY package.json ./
-RUN npm install \
-  && node -p "'tailwindcss=' + require('tailwindcss/package.json').version" \
-  && npm ls tailwindcss
+
+COPY package*.json ./
+RUN rm -f package-lock.json
+RUN npm install --no-audit --no-fund
+
 COPY . .
-RUN npm run build -- --configuration production
 
-# Serve stage - uses express to handle SPA routing
+ARG API_URL=http://localhost:8080
+ARG FACIAL_AI_URL=http://localhost:8000
+
+RUN echo "window.__env = {" > src/env.js && \
+    echo "  API_URL: '${API_URL}'," >> src/env.js && \
+    echo "  FACIAL_AI_URL: '${FACIAL_AI_URL}'" >> src/env.js && \
+    echo "};" >> src/env.js
+
+RUN npm run build -- --configuration=production
+
+# ===== RUNTIME =====
 FROM node:20-alpine
+
 WORKDIR /app
 
-# Install express and body-parser for serving Angular SPA
-RUN npm init -y \
-  && npm install express body-parser
+# Installer express pour le server.js
+RUN npm install express
 
-# Copy Angular browser build output
-COPY --from=builder /app/dist/plateforme-web/browser ./public
+# Copier les fichiers buildés
+COPY --from=build /app/dist/plateforme-web/browser ./public
+
+# Copier env.js
+COPY --from=build /app/src/env.js ./public/env.js
+
+# Copier le serveur Express
+COPY server.js .
 
 EXPOSE 4200
-
-# Create a simple Express server to handle Angular routing
-RUN cat > server.js << 'EOF'
-const express = require('express');
-const path = require('path');
-const app = express();
-
-// Serve static files with cache disabled
-app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: 0,
-  etag: false
-}));
-
-// SPA routing: all non-file requests go to index.html
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.listen(4200, () => {
-  console.log('Angular app listening on http://0.0.0.0:4200');
-});
-EOF
 
 CMD ["node", "server.js"]

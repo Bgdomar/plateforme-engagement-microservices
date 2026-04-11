@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
-import { NavbarComponent } from './components/navbar/navbar.component';
+import { NavbarComponent } from '../components/navbar/navbar.component';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 

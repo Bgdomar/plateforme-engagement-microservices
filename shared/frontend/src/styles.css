@@ -1,8 +1,8 @@
+/*@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');*/
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* ===== CSS VARIABLES ===== */
 :root {
@@ -428,9 +428,9 @@ select option {
   border: 1px solid rgba(124, 58, 237, 0.2);
 }
 
-.nav-icon { 
-  font-size: 18px; 
-  width: 24px; 
+.nav-icon {
+  font-size: 18px;
+  width: 24px;
   text-align: center;
   transition: var(--transition);
 }
@@ -481,7 +481,6 @@ select option {
   gap: 6px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-sm);
 }
 
 .role-badge.admin { color: #f87171; border-color: rgba(248, 113, 113, 0.3); }
@@ -575,7 +574,6 @@ select option {
 
 .btn-icon:hover {
   transform: scale(1.1);
-  box-shadow: var(--shadow-md);
 }
 
 .btn-icon.approve:hover { color: #10b981; border-color: #10b981; background: rgba(16, 185, 129, 0.1); }

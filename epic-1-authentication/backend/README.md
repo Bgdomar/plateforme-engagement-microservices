@@ -2,7 +2,7 @@
 
 ## Services
 
-### iam-service (Spring Boot)
+### com.engagement.iam-service (Spring Boot)
 Identity & Access Management service handling:
 - User registration and login (email/password)
 - JWT token generation and validation

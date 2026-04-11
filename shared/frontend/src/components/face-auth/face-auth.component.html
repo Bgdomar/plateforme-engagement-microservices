@@ -1,0 +1,316 @@
+<div class="page-container">
+  <div class="auth-container">
+    <div class="brand">
+      <h1>Stagiaire <span>DXC</span></h1>
+      <p>Reconnaissance faciale biométrique avec détection de vivacité</p>
+    </div>
+
+    <div class="glass-card" style="padding: 36px;">
+      <h2 class="form-title">
+        {{ mode === 'register' ? 'Configuration FaceID' : 'Connexion biométrique' }}
+      </h2>
+      <p class="form-subtitle">
+        {{ mode === 'register' ? 'Enregistrez votre visage pour une connexion rapide et sécurisée.' : 'Notre IA analyse votre visage et vérifie votre vivacité (clignements).' }}
+      </p>
+
+      <!-- Messages d'erreur -->
+      <div *ngIf="error" class="alert alert-error">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        {{ error }}
+        <button class="retry-btn" (click)="retry()">Réessayer</button>
+      </div>
+
+      <!-- Message de succès -->
+      <div *ngIf="result" [class]="result.verified ? 'alert alert-success' : 'alert alert-error'">
+        <i [class]="result.verified ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
+        {{ result.message }}
+        <div *ngIf="result.verified" style="margin-top: 12px;">
+          <a routerLink="/dashboard" style="color: #0089B6; text-decoration: underline;">
+            Accéder au tableau de bord <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Zone Caméra -->
+      <div style="margin: 20px 0; text-align: center; position: relative;">
+        <div class="camera-viewport">
+          <video #videoEl [style.display]="cameraOn ? 'block' : 'none'"
+                 autoplay playsinline muted></video>
+          <canvas #overlayCanvas *ngIf="cameraOn" class="detection-overlay"></canvas>
+          <div *ngIf="!cameraOn" style="color: var(--text-muted); text-align: center; padding: 40px;">
+            <div style="font-size: 48px; margin-bottom: 12px;"><i class="fa-solid fa-camera"></i></div>
+            <p>Caméra inactive</p>
+          </div>
+        </div>
+        <canvas #canvas style="display: none;"></canvas>
+
+        <!-- Barre de progression capture -->
+        <div *ngIf="isCapturing" class="capture-progress-container">
+          <div class="capture-progress-bar">
+            <div class="capture-progress-fill" [style.width.%]="captureProgress"></div>
+          </div>
+          <p class="capture-progress-text">
+            <i class="fa-solid fa-camera-retro"></i>
+            Capture en cours... {{ framesCollected }}/{{ 40 }} frames
+          </p>
+          <p class="capture-hint">
+            <i class="fa-regular fa-eye"></i>
+            Clignez naturellement des yeux pendant la capture
+          </p>
+        </div>
+
+        <!-- Status de détection -->
+        <div *ngIf="cameraOn && !isCapturing && !loading" class="detection-status"
+             [class.detected]="faceDetected && faceCount === 1"
+             [class.warning]="faceCount > 1">
+          <span class="status-dot" [class.active]="faceDetected && faceCount === 1"></span>
+          <span class="status-text">{{ detectionStatus }}</span>
+          <span *ngIf="faceDetected && faceCount === 1" class="confidence-badge">
+            {{ faceConfidence }}%
+          </span>
+        </div>
+
+        <!-- Scanner laser pendant l'analyse -->
+        <div *ngIf="loading" class="scanner-container">
+          <div class="laser-line"></div>
+          <div class="loading-overlay">
+            <div class="spinner"></div>
+            <p>Analyse en cours...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutons d'action -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Caméra OFF -->
+        <ng-container *ngIf="!cameraOn && !loading && !result">
+          <ng-container *ngIf="mode === 'register'">
+            <button class="btn-primary" (click)="startCamera('register')">
+              <i class="fa-solid fa-id-card"></i> Enregistrer mon visage
+            </button>
+            <button class="btn-outline" (click)="skipForNow()">
+              <i class="fa-solid fa-forward"></i> Ignorer pour l'instant
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="mode === 'verify'">
+            <button class="btn-primary" (click)="startCamera('verify')">
+              <i class="fa-solid fa-user-shield"></i> Vérifier mon identité
+            </button>
+          </ng-container>
+        </ng-container>
+
+        <!-- Caméra ON -->
+        <ng-container *ngIf="cameraOn && !loading && !isCapturing && !result">
+          <button class="btn-primary" *ngIf="mode === 'register'" (click)="captureAndRegister()"
+                  [disabled]="!faceDetected || faceCount !== 1">
+            <i class="fa-solid fa-camera-retro"></i>
+            {{ !faceDetected ? 'Aucun visage détecté' : 'Capturer et Enregistrer' }}
+          </button>
+          <button class="btn-primary" *ngIf="mode === 'verify'" (click)="captureAndVerify()"
+                  [disabled]="!faceDetected || faceCount !== 1">
+            <i class="fa-solid fa-expand"></i>
+            {{ !faceDetected ? 'Aucun visage détecté' : 'Analyser le visage' }}
+          </button>
+          <button class="btn-outline" (click)="stopCamera()">
+            <i class="fa-solid fa-times"></i> Annuler
+          </button>
+        </ng-container>
+
+        <!-- Bouton réessayer en cas d'erreur -->
+        <button class="btn-outline" *ngIf="error && !cameraOn" (click)="retry()">
+          <i class="fa-solid fa-rotate-right"></i> Réessayer
+        </button>
+      </div>
+
+      <p class="auth-link">
+        <a routerLink="/login"><i class="fa-solid fa-arrow-left"></i> Retour à la connexion classique</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Styles additionnels -->
+<style>
+  .capture-progress-container {
+    margin-top: 15px;
+    text-align: center;
+  }
+
+  .capture-progress-bar {
+    width: 100%;
+    max-width: 400px;
+    height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 0 auto;
+  }
+
+  .capture-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 0.1s linear;
+    border-radius: 3px;
+  }
+
+  .capture-progress-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+  }
+
+  .capture-hint {
+    font-size: 12px;
+    color: #ecc94b;
+    margin-top: 5px;
+  }
+
+  .confidence-badge {
+    background: #10b981;
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+  }
+
+  .detection-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.08);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+  }
+
+  .detection-status.detected {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  .detection-status.warning {
+    background: rgba(236, 201, 75, 0.15);
+    color: #ecc94b;
+    border-color: rgba(236, 201, 75, 0.3);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #718096;
+    transition: all 0.3s ease;
+  }
+
+  .status-dot.active {
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  }
+
+  .scanner-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.5);
+    border-radius: 12px;
+    z-index: 20;
+  }
+
+  .laser-line {
+    position: absolute;
+    width: 80%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #10b981, transparent);
+    box-shadow: 0 0 15px #10b981;
+    animation: laser-scan 2s ease-in-out infinite;
+  }
+
+  @keyframes laser-scan {
+    0% { top: 20%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 80%; opacity: 0; }
+  }
+
+  .loading-overlay {
+    text-align: center;
+    color: white;
+  }
+
+  .loading-overlay .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 10px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .retry-btn {
+    margin-left: 10px;
+    padding: 4px 12px;
+    background: rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 6px;
+    color: inherit;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .retry-btn:hover {
+    background: rgba(0,0,0,0.2);
+  }
+
+  .camera-viewport {
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border);
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .camera-viewport video {
+    width: 100%;
+    border-radius: 12px;
+    display: block;
+  }
+
+  .detection-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border-radius: 12px;
+  }
+</style>

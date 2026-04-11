@@ -1,0 +1,112 @@
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+
+      <!-- Logo -->
+      <a routerLink="/dashboard/admin" class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h1 class="logo-text">EngageTrack<span class="logo-dot">.</span></h1>
+        <span class="admin-badge">Admin</span>
+      </a>
+
+      <!-- Navigation -->
+      <nav class="navigation">
+        <a routerLink="/dashboard/admin"
+           class="nav-link"
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{ exact: true }">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          Dashboard
+        </a>
+        <a routerLink="/dashboard/admin/inscriptions" class="nav-link" routerLinkActive="active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          Inscriptions
+        </a>
+        <a routerLink="/dashboard/admin/utilisateurs" class="nav-link" routerLinkActive="active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Utilisateurs
+        </a>
+        <a routerLink="/dashboard/admin/missions" class="nav-link" routerLinkActive="active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+          Missions
+        </a>
+      </nav>
+
+      <!-- Actions -->
+      <div class="actions">
+        <div class="user-dropdown">
+          <button class="user-trigger icon-button" (click)="toggleDropdown()" aria-label="Profil admin">
+            <div class="admin-avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+          </button>
+
+          <div class="dropdown-content" [class.show]="isDropdownOpen">
+            <div class="user-info-header">
+              <div class="user-avatar-container">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="user-avatar-icon">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="user-details">
+                <p class="user-name">{{ prenom }} {{ nom }}</p>
+                <p class="user-email">{{ email }}</p>
+                <span class="role-tag">Super Administrateur</span>
+              </div>
+            </div>
+
+            <div class="dropdown-separator"></div>
+
+            <a routerLink="/dashboard/admin" class="dropdown-item" (click)="closeDropdown()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              Dashboard
+            </a>
+
+            <div class="dropdown-separator"></div>
+
+            <button class="dropdown-item logout" (click)="logout()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

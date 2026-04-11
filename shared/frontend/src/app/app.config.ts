@@ -1,19 +1,25 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+// src/app/app.config.ts
+import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+
+import { FormsModule } from '@angular/forms';
+
 import { routes } from './app.routes';
-import { TokenInterceptor } from './services/token.interceptor';
+import { jwtInterceptor } from "../interceptors/jwt.interceptor";
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
+    provideHttpClient(
+      //withFetch(),
+      withInterceptors([jwtInterceptor])
+    ),
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptorsFromDi()),
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: TokenInterceptor,
-      multi: true
-    }
+    provideAnimations(),
+    importProvidersFrom(
+      FormsModule
+    ),
   ]
 };

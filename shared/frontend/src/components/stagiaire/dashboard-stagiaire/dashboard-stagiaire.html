@@ -1,0 +1,80 @@
+<div class="dashboard-container">
+  <app-header-stagiaire></app-header-stagiaire>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Tableau de bord Stagiaire</h1>
+      <div class="user-info">
+        <span class="user-name">{{ stagiaireInfo.prenom }} {{ stagiaireInfo.nom }}</span>
+        <button class="logout-btn" (click)="logout()">Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-content">
+    <!-- Profil Card -->
+    <div class="profile-card">
+      <div class="profile-icon">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <h2>{{ stagiaireInfo.prenom }} {{ stagiaireInfo.nom }}</h2>
+      <p class="email">{{ stagiaireInfo.email }}</p>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Promotion</span>
+          <span class="value">{{ stagiaireInfo.promotion }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Tuteur</span>
+          <span class="value">{{ stagiaireInfo.tuteur }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-value">{{ points.total }}</div>
+        <div class="stat-label">Points totaux</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-value">{{ points.badges }}</div>
+        <div class="stat-label">Badges obtenus</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value">{{ points.classement }}</div>
+        <div class="stat-label">Classement</div>
+      </div>
+    </div>
+
+    <!-- Missions -->
+    <div class="missions-section">
+      <h3>Mes missions</h3>
+      <div class="missions-list">
+        <div *ngFor="let mission of missions" class="mission-card">
+          <div class="mission-header">
+            <h4>{{ mission.titre }}</h4>
+            <span class="mission-status" [class]="mission.statut.toLowerCase().replace(' ', '-')">
+              {{ mission.statut }}
+            </span>
+          </div>
+          <div class="mission-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="mission.progression"></div>
+            </div>
+            <div class="progress-info">
+              <span>Progression: {{ mission.progression }}%</span>
+              <span>Deadline: {{ mission.deadline }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

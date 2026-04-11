@@ -9,7 +9,7 @@ plateforme-engagement/
 │
 ├── epic-1-authentication/          # User authentication & identity
 │   ├── backend/
-│   │   ├── iam-service/            # Spring Boot — JWT, RBAC, profile management
+│   │   ├── com.engagement.iam-service/            # Spring Boot — JWT, RBAC, profile management
 │   │   └── facial-ai-service/      # FastAPI — face recognition (register/identify)
 │   └── frontend/
 │       └── auth-ui/                # (stub) Login, Register, FaceID pages

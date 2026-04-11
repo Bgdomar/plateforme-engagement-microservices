@@ -1,0 +1,84 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Tableau de bord Encadrant</h1>
+      <div class="user-info">
+        <span class="user-name">{{ encadrantInfo.prenom }} {{ encadrantInfo.nom }}</span>
+        <button class="logout-btn" (click)="logout()">Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-content">
+    <div class="profile-card">
+      <div class="profile-icon">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <h2>{{ encadrantInfo.prenom }} {{ encadrantInfo.nom }}</h2>
+      <p class="email">{{ encadrantInfo.email }}</p>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Département</span>
+          <span class="value">{{ encadrantInfo.departement }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Stagiaires encadrés</span>
+          <span class="value">{{ encadrantInfo.stagiairesEncadres }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">{{ encadrantInfo.stagiairesEncadres }}</div>
+        <div class="stat-label">Stagiaires encadrés</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div class="stat-value">{{ livrablesAttente.length }}</div>
+        <div class="stat-label">Livrables en attente</div>
+      </div>
+    </div>
+
+    <div class="two-columns">
+      <div class="stagiaires-section">
+        <h3>Mes stagiaires</h3>
+        <div class="stagiaires-list">
+          <div *ngFor="let stagiaire of stagiaires" class="stagiaire-card">
+            <div class="stagiaire-info">
+              <h4>{{ stagiaire.nom }}</h4>
+              <p>Promotion: {{ stagiaire.promotion }}</p>
+              <p>Missions en cours: {{ stagiaire.missionsEnCours }}</p>
+            </div>
+            <div class="progress-circle">
+              <div class="progress-value">{{ stagiaire.progressionMoyenne }}%</div>
+              <div class="progress-label">Moyenne</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="livrables-section">
+        <h3>Livrables à valider</h3>
+        <div class="livrables-list">
+          <div *ngFor="let livrable of livrablesAttente" class="livrable-card">
+            <div class="livrable-header">
+              <h4>{{ livrable.titre }}</h4>
+              <span class="badge">En attente</span>
+            </div>
+            <p class="stagiaire-name">Stagiaire: {{ livrable.stagiaire }}</p>
+            <p class="deadline">📅 Date limite: {{ livrable.dateLimite }}</p>
+            <div class="action-buttons">
+              <button class="btn-validate">Valider</button>
+              <button class="btn-reject">Demander modification</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

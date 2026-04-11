@@ -36,7 +36,17 @@ spring:
         - id: iam-service
           uri: lb://iam-service
           predicates:
-            - Path=/auth/**,/admin/**,/users/**
+            - Path=/auth/**,/admin/**,/users/**,/inscriptions/**,/api/admin/**
+
+        - id: user-profile-service
+          uri: lb://user-profile-service
+          filters:
+            - name: RequestSize
+              args:
+                maxSize: 5MB
+            - PreserveHostHeader
+          predicates:
+            - Path=/api/profil/**,/uploads/**
 
         - id: face-recognition-service
           uri: lb://face-recognition-service

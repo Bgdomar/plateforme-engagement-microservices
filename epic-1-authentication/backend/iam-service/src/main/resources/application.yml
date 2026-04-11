@@ -18,9 +18,10 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.engagement.iam_service.*"
+        # FIX #2 : package et classe corrigés (iam_service -> iam, UserRegisteredEvent -> UserCreatedEvent)
+        spring.json.trusted.packages: "com.engagement.iam.*"
         spring.json.use.type.headers: false
-        spring.json.value.default.type: com.engagement.iam_service.kafka.events.UserRegisteredEvent
+        spring.json.value.default.type: com.engagement.iam.event.UserCreatedEvent
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -28,6 +29,7 @@ spring:
         spring.json.add.type.headers: false
 
   datasource:
+    # FIX #3 : nom du service PostgreSQL doit correspondre exactement au service docker-compose
     url: jdbc:postgresql://postgres-iam:5432/iam_db
     username: iam_user
     password: iam_pass
@@ -38,13 +40,16 @@ spring:
       ddl-auto: update
     show-sql: true
     open-in-view: false
+    properties:
+      hibernate:
+        # FIX bonus : évite les problèmes de dialecte PostgreSQL avec les enums
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 eureka:
   instance:
     hostname: iam-service
     instance-id: ${spring.application.name}:${server.port}
     prefer-ip-address: false
-
   client:
     register-with-eureka: true
     fetch-registry: true
@@ -60,11 +65,11 @@ management:
 app:
   jwt:
     secret: YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==
-    expirationMinutes: 30
+    expiration: 1800000   # 30 minutes en millisecondes
 
 appKafka:
   topics:
-    userRegistered: iam.user.registered
+    userRegistered: com.engagement.iam.user.registered
 
 appAi:
   baseUrl: ${APP_AI_BASE_URL:http://face-recognition-service:8082}
@@ -72,9 +77,3 @@ appAi:
 iam:
   auto-approve: ${IAM_AUTO_APPROVE:false}
 
-minio:
-  endpoint: ${MINIO_ENDPOINT:http://minio:9000}
-  accessKey: ${MINIO_ACCESS_KEY:minioadmin}
-  secretKey: ${MINIO_SECRET_KEY:minioadmin}
-  bucket: ${MINIO_BUCKET:profile-images}
-  publicUrl: ${MINIO_PUBLIC_URL:http://localhost:9000}
