@@ -1,0 +1,297 @@
+<div class="container">
+
+  <!-- LOADING STATE -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Chargement du profil…</p>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div *ngIf="!isLoading && loadError" class="error-state">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="40" height="40">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <p>{{ loadError }}</p>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <ng-container *ngIf="!isLoading && !loadError">
+
+    <!-- HEADER -->
+    <div class="profile-header-section">
+      <div class="profile-header-row">
+        <div class="avatar-container">
+          <div class="avatar" (click)="openPhotoModal()" title="Modifier la photo">
+            <img [src]="currentPhoto" alt="" [style.display]="currentPhoto ? 'block' : 'none'">
+            <span class="avatar-fallback" [style.display]="currentPhoto ? 'none' : ''">{{ initiales }}</span>
+            <div class="avatar-edit-overlay">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              Modifier
+            </div>
+          </div>
+          <div class="level-badge encadrant-badge">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="12" height="12">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="header-info">
+          <h1 class="user-name">{{ displayName }}</h1>
+
+          <!-- Sous-titre Encadrant -->
+          <p class="user-meta">
+            <span class="role-tag role-encadrant">Encadrant</span>
+            <ng-container *ngIf="inpDepartement"> · {{ inpDepartement }}</ng-container>
+            <ng-container *ngIf="inpSpecialite"> · {{ inpSpecialite }}</ng-container>
+          </p>
+
+          <!-- Stats Encadrant -->
+          <div class="stats-row">
+            <div class="stat-item">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                <path d="M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+              {{ statsStagiairesEncadres }} stagiaires encadrés
+            </div>
+            <div class="stat-item">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+              </svg>
+              {{ statsMissionsValidees }} missions validées
+            </div>
+            <div class="stat-item">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M12 8v4l3 3M12 22a10 10 0 100-20 10 10 0 000 20z"/>
+              </svg>
+              {{ statsEquipes }} équipes
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-outline" (click)="setTab('settings')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Paramètres
+        </button>
+      </div>
+    </div>
+
+    <!-- TABS — Encadrant : 2 onglets -->
+    <div class="tabs-list tabs-2">
+      <button class="tab-trigger" [class.active]="activeTab === 'equipes'" (click)="setTab('equipes')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+          <path d="M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        Mes équipes
+      </button>
+
+      <button class="tab-trigger" [class.active]="activeTab === 'settings'" (click)="setTab('settings')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+        Paramètres
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!--  TAB : ÉQUIPES (Encadrant)                                     -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <div *ngIf="activeTab === 'equipes'" class="tab-content">
+      <div class="equipes-header">
+        <h2 class="section-title">Mes équipes</h2>
+        <button class="btn-create-equipe">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="18" height="18">
+            <path d="M12 4v16m8-8H4"/>
+          </svg>
+          Créer une équipe
+        </button>
+      </div>
+
+      <div class="equipes-grid">
+        <!-- Exemple d'équipe -->
+        <div class="equipe-card">
+          <div class="equipe-header">
+            <div class="equipe-icon">👥</div>
+            <div class="equipe-info">
+              <h3 class="equipe-nom">Équipe Alpha</h3>
+              <p class="equipe-sujet">Développement Full-Stack</p>
+            </div>
+          </div>
+          <div class="equipe-membres">
+            <div class="membres-header">
+              <span>Membres (4)</span>
+              <button class="btn-gestion">Gérer</button>
+            </div>
+            <div class="membre-item">
+              <div class="membre-avatar">JD</div>
+              <span>Jean Dupont</span>
+              <span class="membre-progression">75%</span>
+            </div>
+            <div class="membre-item">
+              <div class="membre-avatar">SM</div>
+              <span>Sophie Martin</span>
+              <span class="membre-progression">45%</span>
+            </div>
+          </div>
+          <div class="equipe-stats">
+            <div class="stat">⭐ 1 250 pts</div>
+            <div class="stat">✅ 65% validation</div>
+            <div class="stat">📊 3 missions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!--  TAB : PARAMÈTRES (Encadrant)                                  -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <div *ngIf="activeTab === 'settings'" class="tab-content">
+      <h2 class="section-title">Paramètres du profil</h2>
+      <div class="settings-grid">
+
+        <!-- Carte Photo & Informations -->
+        <div class="s-card">
+          <div class="s-card-head">
+            <div class="s-card-title">Photo & Informations</div>
+            <div class="s-card-sub">Personnalisez votre profil encadrant</div>
+          </div>
+          <div class="s-body">
+
+            <!-- Photo -->
+            <div class="sec-label">Photo de profil</div>
+            <div class="photo-section">
+              <div class="photo-row">
+                <div class="photo-preview-sm">
+                  <img [src]="currentPhoto" alt="" [style.display]="currentPhoto ? 'block' : 'none'">
+                  <span [style.display]="currentPhoto ? 'none' : ''">{{ initiales }}</span>
+                </div>
+                <div class="photo-actions">
+                  <button class="btn-pick-photo" (click)="openPhotoModal()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Changer la photo
+                  </button>
+                  <button class="btn-rm-photo" *ngIf="currentPhoto" (click)="removePhoto()">Supprimer la photo</button>
+                  <span class="photo-hint">JPG, PNG, WEBP · max 5 Mo</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Identité -->
+            <hr class="divider">
+            <div class="sec-label">Identité</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" type="text" [(ngModel)]="inpPrenom"></div>
+              <div class="form-group"><label class="form-label">Nom</label><input class="form-input" type="text" [(ngModel)]="inpNom"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" [value]="email" disabled></div>
+
+            <!-- Champs Encadrant -->
+            <hr class="divider">
+            <div class="sec-label">Informations professionnelles</div>
+            <div class="form-group"><label class="form-label">Département</label><input class="form-input" type="text" [(ngModel)]="inpDepartement"></div>
+            <div class="form-group"><label class="form-label">Spécialité</label><input class="form-input" type="text" [(ngModel)]="inpSpecialite"></div>
+
+            <button class="btn-save" (click)="saveSettings()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Enregistrer
+            </button>
+          </div>
+        </div>
+
+        <!-- Carte Notifications -->
+        <div class="s-card">
+          <div class="s-card-head">
+            <div class="s-card-title">Préférences de notifications</div>
+            <div class="s-card-sub">Choisissez comment vous souhaitez être alerté</div>
+          </div>
+          <div class="s-body">
+            <div class="sec-label">Canaux de notification</div>
+
+            <label class="notif-toggle-row">
+              <div class="notif-toggle-info">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="20" height="20">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                <div>
+                  <span class="notif-toggle-label">Notifications in-app</span>
+                  <span class="notif-toggle-sub">Alertes visibles directement dans l'application</span>
+                </div>
+              </div>
+              <input type="checkbox" class="notif-checkbox" [(ngModel)]="notifInApp">
+            </label>
+
+            <label class="notif-toggle-row">
+              <div class="notif-toggle-info">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="20" height="20">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <div>
+                  <span class="notif-toggle-label">Notifications par email</span>
+                  <span class="notif-toggle-sub">Alertes envoyées à {{ email }}</span>
+                </div>
+              </div>
+              <input type="checkbox" class="notif-checkbox" [(ngModel)]="notifEmail">
+            </label>
+
+            <button class="btn-save" (click)="saveNotifications()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              Enregistrer
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </ng-container>
+</div>
+
+<!-- PHOTO MODAL -->
+<div class="modal-overlay" [class.open]="modalOpen" (click)="outsideClose($event)">
+  <div class="photo-modal">
+    <div class="pm-head">
+      <span class="pm-title">Photo de profil</span>
+      <button class="pm-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="pm-body">
+      <div class="pm-preview">
+        <img [src]="pendingPhoto" alt="" [style.display]="pendingPhoto ? 'block' : 'none'">
+        <div class="pm-placeholder" [style.display]="pendingPhoto ? 'none' : 'flex'">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+          <span>Aperçu de votre photo</span>
+        </div>
+      </div>
+      <div class="pm-upload" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        <div class="pm-upload-text">Glisser une image ici</div>
+        <div class="pm-upload-sub">ou cliquer pour parcourir · JPG, PNG, WEBP · max 5 Mo</div>
+      </div>
+      <input type="file" #fileInput accept="image/*" style="display:none" (change)="onFileChosen($event)">
+    </div>
+    <div class="pm-foot">
+      <button class="btn-pm-remove" *ngIf="pendingPhoto" (click)="removePhoto()">Supprimer</button>
+      <button class="btn-pm-cancel" (click)="closeModal()">Annuler</button>
+      <button class="btn-pm-apply" (click)="applyPhoto()">Appliquer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" [class.show]="toastVisible">{{ toastMsg }}</div>

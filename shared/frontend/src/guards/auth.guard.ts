@@ -34,3 +34,14 @@ export const stagiaireGuard: CanActivateFn = () => {
   }
   return true;
 };
+
+export const encadrantGuard: CanActivateFn = () => {
+  const auth   = inject(AuthService);
+  const router = inject(Router);
+
+  if (!auth.isEncadrant()) {
+    router.navigate(['/unauthorized']);
+    return false;
+  }
+  return true;
+};

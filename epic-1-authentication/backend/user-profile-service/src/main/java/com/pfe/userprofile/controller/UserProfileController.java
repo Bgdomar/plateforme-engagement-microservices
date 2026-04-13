@@ -20,13 +20,13 @@ public class UserProfileController {
     private final UserProfileService userProfileService;
 
     @GetMapping("/{userId}")
-    @PreAuthorize("hasAnyRole('STAGIAIRE', 'ENCADRANT', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAGIAIRE', 'ENCADRANT', 'ADMINISTRATEUR')")
     public ResponseEntity<ProfilResponse> getProfil(@PathVariable UUID userId) {
         return ResponseEntity.ok(userProfileService.getProfil(userId));
     }
 
     @PutMapping("/{userId}")
-    @PreAuthorize("hasAnyRole('STAGIAIRE', 'ENCADRANT', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAGIAIRE', 'ENCADRANT', 'ADMINISTRATEUR')")
     public ResponseEntity<ProfilResponse> updateProfil(
             @PathVariable UUID userId,
             @RequestBody UpdateProfilRequest request) {
@@ -34,7 +34,7 @@ public class UserProfileController {
     }
 
     @PostMapping("/{userId}/avatar")
-    @PreAuthorize("hasAnyRole('STAGIAIRE', 'ENCADRANT', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAGIAIRE', 'ENCADRANT', 'ADMINISTRATEUR')")
     public ResponseEntity<ProfilResponse> uploadAvatar(
             @PathVariable UUID userId,
             @RequestParam("file") MultipartFile file) {
@@ -42,7 +42,7 @@ public class UserProfileController {
     }
 
     @DeleteMapping("/{userId}/avatar")
-    @PreAuthorize("hasAnyRole('STAGIAIRE', 'ENCADRANT', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAGIAIRE', 'ENCADRANT', 'ADMINISTRATEUR')")
     public ResponseEntity<ProfilResponse> deleteAvatar(@PathVariable UUID userId) {
         return ResponseEntity.ok(userProfileService.deleteAvatar(userId));
     }

@@ -5,7 +5,7 @@
 }
 
 /* ============================================
-   THEME UNIFIED - PAGE PROFIL STAGIAIRE
+   THEME UNIFIED - PAGE PROFIL ENCADRANT
    ============================================ */
 
 .container {
@@ -100,13 +100,17 @@
   color: white;
   font-size: 0.65rem;
   font-weight: 700;
-  padding: 0.15rem 0.4rem;
+  padding: 0.2rem 0.4rem;
   border-radius: 9999px;
   border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.encadrant-badge {
-  background: linear-gradient(135deg, #059669, #065f46);
+.encadrant-badge svg {
+  width: 10px;
+  height: 10px;
 }
 
 .header-info {
@@ -134,11 +138,6 @@
   font-weight: 700;
   padding: 0.2rem 0.6rem;
   border-radius: 9999px;
-}
-
-.role-stagiaire {
-  background: #dbeafe;
-  color: #1d4ed8;
 }
 
 .role-encadrant {
@@ -191,47 +190,16 @@
   border-color: #93c5fd;
 }
 
-/* XP */
-.xp-bar-wrap {
-  margin-top: 1rem;
-}
-
-.xp-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: #64748b;
-  margin-bottom: 0.35rem;
-}
-
-.xp-bar {
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-.xp-fill {
-  height: 100%;
-  width: 83%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  border-radius: 9999px;
-}
-
 /* Tabs */
 .tabs-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
   margin-bottom: 2rem;
   background: white;
   padding: 0.5rem;
   border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
-}
-
-.tabs-list.tabs-2 {
-  grid-template-columns: repeat(2, 1fr);
 }
 
 .tab-trigger {
@@ -285,279 +253,157 @@
   color: #1e293b;
 }
 
-/* Missions */
-.missions-grid {
+/* Équipes Header */
+.equipes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.btn-create-equipe {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-create-equipe:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Équipes Grid */
+.equipes-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.5rem;
 }
 
-@media(min-width: 768px){
-  .missions-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media(min-width: 1024px){
-  .missions-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-.mission-card {
+.equipe-card {
   background: white;
   border-radius: 1rem;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s;
   overflow: hidden;
-  position: relative;
+  transition: all 0.3s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.mission-card:hover {
+.equipe-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   border-color: #93c5fd;
 }
 
-.mission-img-wrapper {
-  position: relative;
-  width: 100%;
-  height: 140px;
-  overflow: hidden;
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-}
-
-.mission-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.7));
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding: 0.75rem;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.mission-card:hover .mission-overlay {
-  opacity: 1;
-}
-
-.overlay-tag {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 1rem;
-}
-
-.tag-blue {
-  background: rgba(59, 130, 246, 0.9);
-  color: #fff;
-}
-
-.tag-green {
-  background: rgba(5, 150, 105, 0.9);
-  color: #fff;
-}
-
-.tag-white {
-  background: rgba(255, 255, 255, 0.9);
-  color: #1e293b;
-}
-
-.status-top-badge {
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  padding: 4px 10px;
-  border-radius: 1.25rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: white;
-}
-
-.s-encours { background: #1d4ed8; }
-.s-afaire { background: #64748b; }
-.s-termine { background: #10b981; }
-
-.pill {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.2rem 0.6rem;
-  border-radius: 9999px;
-}
-
-.p-encours { background: #dbeafe; color: #1d4ed8; }
-.p-afaire { background: #f1f5f9; color: #1e293b; }
-.p-termine { background: #d1fae5; color: #065f46; }
-
-.mission-content { padding: 1.25rem; }
-
-.mission-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-}
-
-.mission-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1e293b;
-  line-height: 1.4;
-  flex: 1;
-  margin-right: 0.5rem;
-}
-
-.progress-bar {
-  height: 6px;
-  background: #e2e8f0;
-  border-radius: 9999px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  border-radius: 9999px;
-}
-
-.progress-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
-/* Badges */
-.badges-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem;
-}
-
-@media(min-width: 640px){
-  .badges-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-@media(min-width: 1024px){
-  .badges-grid { grid-template-columns: repeat(4, 1fr); }
-}
-
-.badge-card {
-  background: white;
-  border-radius: 1rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  padding: 1.25rem;
-  text-align: center;
-  transition: all 0.3s;
-}
-
-.badge-card:hover:not(.locked) {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-color: #93c5fd;
-}
-
-.badge-card.locked {
-  opacity: 0.5;
-  filter: grayscale(0.3);
-}
-
-.badge-emoji { font-size: 2.5rem; margin-bottom: 0.75rem; }
-.badge-name { font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
-.badge-desc { font-size: 0.75rem; color: #64748b; }
-
-.badge-ok {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge-lock {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-/* Ranking */
-.ranking-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.ranking-item {
+.equipe-header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  padding: 1rem 1.25rem;
-  transition: all 0.3s;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
 }
 
-.ranking-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+.equipe-icon {
+  font-size: 2rem;
 }
 
-.ranking-item.me {
-  border-color: #60a5fa;
-  background: #eff6ff;
+.equipe-info {
+  flex: 1;
 }
 
-.rank-pos {
-  font-size: 1.2rem;
+.equipe-nom {
+  font-size: 1.1rem;
   font-weight: 700;
-  min-width: 2.5rem;
-  text-align: center;
+  color: #1e293b;
+  margin: 0 0 0.25rem;
+}
+
+.equipe-sujet {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.equipe-membres {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.membres-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: #64748b;
 }
 
-.rank-av {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 9999px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
+.btn-gestion {
+  font-size: 0.7rem;
+  color: #3b82f6;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-gestion:hover {
+  text-decoration: underline;
+}
+
+.membre-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.membre-avatar {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  color: white;
+  font-size: 0.7rem;
   font-weight: 700;
-  flex-shrink: 0;
 }
 
-.rank-info { flex: 1; }
-.rank-name { font-size: 0.9rem; font-weight: 700; color: #1e293b; }
-.rank-name span { font-weight: 400; color: #3b82f6; font-size: 0.8rem; }
-.rank-level { font-size: 0.75rem; color: #64748b; }
-.rank-pts { font-size: 0.9rem; font-weight: 700; color: #3b82f6; }
+.membre-progression {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #10b981;
+}
 
-.rank-bar { flex: 1; max-width: 120px; }
-.rank-track { height: 6px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; }
-.rank-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 9999px; }
-.rank-lbl { font-size: 0.65rem; color: #94a3b8; margin-top: 2px; text-align: right; }
+.equipe-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 0.75rem;
+  background: #f8fafc;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.equipe-stats .stat {
+  font-weight: 500;
+}
 
 /* Settings */
 .settings-grid {
@@ -1036,8 +882,8 @@
   .profile-header-row { flex-direction: column; }
   .tabs-list { grid-template-columns: repeat(2, 1fr); }
   .user-name { font-size: 1.75rem; }
-  .rank-bar { display: none; }
   .settings-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
   .container { padding: 1rem; }
+  .equipes-grid { grid-template-columns: 1fr; }
 }
