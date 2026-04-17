@@ -39,13 +39,15 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/api/auth/**",
                                 "/assets/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/uploads/**"
                         ).permitAll()
                         // Routes par rôle /api/admin/inscriptions
                         .requestMatchers("/api/admin/inscriptions/**").hasRole("ADMINISTRATEUR")
                         .requestMatchers("/api/admin/**").hasRole("ADMINISTRATEUR")  // ← Changement clé
                         .requestMatchers("/api/stagiaire/**").hasRole("STAGIAIRE")
                         .requestMatchers("/api/encadrant/**").hasRole("ENCADRANT")
+                        .requestMatchers("/api/profil/**").hasAnyRole("STAGIAIRE", "ENCADRANT", "ADMINISTRATEUR")
                         // FIX #4 : lignes dupliquées supprimées (elles étaient après anyRequest et ignorées)
                         .anyRequest().authenticated()
                 )

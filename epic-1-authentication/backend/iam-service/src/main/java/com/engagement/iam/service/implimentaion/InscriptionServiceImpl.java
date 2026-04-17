@@ -3,22 +3,23 @@ package com.engagement.iam.service.implimentaion;
 import com.engagement.iam.dto.DemandeInscriptionRequest;
 import com.engagement.iam.dto.InscriptionResponse;
 import com.engagement.iam.entity.DemandeInscription;
+import com.engagement.iam.entity.InfoEncadrantDemande;
+import com.engagement.iam.entity.InfoStagiaireDemande;
 import com.engagement.iam.entity.Utilisateur;
 import com.engagement.iam.entity.enums.StatutCompte;
 import com.engagement.iam.entity.enums.TypeCompte;
-import com.engagement.iam.event.UserCreatedEvent;
-import com.engagement.iam.event.UserEventProducer;
 import com.engagement.iam.repository.DemandeInscriptionRepository;
+import com.engagement.iam.repository.EncadrantDemandeRepository;
+import com.engagement.iam.repository.StagiaireDemandeRepository;
 import com.engagement.iam.repository.UtilisateurRepository;
 import com.engagement.iam.service.interfaces.InscriptionService;
+import com.engagement.iam.util.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,33 +28,47 @@ public class InscriptionServiceImpl implements InscriptionService {
 
     private final UtilisateurRepository utilisateurRepo;
     private final DemandeInscriptionRepository demandeRepo;
+    private final StagiaireDemandeRepository infoStagiaireDemandeRepo;   // ✅ AJOUT
+    private final EncadrantDemandeRepository infoEncadrantDemandeRepo;   // ✅ AJOUT
     private final BCryptPasswordEncoder passwordEncoder;
-    private final UserEventProducer userEventProducer;
+    private final FileUploadUtil fileUploadUtil;
 
     @Override
     @Transactional
     public InscriptionResponse soumettreDemande(
             DemandeInscriptionRequest request,
-            MultipartFile photo,
-            MultipartFile profileImage
-    ) {
+            MultipartFile profileImage) {
+
         // 1. Vérifier email unique
         validateUniqueEmail(request.getEmail());
 
-        // 2. Créer l'utilisateur (statut EN_ATTENTE)
+        // 2. Sauvegarder l'image de profil sur disque (si présente)
+        //    → on stocke UNIQUEMENT le nom du fichier (ex: avatar_xxx_yyy.jpg)
+        String avatarUrl = null;
+        if (profileImage != null && !profileImage.isEmpty()) {
+            String prefix = "avatar_" + System.currentTimeMillis();
+            avatarUrl = fileUploadUtil.saveImage(profileImage, prefix);
+            log.info("🖼️ Avatar sauvegardé: {}", avatarUrl);
+        }
+
+        // 3. Créer l'utilisateur (statut EN_ATTENTE)
         Utilisateur utilisateur = createUser(request);
 
-        // 3. Créer la demande d'inscription (sans urlImage)
-        DemandeInscription demande = createRegistrationRequest(request, utilisateur);
+        // 4. Créer la demande d'inscription avec l'URL de l'avatar
+        DemandeInscription demande = createDemandeInscription(request, utilisateur, avatarUrl);
 
-        // 4. Publier l'événement avec l'image de profil
-        publishUserCreatedEvent(request, utilisateur, profileImage);
+        // 5. ✅ Sauvegarder les infos spécifiques au rôle (tables temporaires)
+        saveRoleInfo(request, demande);
 
         log.info("✅ Demande d'inscription complétée pour : {}", utilisateur.getEmail());
 
-        // 5. Retourner la réponse
+        // 6. Retourner la réponse
         return buildInscriptionResponse(utilisateur, demande);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────────────
 
     private void validateUniqueEmail(String email) {
         if (utilisateurRepo.existsByEmail(email)) {
@@ -75,19 +90,15 @@ public class InscriptionServiceImpl implements InscriptionService {
         return utilisateur;
     }
 
-    private DemandeInscription createRegistrationRequest(
+    private DemandeInscription createDemandeInscription(
             DemandeInscriptionRequest request,
-            Utilisateur utilisateur
-    ) {
+            Utilisateur utilisateur,
+            String avatarUrl) {
+
         DemandeInscription demande = DemandeInscription.builder()
                 .nom(request.getNom())
                 .prenom(request.getPrenom())
-                .niveauEtudes(request.getNiveauEtudes())
-                .filiere(request.getFiliere())
-                .etablissement(request.getEtablissement())
-                .departement(request.getDepartement())
-                .specialite(request.getSpecialite())
-                .urlImage(null)
+                .avatarUrl(avatarUrl)   // URL générée côté serveur, pas celle du request
                 .utilisateur(utilisateur)
                 .build();
 
@@ -96,49 +107,45 @@ public class InscriptionServiceImpl implements InscriptionService {
         return demande;
     }
 
-    private void publishUserCreatedEvent(
-            DemandeInscriptionRequest request,
-            Utilisateur utilisateur,
-            MultipartFile profileImage
-    ) {
-        UserCreatedEvent.UserCreatedEventBuilder builder = UserCreatedEvent.builder()
-                .userId(utilisateur.getId())
-                .email(utilisateur.getEmail())
-                .typeCompte(utilisateur.getTypeCompte().name())
-                .nom(request.getNom())
-                .prenom(request.getPrenom())
-                .niveauEtudes(request.getNiveauEtudes())
-                .filiere(request.getFiliere())
-                .etablissement(request.getEtablissement())
-                .departement(request.getDepartement())
-                .specialite(request.getSpecialite());
+    /**
+     * ✅ Sauvegarde les informations spécifiques au rôle dans les tables temporaires
+     * (info_stagiaire_demande ou info_encadrant_demande).
+     * Ces données seront copiées vers info_stagiaire / info_encadrant
+     * lors de la validation par l'admin.
+     */
+    private void saveRoleInfo(DemandeInscriptionRequest request, DemandeInscription demande) {
+        TypeCompte type = TypeCompte.valueOf(request.getTypeCompte().toUpperCase());
 
-        // ✅ Convertir l'image en bytes et l'ajouter à l'événement
-        if (profileImage != null && !profileImage.isEmpty()) {
-            try {
-                builder.profileImageBytes(profileImage.getBytes());
-                builder.profileImageContentType(profileImage.getContentType());
-                builder.profileImageFilename(profileImage.getOriginalFilename());
-                log.info("🖼️ Image de profil ajoutée à l'événement: {} bytes", profileImage.getSize());
-            } catch (IOException e) {
-                log.error("❌ Erreur conversion image", e);
-            }
+        if (type == TypeCompte.STAGIAIRE) {
+            InfoStagiaireDemande info = InfoStagiaireDemande.builder()
+                    .demande(demande)
+                    .niveauEtudes(request.getNiveauEtudes())
+                    .filiere(request.getFiliere())
+                    .etablissement(request.getEtablissement())
+                    .build();
+            infoStagiaireDemandeRepo.save(info);
+            log.info("✅ InfoStagiaireDemande sauvegardé pour demande ID: {}", demande.getId());
+
+        } else if (type == TypeCompte.ENCADRANT) {
+            InfoEncadrantDemande info = InfoEncadrantDemande.builder()
+                    .demande(demande)
+                    .departement(request.getDepartement())
+                    .specialite(request.getSpecialite())
+                    .build();
+            infoEncadrantDemandeRepo.save(info);
+            log.info("✅ InfoEncadrantDemande sauvegardé pour demande ID: {}", demande.getId());
         }
-
-        UserCreatedEvent event = builder.build();
-        userEventProducer.publishUserCreated(event);
     }
 
     private InscriptionResponse buildInscriptionResponse(
             Utilisateur utilisateur,
-            DemandeInscription demande
-    ) {
+            DemandeInscription demande) {
+
         return InscriptionResponse.builder()
                 .success(true)
                 .message("Demande soumise avec succès")
                 .userId(utilisateur.getId())
                 .demandeId(demande.getId())
-                .urlImage(null)
                 .build();
     }
 }

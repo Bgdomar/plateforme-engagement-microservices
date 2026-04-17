@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import {HeaderEncadrantComponent} from "../header-encadrant/header-encadrant";
 
 interface ProfilResponse {
   userId:        string;
@@ -22,29 +23,28 @@ interface ProfilResponse {
 @Component({
   selector: 'app-profil-encadrant',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HeaderEncadrantComponent],
   templateUrl: './profil-encadrant.html',
-  styleUrls: ['./profil-encadrant.css']
+  styleUrls: ['./profil-encadrant.css'],
 })
 export class ProfilEncadrantComponent implements OnInit {
-
   activeTab: string = 'equipes';
 
   // Données affichage
-  prenom:      string = '';
-  nom:         string = '';
+  prenom: string = '';
+  nom: string = '';
   displayName: string = '';
-  initiales:   string = '';
-  email:       string = '';
-  typeCompte:  string = '';
+  initiales: string = '';
+  email: string = '';
+  typeCompte: string = '';
 
   // Champs formulaire
   inpPrenom: string = '';
-  inpNom:    string = '';
+  inpNom: string = '';
 
   // Champs Encadrant
   inpDepartement: string = '';
-  inpSpecialite:  string = '';
+  inpSpecialite: string = '';
 
   // Stats
   statsStagiairesEncadres: number = 0;
@@ -54,25 +54,25 @@ export class ProfilEncadrantComponent implements OnInit {
   // Photo
   currentPhoto: string | null = null;
   pendingPhoto: string | null = null;
-  modalOpen:    boolean = false;
+  modalOpen: boolean = false;
 
   // Notifications
-  notifInApp:  boolean = true;
-  notifEmail:  boolean = true;
+  notifInApp: boolean = true;
+  notifEmail: boolean = true;
 
   // État
-  isLoading:  boolean = true;
-  loadError:  string  = '';
+  isLoading: boolean = true;
+  loadError: string = '';
 
   // Toast
-  toastMsg:     string  = '';
+  toastMsg: string = '';
   toastVisible: boolean = false;
   private toastTimer: any;
   pendingFile: File | null = null;
 
   constructor(
-    private cdr:  ChangeDetectorRef,
-    private http: HttpClient
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
@@ -82,12 +82,16 @@ export class ProfilEncadrantComponent implements OnInit {
     }
   }
 
-  get isStagiaire(): boolean { return this.typeCompte === 'STAGIAIRE'; }
-  get isEncadrant(): boolean { return this.typeCompte === 'ENCADRANT'; }
+  get isStagiaire(): boolean {
+    return this.typeCompte === 'STAGIAIRE';
+  }
+  get isEncadrant(): boolean {
+    return this.typeCompte === 'ENCADRANT';
+  }
 
   private loadUserProfile(): void {
     const userId = localStorage.getItem('userId');
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     if (!userId || !token) {
       this.loadError = 'Session introuvable. Veuillez vous reconnecter.';
@@ -111,7 +115,7 @@ export class ProfilEncadrantComponent implements OnInit {
           this.loadError = 'Impossible de charger le profil.';
           this.isLoading = false;
           this.cdr.detectChanges();
-        }
+        },
       });
   }
 
@@ -124,12 +128,12 @@ export class ProfilEncadrantComponent implements OnInit {
   }
 
   private mapProfilToView(data: ProfilResponse): void {
-    this.typeCompte  = data.typeCompte ?? '';
-    this.prenom      = data.prenom     ?? '';
-    this.nom         = data.nom        ?? '';
-    this.email       = data.email      ?? '';
+    this.typeCompte = data.typeCompte ?? '';
+    this.prenom = data.prenom ?? '';
+    this.nom = data.nom ?? '';
+    this.email = data.email ?? '';
     this.displayName = `${this.prenom} ${this.nom}`.trim();
-    this.initiales   = this.buildInitiales(this.prenom, this.nom);
+    this.initiales = this.buildInitiales(this.prenom, this.nom);
 
     if (data.avatar) {
       this.currentPhoto = data.avatar.startsWith('http')
@@ -140,17 +144,17 @@ export class ProfilEncadrantComponent implements OnInit {
     }
 
     this.inpPrenom = this.prenom;
-    this.inpNom    = this.nom;
+    this.inpNom = this.nom;
 
     if (this.isEncadrant) {
       this.inpDepartement = data.departement ?? '';
-      this.inpSpecialite  = data.specialite  ?? '';
+      this.inpSpecialite = data.specialite ?? '';
     }
   }
 
   private buildInitiales(prenom: string, nom: string): string {
     const p = prenom?.trim()[0] ?? '';
-    const n = nom?.trim()[0]    ?? '';
+    const n = nom?.trim()[0] ?? '';
     return (p + n).toUpperCase();
   }
 
@@ -161,15 +165,15 @@ export class ProfilEncadrantComponent implements OnInit {
 
   openPhotoModal(): void {
     this.pendingPhoto = this.currentPhoto;
-    this.pendingFile  = null;
-    this.modalOpen    = true;
+    this.pendingFile = null;
+    this.modalOpen = true;
     this.cdr.detectChanges();
   }
 
   closeModal(): void {
     this.pendingPhoto = null;
-    this.pendingFile  = null;
-    this.modalOpen    = false;
+    this.pendingFile = null;
+    this.modalOpen = false;
     this.cdr.detectChanges();
   }
 
@@ -188,7 +192,9 @@ export class ProfilEncadrantComponent implements OnInit {
     input.value = '';
   }
 
-  onDragOver(event: DragEvent): void { event.preventDefault(); }
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
@@ -209,9 +215,12 @@ export class ProfilEncadrantComponent implements OnInit {
   }
 
   applyPhoto(): void {
-    if (!this.pendingFile) { this.closeModal(); return; }
+    if (!this.pendingFile) {
+      this.closeModal();
+      return;
+    }
 
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     if (!token || !userId) return;
 
@@ -219,59 +228,66 @@ export class ProfilEncadrantComponent implements OnInit {
     formData.append('file', this.pendingFile);
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.http.post<ProfilResponse>(
-      `${environment.apiUrl}/api/profil/${userId}/avatar`, formData, { headers }
-    ).subscribe({
-      next: (data) => {
-        this.currentPhoto = data.avatar
-          ? (data.avatar.startsWith('http') ? data.avatar : `http://localhost:8080${data.avatar}`)
-          : null;
-        this.pendingFile  = null;
-        this.pendingPhoto = null;
-        this.modalOpen    = false;
-        this.cdr.detectChanges();
-        this.showToast('Photo de profil mise à jour !');
-      },
-      error: () => this.showToast('Erreur lors de l\'upload.')
-    });
+    this.http
+      .post<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}/avatar`, formData, {
+        headers,
+      })
+      .subscribe({
+        next: (data) => {
+          this.currentPhoto = data.avatar
+            ? data.avatar.startsWith('http')
+              ? data.avatar
+              : `http://localhost:8080${data.avatar}`
+            : null;
+          this.pendingFile = null;
+          this.pendingPhoto = null;
+          this.modalOpen = false;
+          this.cdr.detectChanges();
+          this.showToast('Photo de profil mise à jour !');
+        },
+        error: () => this.showToast("Erreur lors de l'upload."),
+      });
   }
 
   removePhoto(): void {
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     if (!token || !userId) return;
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.http.delete<ProfilResponse>(
-      `${environment.apiUrl}/api/profil/${userId}/avatar`, { headers }
-    ).subscribe({
-      next: () => {
-        this.currentPhoto = null;
-        this.pendingPhoto = null;
-        this.pendingFile  = null;
-        this.modalOpen = false;
-        this.cdr.detectChanges();
-        this.showToast('Photo supprimée.');
-      },
-      error: () => this.showToast('Erreur lors de la suppression.')
-    });
+    this.http
+      .delete<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}/avatar`, { headers })
+      .subscribe({
+        next: () => {
+          this.currentPhoto = null;
+          this.pendingPhoto = null;
+          this.pendingFile = null;
+          this.modalOpen = false;
+          this.cdr.detectChanges();
+          this.showToast('Photo supprimée.');
+        },
+        error: () => this.showToast('Erreur lors de la suppression.'),
+      });
   }
 
   saveSettings(): void {
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
-    if (!token || !userId) { this.showToast('Session expirée.'); return; }
+    if (!token || !userId) {
+      this.showToast('Session expirée.');
+      return;
+    }
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     const payload: any = {
       prenom: this.inpPrenom.trim() || this.prenom,
-      nom:    this.inpNom.trim()    || this.nom,
+      nom: this.inpNom.trim() || this.nom,
     };
 
     if (this.isEncadrant) {
       payload['departement'] = this.inpDepartement.trim();
-      payload['specialite']  = this.inpSpecialite.trim();
+      payload['specialite'] = this.inpSpecialite.trim();
     }
 
     this.http
@@ -282,12 +298,12 @@ export class ProfilEncadrantComponent implements OnInit {
           this.cdr.detectChanges();
           this.showToast('Modifications enregistrées !');
         },
-        error: () => this.showToast('Erreur lors de la sauvegarde.')
+        error: () => this.showToast('Erreur lors de la sauvegarde.'),
       });
   }
 
   saveNotifications(): void {
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     if (!token || !userId) return;
 
@@ -298,12 +314,12 @@ export class ProfilEncadrantComponent implements OnInit {
       .put<any>(`${environment.apiUrl}/api/profil/${userId}/notifications`, payload, { headers })
       .subscribe({
         next: () => this.showToast('Préférences de notifications enregistrées !'),
-        error: () => this.showToast('Erreur lors de la sauvegarde des notifications.')
+        error: () => this.showToast('Erreur lors de la sauvegarde des notifications.'),
       });
   }
 
   showToast(msg: string): void {
-    this.toastMsg     = '✓ ' + msg;
+    this.toastMsg = '✓ ' + msg;
     this.toastVisible = true;
     clearTimeout(this.toastTimer);
     this.toastTimer = setTimeout(() => {

@@ -10,7 +10,7 @@ import java.util.UUID;
 public class InscriptionResponse {
     private boolean success;
     private String message;
-    private UUID userId;          // pour Facial AI
-    private UUID demandeId;
+    private long userId;          // pour Facial AI
+    private long demandeId;
     private String urlImage;
 }

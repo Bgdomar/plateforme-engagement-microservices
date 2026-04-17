@@ -33,31 +33,16 @@ spring:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
       routes:
-        - id: iam-service
-          uri: lb://iam-service
+        # Identity Service
+        - id: identity-service
+          uri: lb://identity-service
           predicates:
-            - Path=/auth/**,/admin/**,/users/**,/inscriptions/**,/api/admin/**
+            - Path=/auth/**,/admin/**,/users/**,/inscriptions/**,/api/admin/**,/api/profil/**,/uploads/**
 
-        - id: user-profile-service
-          uri: lb://user-profile-service
-          filters:
-            - name: RequestSize
-              args:
-                maxSize: 5MB
-            - PreserveHostHeader
+        - id: facial-ai-service
+          uri: http://host.docker.internal:8000   # ← Pour accéder à localhost depuis Docker
           predicates:
-            - Path=/api/profil/**,/uploads/**
-
-        - id: face-recognition-service
-          uri: lb://face-recognition-service
-          predicates:
-            - Path=/api/v1/faces/**
-
-        - id: mission-service
-          uri: lb://mission-service
-          predicates:
-            - Path=/api/v1/missions/**
-
+              - Path=/facial-ai/**
 
 eureka:
   client:
@@ -65,22 +50,17 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://discovery-service:8761/eureka/
-
   instance:
     prefer-ip-address: true
 
-
-# 🔥 IMPORTANT (fix healthcheck Docker)
 management:
   endpoints:
     web:
       exposure:
         include: "*"
-
   endpoint:
     health:
       show-details: always
-
   health:
     defaults:
       enabled: true

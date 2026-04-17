@@ -23,37 +23,29 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
       - kafka_data:/var/lib/kafka/data
-
-  # ===== DATABASES =====
-  postgres-iam:
-    image: postgres:16
-    container_name: postgres-com.engagement.iam
+  # ===== POSTGRESQL AVEC PGVECTOR =====
+  postgres-identity:
+    image: pgvector/pgvector:pg16
+    container_name: postgres-identity
     restart: always
     environment:
-      POSTGRES_DB: iam_db
-      POSTGRES_USER: iam_user
-      POSTGRES_PASSWORD: iam_pass
+      POSTGRES_DB: identity_db
+      POSTGRES_USER: identity_user
+      POSTGRES_PASSWORD: identity_pass
     ports:
-      - "5435:5432"
+      - "5436:5432"
     volumes:
-      - pg_iam_data:/var/lib/postgresql/data
+      - pg_identity_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U identity_user -d identity_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - plateforme-engagement-network
 
-  postgres-mission:
-    image: postgres:16
-    container_name: postgres-mission
-    restart: always
-    environment:
-      POSTGRES_DB: mission_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5433:5432"
-    volumes:
-      - pg_mission_data:/var/lib/postgresql/data
-
-
-
-  # ===== DISCOVERY SERVICE =====
+  # ===== DISCOVERY SERVICE (EUREKA SERVER) =====
   discovery-service:
     build:
       context: ./infrastructure/discovery-service
@@ -70,111 +62,44 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+    networks:
+      - plateforme-engagement-network
 
-
-  # ===== IAM SERVICE =====
-  iam-service:
+  # ===== IDENTITY SERVICE (Spring Boot) =====
+  identity-service:
     build:
       context: ./epic-1-authentication/backend/iam-service
       dockerfile: Dockerfile
-    container_name: com.engagement.iam-service
+    container_name: identity-service
     restart: always
     ports:
       - "8081:8081"
-    environment:
-      SPRING_APPLICATION_NAME: iam-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-com.engagement.iam:5432/iam_db
-      SPRING_DATASOURCE_USERNAME: iam_user
-      SPRING_DATASOURCE_PASSWORD: iam_pass
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
-      APP_JWT_SECRET: YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==
-      APP_JWT_EXPIRATION: 86400000
-      IAM_AUTO_APPROVE: "true"
-    depends_on:
-      postgres-iam:
-        condition: service_started
-      discovery-service:
-        condition: service_healthy
-      kafka:
-        condition: service_started
-
-
-  # ===== USER PROFILE DATABASE =====
-  postgres-user-profile:
-    image: postgres:16
-    container_name: postgres-user-profile
-    restart: always
-    environment:
-      POSTGRES_DB: user_profile_db
-      POSTGRES_USER: user_profile_user
-      POSTGRES_PASSWORD: user_profile_pass
-    ports:
-      - "5436:5432"
     volumes:
-      - pg_user_profile_data:/var/lib/postgresql/data
-
-
-  # ===== USER PROFILE SERVICE =====
-  user-profile-service:
-    build:
-      context: ./epic-1-authentication/backend/user-profile-service
-      dockerfile: Dockerfile
-    container_name: user-profile-service
-    restart: always
-    ports:
-      - "8084:8084"
-    volumes:
-      - user_profile_images:/app/assets/images  # Volume persistant pour les images
+      - identity_images:/app/assets/images
     environment:
-      SPRING_APPLICATION_NAME: user-profile-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-user-profile:5432/user_profile_db
-      SPRING_DATASOURCE_USERNAME: user_profile_user
-      SPRING_DATASOURCE_PASSWORD: user_profile_pass
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      SPRING_APPLICATION_NAME: identity-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-identity:5432/identity_db
+      SPRING_DATASOURCE_USERNAME: identity_user
+      SPRING_DATASOURCE_PASSWORD: identity_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
       JWT_SECRET: YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==
-      APP_JWT_SECRET: YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==
-      APP_JWT_EXPIRATION: 86400000
+      APP_UPLOAD_PATH: /app/assets/images
     depends_on:
-      postgres-user-profile:
-        condition: service_started
+      postgres-identity:
+        condition: service_healthy
       discovery-service:
         condition: service_healthy
-      kafka:
-        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - plateforme-engagement-network
 
 
-  # ===== MISSION SERVICE ===
-  mission-service:
-    build:
-      context: ./epic-3-missions/backend/mission-service
-      dockerfile: Dockerfile
-    container_name: mission-service
-    restart: always
-    ports:
-      - "8083:8083"
-    environment:
-      SPRING_APPLICATION_NAME: mission-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-mission:5432/mission_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
-    depends_on:
-      postgres-mission:
-        condition: service_started
-      discovery-service:
-        condition: service_healthy
-
-
-
-
-
-  # ===== API GATEWAY ===
+  # ===== API GATEWAY =====
   api-gateway:
     build:
       context: ./infrastructure/api-gateway
@@ -189,14 +114,16 @@ services:
     depends_on:
       discovery-service:
         condition: service_healthy
-      iam-service:
-        condition: service_started
-      mission-service:
-        condition: service_started
-      user-profile-service:
-        condition: service_started
+      identity-service:
+        condition: service_healthy
 
-
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - plateforme-engagement-network
 
   # ===== FRONTEND =====
   frontend:
@@ -205,7 +132,6 @@ services:
       dockerfile: Dockerfile
       args:
         API_URL: http://localhost:8080
-        FACIAL_AI_URL: http://localhost:8000
     container_name: frontend
     restart: always
     ports:
@@ -213,18 +139,11 @@ services:
     depends_on:
       - api-gateway
 
-
 volumes:
-  pg_iam_data:
-  pg_user_profile_data:
-  pg_mission_data:
+  pg_identity_data:
+  identity_images:
   kafka_data:
-  user_profile_images:
-
-
 
 networks:
-  default:
-    name: plateforme-engagement-network
+  plateforme-engagement-network:
     external: true
-

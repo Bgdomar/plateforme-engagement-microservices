@@ -41,7 +41,7 @@ public class AuthController {
                         .body(Map.of("message", "userId manquant"));
             }
 
-            LoginResponse response = authService.facialLogin(userId);
+            LoginResponse response = authService.facialLogin(Long.valueOf(userId));
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {

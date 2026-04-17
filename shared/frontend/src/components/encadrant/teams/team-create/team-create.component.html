@@ -1,0 +1,120 @@
+<div class="team-create-container">
+  <div class="form-wrapper">
+    <!-- Header -->
+    <div class="form-header">
+      <button routerLink="/encadrant/teams" class="back-btn">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Retour
+      </button>
+      <h1 class="form-title">Créer une nouvelle équipe</h1>
+      <p class="form-subtitle">Remplissez les informations ci-dessous pour créer votre équipe</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="error-message">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="onSubmit()" class="team-form">
+      <!-- Team Name -->
+      <div class="form-group">
+        <label class="form-label">
+          Nom de l'équipe <span class="required">*</span>
+        </label>
+        <input type="text"
+               [(ngModel)]="teamRequest.nom"
+               name="nom"
+               class="form-input"
+               placeholder="Ex: Équipe Alpha, Projet Innovant..."
+               required>
+      </div>
+
+      <!-- Subject -->
+      <div class="form-group">
+        <label class="form-label">Sujet / Description</label>
+        <textarea [(ngModel)]="teamRequest.sujet"
+                  name="sujet"
+                  rows="4"
+                  class="form-textarea"
+                  placeholder="Décrivez le sujet ou la mission de l'équipe..."></textarea>
+      </div>
+
+      <!-- Members Selection -->
+      <div class="form-group">
+        <label class="form-label">Ajouter des membres</label>
+        <p class="form-hint">Sélectionnez les stagiaires à ajouter à cette équipe</p>
+
+        <!-- Search -->
+        <div class="search-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input type="text"
+                 [(ngModel)]="searchTerm"
+                 (input)="filterStagiaires()"
+                 name="search"
+                 class="search-input"
+                 placeholder="Rechercher un stagiaire...">
+        </div>
+
+        <!-- Members List -->
+        <div class="members-list">
+          <div *ngIf="isLoading" class="loading-members">
+            <div class="spinner-small"></div>
+            <span>Chargement des stagiaires...</span>
+          </div>
+
+          <div *ngIf="!isLoading && filteredStagiaires.length === 0" class="no-members">
+            <p>Aucun stagiaire trouvé</p>
+          </div>
+
+          <div *ngFor="let stagiaire of filteredStagiaires" class="member-item">
+            <label class="member-checkbox">
+              <input type="checkbox"
+                     [value]="stagiaire.userId"
+                     [checked]="isMemberSelected(stagiaire.userId)"
+                     (change)="onMemberSelect($event, stagiaire.userId)">
+              <span class="checkbox-custom"></span>
+            </label>
+            <div class="member-avatar">
+              <img [src]="stagiaire.avatar || 'assets/default-avatar.png'"
+                   [alt]="stagiaire.prenom">
+            </div>
+            <div class="member-info">
+              <div class="member-name">{{ stagiaire.prenom }} {{ stagiaire.nom }}</div>
+              <div class="member-email">{{ stagiaire.email }}</div>
+              <div class="member-details" *ngIf="stagiaire.filiere">
+                {{ stagiaire.filiere }} • {{ stagiaire.niveauEtudes }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Count -->
+        <div class="selected-count" *ngIf="selectedMembers.length > 0">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          {{ selectedMembers.length }} stagiaire(s) sélectionné(s)
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" routerLink="/encadrant/teams" class="btn-cancel">
+          Annuler
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">Créer l'équipe</span>
+          <span *ngIf="isSubmitting" class="loading-spinner"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -8,7 +8,5 @@ public interface InscriptionService {
 
     InscriptionResponse soumettreDemande(
             DemandeInscriptionRequest request,
-            MultipartFile photo,
-            MultipartFile profileImage
-    );
+            MultipartFile photo);
 }

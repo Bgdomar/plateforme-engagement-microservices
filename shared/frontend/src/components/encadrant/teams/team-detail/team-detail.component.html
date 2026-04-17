@@ -1,0 +1,150 @@
+<div class="team-detail-container">
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement...</p>
+  </div>
+
+  <div *ngIf="!isLoading && team" class="detail-wrapper">
+    <!-- Header -->
+    <div class="detail-header">
+      <div class="header-left">
+        <button routerLink="/encadrant/teams" class="back-btn">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Retour aux équipes
+        </button>
+      </div>
+      <div class="header-right">
+        <button class="btn-edit" (click)="editTeam()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+          Modifier
+        </button>
+        <button class="btn-delete" (click)="deleteTeam()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+          Supprimer
+        </button>
+      </div>
+    </div>
+
+    <!-- Team Info Card -->
+    <div class="team-info-card">
+      <div class="team-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+      </div>
+      <div class="team-info">
+        <h1 class="team-name">{{ team.nom }}</h1>
+        <p *ngIf="team.sujet" class="team-sujet">{{ team.sujet }}</p>
+        <div class="team-meta">
+          <span class="meta-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Créée le {{ getFormattedDate(team.dateCreation) }}
+          </span>
+          <span class="meta-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+            {{ team.nombreMembres }} membre(s)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members Section -->
+    <div class="members-section">
+      <div class="section-header">
+        <h2 class="section-title">Membres de l'équipe</h2>
+        <button class="btn-add-member" (click)="openAddMemberModal()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+          </svg>
+          Ajouter un membre
+        </button>
+      </div>
+
+      <div *ngIf="team.membres.length === 0" class="empty-members">
+        <p>Aucun membre dans cette équipe</p>
+        <button class="btn-add-member-empty" (click)="openAddMemberModal()">
+          Ajouter votre premier membre
+        </button>
+      </div>
+
+      <div class="members-grid">
+        <div *ngFor="let member of team.membres" class="member-card">
+          <div class="member-avatar">
+            <img [src]="member.avatar || 'assets/default-avatar.png'" [alt]="member.prenom">
+          </div>
+          <div class="member-details">
+            <h3 class="member-name">{{ member.prenom }} {{ member.nom }}</h3>
+            <p class="member-email">{{ member.email }}</p>
+            <p class="member-added">Ajouté le {{ getFormattedDate(member.dateAjout) }}</p>
+          </div>
+          <button class="member-remove" (click)="removeMember(member.stagiaireId)" title="Retirer">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Member Modal -->
+  <div *ngIf="showAddMemberModal" class="modal-overlay" (click)="showAddMemberModal = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Ajouter un membre</h3>
+        <button class="modal-close" (click)="showAddMemberModal = false">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="search-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input type="text"
+                 [(ngModel)]="searchTerm"
+                 (input)="filterStagiaires()"
+                 class="search-input"
+                 placeholder="Rechercher un stagiaire...">
+        </div>
+
+        <div class="stagiaires-list">
+          <div *ngFor="let stagiaire of getAvailableStagiaires()" class="stagiaire-option">
+            <label class="radio-label">
+              <input type="radio"
+                     [value]="stagiaire.userId"
+                     [(ngModel)]="selectedStagiaireId"
+                     name="selectedStagiaire">
+              <span class="radio-custom"></span>
+            </label>
+            <div class="stagiaire-avatar">
+              <img [src]="stagiaire.avatar || 'assets/default-avatar.png'" [alt]="stagiaire.prenom">
+            </div>
+            <div class="stagiaire-info">
+              <div class="stagiaire-name">{{ stagiaire.prenom }} {{ stagiaire.nom }}</div>
+              <div class="stagiaire-email">{{ stagiaire.email }}</div>
+              <div class="stagiaire-filiere">{{ stagiaire.filiere }} • {{ stagiaire.niveauEtudes }}</div>
+            </div>
+          </div>
+          <div *ngIf="getAvailableStagiaires().length === 0" class="no-stagiaires">
+            <p>Aucun stagiaire disponible à ajouter</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="showAddMemberModal = false">Annuler</button>
+        <button class="btn-primary" (click)="addMember()" [disabled]="!selectedStagiaireId || isAddingMember">
+          {{ isAddingMember ? 'Ajout...' : 'Ajouter' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

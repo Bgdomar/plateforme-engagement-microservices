@@ -50,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(
                 user.getEmail(),
                 role,
-                user.getId().toString()
+                user.getId()
         );
 
         // 6. Déterminer la redirection selon le rôle
@@ -62,11 +62,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponse facialLogin(String userId) {
+    public LoginResponse facialLogin(Long userId) {
 
         // 1. Chercher l'utilisateur par UUID
         Utilisateur user = utilisateurRepo
-                .findById(UUID.fromString(userId))
+                .findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
         // 2. Vérifier le statut du compte
@@ -77,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(
                 user.getEmail(),
                 role,
-                user.getId().toString()
+                user.getId()
         );
 
         log.info("✅ Facial login réussi : {} ({})", user.getEmail(), role);

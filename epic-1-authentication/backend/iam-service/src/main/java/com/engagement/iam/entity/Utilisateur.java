@@ -20,8 +20,8 @@ import java.util.UUID;
 public class Utilisateur {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
     @Column(nullable = false, unique = true)
     private String email;

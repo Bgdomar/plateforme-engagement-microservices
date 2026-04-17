@@ -11,7 +11,7 @@ import java.util.UUID;
 public class LoginResponse {
     private String token;
     private String role;
-    private UUID userId;
+    private long userId;
     private String email;
     private String redirectUrl; // /dashboard/stagiaire, /dashboard/encadrant, /dashboard/admin
 }

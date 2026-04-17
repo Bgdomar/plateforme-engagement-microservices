@@ -37,7 +37,7 @@ public class DemandeInscriptionController {
      */
     @PatchMapping("/{id}/traiter")
     public ResponseEntity<DemandeInscriptionResponse> traiterDemande(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody TraiterDemandeRequest request) {
 
         return ResponseEntity.ok(demandeService.traiterDemande(id, request));

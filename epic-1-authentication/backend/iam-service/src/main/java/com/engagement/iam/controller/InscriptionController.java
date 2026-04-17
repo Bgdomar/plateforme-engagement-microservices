@@ -27,13 +27,12 @@ public class InscriptionController {
     )
     public ResponseEntity<InscriptionResponse> soumettreDemande(
             @RequestPart("data") @Valid DemandeInscriptionRequest request,
-            @RequestPart(value = "photo", required = false) MultipartFile photo,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) {
         log.info("📥 Nouvelle demande inscription : {} {}", request.getPrenom(), request.getNom());
 
         InscriptionResponse response =
-                inscriptionService.soumettreDemande(request, photo, profileImage);
+                inscriptionService.soumettreDemande(request, profileImage);
 
         return ResponseEntity.ok(response);
     }

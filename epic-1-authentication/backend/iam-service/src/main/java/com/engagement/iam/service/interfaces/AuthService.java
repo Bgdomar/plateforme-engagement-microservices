@@ -6,5 +6,5 @@ import com.engagement.iam.dto.LoginResponse;
 public interface AuthService {
 
     LoginResponse login(LoginRequest request);
-    LoginResponse facialLogin(String userId);
+    LoginResponse facialLogin(Long userId);
 }

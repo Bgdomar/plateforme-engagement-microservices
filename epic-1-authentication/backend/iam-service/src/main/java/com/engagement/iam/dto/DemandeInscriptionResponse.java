@@ -10,7 +10,7 @@ import java.util.UUID;
 @Data
 @Builder
 public class DemandeInscriptionResponse {
-    private UUID id;
+    private Long id;
     private String nom;
     private String prenom;
     private String email;

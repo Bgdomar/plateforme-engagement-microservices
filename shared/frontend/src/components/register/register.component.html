@@ -407,11 +407,14 @@
             </div>
 
             <!-- ÉTAPE 4: Capture faciale -->
+            <!-- ÉTAPE 4: Capture faciale -->
             <div *ngIf="currentStep === 4" class="step-content">
               <div class="step-header">
                 <h2>Enregistrement facial</h2>
                 <p>Pour renforcer la sécurité, veuillez enregistrer votre visage</p>
-                <p class="step-subheader">L'authentification faciale est obligatoire pour activer votre compte</p>
+                <p class="step-subheader">
+                  L'authentification faciale est <strong>optionnelle</strong> mais recommandée
+                </p>
               </div>
 
               <!-- Instructions en haut -->
@@ -421,7 +424,7 @@
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M12 16v-4M12 8h.01"/>
                   </svg>
-                  <h3>Instructions pour l'enregistrement facial</h3>
+                  <h3>Instructions pour l'enregistrement facial (optionnel)</h3>
                 </div>
                 <div class="instructions-grid">
                   <div class="instruction-card">
@@ -438,14 +441,6 @@
                   </div>
                   <div class="instruction-card">
                     <div class="instruction-number">4</div>
-                    <div class="instruction-desc">Regardez directement l'objectif</div>
-                  </div>
-                  <div class="instruction-card">
-                    <div class="instruction-number">5</div>
-                    <div class="instruction-desc">Maintenez la position pendant 3 secondes</div>
-                  </div>
-                  <div class="instruction-card">
-                    <div class="instruction-number">6</div>
                     <div class="instruction-desc">La capture se fera automatiquement</div>
                   </div>
                 </div>
@@ -467,18 +462,11 @@
                     <p class="camera-hint">Autorisez l'accès à votre caméra pour continuer</p>
                   </div>
 
-                  <!-- État: Caméra active - Capture en continu -->
+                  <!-- État: Caméra active -->
                   <div *ngIf="showCamera && !faceCaptured" class="camera-active">
-                    <video
-                      id="cameraVideo"
-                      autoplay
-                      playsinline
-                      muted
-                      class="camera-preview">
-                    </video>
+                    <video id="cameraVideo" autoplay playsinline muted class="camera-preview"></video>
                     <canvas id="captureCanvas" style="display: none;"></canvas>
 
-                    <!-- Indicateur de capture -->
                     <div class="capture-indicator" *ngIf="isCapturing">
                       <div class="capture-progress">
                         <div class="progress-bar" [style.width.%]="captureProgress"></div>
@@ -486,7 +474,6 @@
                       <p>Capture en cours... {{ captureProgress }}%</p>
                     </div>
 
-                    <!-- Message de détection de visage -->
                     <div class="face-detection-status" [class.face-detected]="faceDetected">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <circle cx="12" cy="12" r="10"/>
@@ -506,7 +493,7 @@
                     <div class="captured-actions">
                       <button type="button" class="btn-secondary" (click)="retakePhoto()">Reprendre</button>
                       <button type="button" class="btn-primary" (click)="confirmFaceAndSubmit()" [disabled]="loading">
-                        {{ loading ? "Envoi..." : "Confirmer" }}
+                        {{ loading ? "Envoi..." : "Confirmer et terminer" }}
                       </button>
                     </div>
                   </div>
@@ -530,6 +517,14 @@
                     <p>Le système vérifie qu'il s'agit bien d'une personne réelle (clignement, mouvement) pour éviter les fraudes par photo.</p>
                   </div>
                 </div>
+              </div>
+
+              <!-- ✅ NOUVEAU BOUTON : Passer l'étape -->
+              <div class="step-actions skip-actions">
+                <button type="button" class="btn-secondary" (click)="skipFacialStep()" [disabled]="loading">
+                  ⏭️ Passer cette étape
+                </button>
+                <button type="button" class="btn-secondary" (click)="prevStep()">Retour</button>
               </div>
 
               <div *ngIf="error" class="error-message">{{ error }}</div>

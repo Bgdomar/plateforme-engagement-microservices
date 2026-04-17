@@ -19,12 +19,7 @@ export class InscriptionService {
     return this.http.post(`${this.apiUrl}/demandes`, formData);
   }
 
-  /**
-   * Vérifier si l'email existe déjà
-   */
-  checkEmailExists(email: string): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/check-email?email=${email}`);
-  }
+
 
 
 }

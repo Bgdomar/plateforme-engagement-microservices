@@ -33,7 +33,7 @@ export interface RegisterFaceResponse {
 @Injectable({ providedIn: 'root' })
 export class FacialAIService {
 
-  private apiUrl = `${environment.facialAiUrl}/facial-ai`;
+  private apiUrl = `${environment.apiUrl}/facial-ai`;
 
   constructor(private http: HttpClient) {}
 
