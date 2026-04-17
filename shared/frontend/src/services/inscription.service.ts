@@ -13,10 +13,20 @@ export class InscriptionService {
 
   /**
    * Envoyer les données complètes + visage + image de profil au backend
+   * Utilise multipart/form-data pour envoyer les fichiers
    */
   createDemande(formData: FormData): Observable<any> {
-    // Maintenant la méthode accepte un seul paramètre (FormData)
     return this.http.post(`${this.apiUrl}/demandes`, formData);
+  }
+
+  /**
+   * Inscription simple sans reconnaissance faciale
+   * Envoie du JSON pur (application/json)
+   */
+  createDemandeSimple(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/demandes-simple`, data, {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   /**

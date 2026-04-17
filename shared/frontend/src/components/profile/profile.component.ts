@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { FacialAIService } from '../../services/facial-ai.service';
 
 @Component({
   selector: 'app-profile',
@@ -49,10 +50,24 @@ export class ProfileComponent implements OnInit {
   updateSuccess: string = '';
   isSaving: boolean = false;
 
-  constructor(private http: HttpClient) {}
+  // Facial Recognition
+  @ViewChild('facialVideo') facialVideo!: ElementRef<HTMLVideoElement>;
+  hasFacialRecognition: boolean = false;
+  showFacialSetup: boolean = false;
+  isCameraActive: boolean = false;
+  isCapturing: boolean = false;
+  facialError: string = '';
+  facialSuccess: string = '';
+  private facialStream: MediaStream | null = null;
+
+  constructor(
+    private http: HttpClient,
+    private facialAIService: FacialAIService
+  ) {}
 
   ngOnInit(): void {
     this.loadUserData();
+    this.checkFacialRecognitionStatus();
   }
 
   loadUserData(): void {
@@ -72,6 +87,15 @@ export class ProfileComponent implements OnInit {
         this.updateError = 'Erreur lors du chargement du profil.';
       }
     });
+  }
+
+  checkFacialRecognitionStatus(): void {
+    // Vérifier dans localStorage si l'utilisateur a déjà activé la reconnaissance faciale
+    const hasFacial = localStorage.getItem('has_facial_recognition');
+    this.hasFacialRecognition = hasFacial === 'true';
+
+    // TODO: Vérifier également avec le backend si le visage est enregistré
+    // this.facialAIService.checkFaceExists(this.email).subscribe(...);
   }
 
   getInitials(): string {
@@ -215,5 +239,121 @@ export class ProfileComponent implements OnInit {
   cancelEdit(): void {
     this.isEditingProfile = false;
     this.loadUserData();
+  }
+
+  // ==================== FACIAL RECOGNITION METHODS ====================
+
+  startFacialCamera(): void {
+    this.facialError = '';
+    this.facialSuccess = '';
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+      .then(stream => {
+        this.facialStream = stream;
+        this.isCameraActive = true;
+
+        // Attendre que la vue soit mise à jour
+        setTimeout(() => {
+          if (this.facialVideo && this.facialVideo.nativeElement) {
+            this.facialVideo.nativeElement.srcObject = stream;
+          }
+        }, 100);
+      })
+      .catch(err => {
+        console.error('❌ Erreur caméra:', err);
+        this.facialError = 'Impossible d\'accéder à la caméra. Vérifiez les permissions.';
+      });
+  }
+
+  stopFacialCamera(): void {
+    if (this.facialStream) {
+      this.facialStream.getTracks().forEach(track => track.stop());
+      this.facialStream = null;
+    }
+    this.isCameraActive = false;
+  }
+
+  captureFace(): void {
+    if (!this.facialVideo || !this.facialVideo.nativeElement) {
+      this.facialError = 'Caméra non disponible';
+      return;
+    }
+
+    this.isCapturing = true;
+    this.facialError = '';
+
+    const video = this.facialVideo.nativeElement;
+
+    // Créer un canvas pour capturer l'image
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      this.facialError = 'Erreur lors de la capture';
+      this.isCapturing = false;
+      return;
+    }
+
+    // Dessiner l'image de la vidéo
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convertir en blob
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        this.facialError = 'Erreur lors de la conversion de l\'image';
+        this.isCapturing = false;
+        return;
+      }
+
+      // Enregistrer le visage
+      this.registerFace(blob);
+    }, 'image/jpeg', 0.9);
+  }
+
+  private registerFace(blob: Blob): void {
+    const userEmail = localStorage.getItem('user_email') || this.email;
+
+    this.facialAIService.registerFace(userEmail, blob).subscribe({
+      next: (response) => {
+        console.log('✅ Visage enregistré:', response);
+        this.hasFacialRecognition = true;
+        this.facialSuccess = 'Reconnaissance faciale activée avec succès !';
+        this.isCapturing = false;
+        this.stopFacialCamera();
+        this.showFacialSetup = false;
+
+        // Sauvegarder le statut dans localStorage
+        localStorage.setItem('has_facial_recognition', 'true');
+      },
+      error: (error) => {
+        console.error('❌ Erreur enregistrement visage:', error);
+        this.facialError = error.message || 'Erreur lors de l\'enregistrement du visage';
+        this.isCapturing = false;
+      }
+    });
+  }
+
+  cancelFacialSetup(): void {
+    this.stopFacialCamera();
+    this.showFacialSetup = false;
+    this.facialError = '';
+    this.facialSuccess = '';
+  }
+
+  disableFacialRecognition(): void {
+    if (!confirm('Êtes-vous sûr de vouloir désactiver la reconnaissance faciale ?')) {
+      return;
+    }
+
+    // TODO: Appeler l'API pour supprimer le visage
+    this.hasFacialRecognition = false;
+    localStorage.removeItem('has_facial_recognition');
+    this.facialSuccess = 'Reconnaissance faciale désactivée';
+
+    setTimeout(() => {
+      this.facialSuccess = '';
+    }, 3000);
   }
 }

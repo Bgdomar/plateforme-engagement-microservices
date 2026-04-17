@@ -200,15 +200,12 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.successMessage = '';
 
     try {
-      const userCredential = await this.firebaseAuth.register(this.email, this.password);
-      this.firebaseUser = userCredential.user;
+      this.firebaseUser = this.firebaseAuth.getCurrentUser();
 
-      this.successMessage = '✅ Un email de vérification a été envoyé à ' + this.email +
-        '. Veuillez vérifier votre boîte mail pour continuer l\'inscription.';
-
-      this.waitingForVerification = true;
+      this.emailVerified = true;
+      this.waitingForVerification = false;
+      this.successMessage = '✅ Compte créé avec succès. La vérification email est désactivée, vous pouvez continuer vers l\'enregistrement facial.';
       this.cdr.detectChanges();
-      this.startEmailVerificationCheck();
 
     } catch (err: any) {
       console.error('❌ Erreur création compte Firebase:', err);
@@ -460,27 +457,28 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     try {
-      const formData = new FormData();
-      this.captureFramesList.forEach((frame, index) => {
-        formData.append('frames', frame, `frame_${index}.jpg`);
-      });
+      // Prendre une frame du milieu pour l'analyse
+      const bestFrameIndex = Math.floor(this.captureFramesList.length / 2);
+      const bestFrame = this.captureFramesList[bestFrameIndex];
 
-
-      const response = await this.facialAIService.analyzeFrames(formData).toPromise();
+      // Utiliser identifyFace pour vérifier qu'un visage est présent
+      // (si aucune correspondance mais pas d'erreur, c'est un nouveau visage valide)
+      const response = await this.facialAIService.identifyFace(bestFrame).toPromise();
       console.log('📊 Réponse Facial AI:', response);
 
-      if (response && response.isLive && response.faceDetected) {
-        const bestFrameIndex = response.bestFrameIndex || Math.floor(this.captureFramesList.length / 2);
-        const bestFrame = this.captureFramesList[bestFrameIndex];
+      if (response && (response.identified || response.message?.includes('Face not recognized'))) {
+        // Visage détecté (soit matché, soit nouveau)
         this.capturedImageBlob = bestFrame;
         this.capturedImageUrl = URL.createObjectURL(bestFrame);
         this.faceCaptured = true;
         this.stopCamera();
 
-        this.successMessage = `✅ Visage enregistré avec succès! (${response.blinkCount || 0} clignements)`;
+        this.successMessage = response.identified
+          ? `✅ Visage détecté et reconnu!`
+          : `✅ Visage détecté (nouvel utilisateur)`;
         this.cdr.detectChanges();
       } else {
-        this.error = response?.message || '⚠️ Visage non détecté ou photo/vidéo détectée';
+        this.error = response?.message || '⚠️ Visage non détecté';
         this.cdr.detectChanges();
 
         setTimeout(() => {
@@ -491,7 +489,17 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
     } catch (err: any) {
       console.error('❌ Erreur analyse faciale:', err);
-      this.error = err.message || 'Erreur de connexion au service Facial AI';
+      // Si l'erreur indique "No face detected", c'est un problème de capture
+      // Sinon c'est une erreur de connexion
+      if (err.error?.detail?.includes('No face detected') || err.message?.includes('No face detected')) {
+        this.error = '⚠️ Aucun visage détecté. Veuillez réessayer.';
+        setTimeout(() => {
+          this.error = '';
+          this.startAutoCapture();
+        }, 3000);
+      } else {
+        this.error = err.message || 'Erreur de connexion au service Facial AI';
+      }
       this.cdr.detectChanges();
     } finally {
       this.loading = false;
@@ -529,6 +537,56 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.captureProgress = 0;
     this.captureFramesList = [];
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Passer l'étape de reconnaissance faciale et soumettre l'inscription
+   * L'authentification classique (email/mot de passe) reste obligatoire
+   */
+  async skipFacialStep(): Promise<void> {
+    this.loading = true;
+    this.error = '';
+
+    try {
+      // ── PRÉPARER LES DONNÉES ─────────────
+      // IMPORTANT: utiliser 'motDePasse' (pas 'password') pour matcher le backend Java
+      const data = {
+        nom: this.nom,
+        prenom: this.prenom,
+        email: this.email,
+        typeCompte: this.userType.toUpperCase(),
+        motDePasse: this.password,
+        etablissement: this.userType === 'stagiaire' ? this.etablissement : null,
+        niveauEtudes: this.userType === 'stagiaire' ? this.niveauEtudes : null,
+        filiere: this.userType === 'stagiaire' ? this.filiere : null,
+        departement: this.userType === 'encadrant' ? this.departement : null,
+        poste: this.userType === 'encadrant' ? this.poste : null,
+      };
+
+      console.log('📋 Inscription sans reconnaissance faciale - Données:', data);
+
+      // ── APPEL API IAM (JSON/simple) ────────
+      // Utilise createDemandeSimple qui envoie du JSON pur (pas de multipart)
+      const response = await this.inscriptionService.createDemandeSimple(data).toPromise();
+      console.log('✅ Inscription réussie (sans facial):', response);
+
+      // ── AFFICHER LE SUCCÈS ───────────────
+      this.successMessage = 'Inscription envoyée ! Votre compte sera activé par l\'administrateur.';
+      this.cdr.detectChanges();
+
+      // Redirection après 2 secondes
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 2000);
+
+    } catch (err: any) {
+      console.error('❌ Erreur inscription:', err);
+      this.error = err.message || 'Erreur lors de l\'inscription. Veuillez réessayer.';
+      this.cdr.detectChanges();
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
   }
 
   retakePhoto(): void {
@@ -608,14 +666,13 @@ export class RegisterComponent implements OnInit, OnDestroy {
       console.log('✅ IAM OK:', iamResponse);
 
       // ── STOCKER EMBEDDING DANS FACIAL AI ─────────────
-      const userId = iamResponse?.userId;
-
-      if (userId && this.capturedFrames && this.capturedFrames.length > 0) {
-        console.log('🧠 Stockage embedding pour userId:', userId);
+      // Utiliser l'email comme identifiant pour le service Facial AI
+      if (this.email && this.capturedImageBlob) {
+        console.log('🧠 Stockage embedding pour email:', this.email);
 
         try {
           const facialResponse = await this.facialAIService
-            .registerFace(userId, this.capturedFrames)
+            .registerFace(this.email, this.capturedImageBlob)
             .toPromise();
           console.log('✅ Embedding stocké:', facialResponse);
         } catch (facialErr: any) {

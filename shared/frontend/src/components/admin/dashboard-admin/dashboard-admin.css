@@ -109,6 +109,10 @@
 .stat-attente .stat-icon { background: #fef3c7; color: #f59e0b; }
 .stat-approuve .stat-icon { background: #dcfce7; color: #10b981; }
 .stat-rejete .stat-icon { background: #fee2e2; color: #ef4444; }
+.stat-users .stat-icon { background: #f3e8ff; color: #9333ea; }
+.stat-stagiaires .stat-icon { background: #e0f2fe; color: #0ea5e9; }
+.stat-encadrants .stat-icon { background: #fef9c3; color: #eab308; }
+.stat-admin .stat-icon { background: #fce7f3; color: #ec4899; }
 
 .stat-value {
   display: block;

@@ -6,82 +6,64 @@ import { catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 
 export interface FacialAnalysisResponse {
-  isLive: boolean;
-  faceDetected: boolean;
-  confidence: number;
-  faceCount: number;
-  bestFrameIndex: number;
-  blinkCount?: number;
-  message?: string;
+  verified: boolean;
+  user_email?: string;
+  message: string;
 }
 
 export interface IdentifyFaceResponse {
-  success: boolean;
-  user_id: string;
-  distance: number;
-  blinks: number;
+  identified: boolean;
+  user_email?: string;
   message: string;
+  distance?: number;
 }
 
 export interface RegisterFaceResponse {
-  success: boolean;
-  profil_id?: string;
-  blinks?: number;
   message: string;
+  user_email: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class FacialAIService {
 
-  private apiUrl = `${environment.facialAiUrl}/facial-ai`;
+  private apiBaseUrl = environment.facialAiUrl;
+  private apiUrl = `${this.apiBaseUrl}/api/v1/faces`;
 
   constructor(private http: HttpClient) {}
 
   /**
    * Identifier un utilisateur par son visage UNIQUEMENT (sans email).
-   * POST /facial-ai/identify
-   * Le backend cherche dans toute la BDD biométrique et retourne le user_id.
+   * POST /api/v1/faces/identify
+   * Le backend cherche dans toute la BDD biométrique et retourne le user_email.
    */
-  identifyFace(frames: Blob[]): Observable<IdentifyFaceResponse> {
+  identifyFace(file: Blob): Observable<IdentifyFaceResponse> {
     const formData = new FormData();
-    frames.forEach((frame, i) => {
-      formData.append('frames', frame, `frame_${i}.jpg`);
-    });
+    formData.append('file', file, 'face.jpg');
     return this.http.post<IdentifyFaceResponse>(`${this.apiUrl}/identify`, formData)
       .pipe(catchError(this.handleError));
   }
 
   /**
-   * Analyser les frames pour détection de visage et vivacité
+   * Vérifier le visage d'un utilisateur spécifique
+   * POST /api/v1/faces/verify
    */
-  analyzeFrames(formData: FormData): Observable<FacialAnalysisResponse> {
-    return this.http.post<FacialAnalysisResponse>(`${this.apiUrl}/analyze`, formData)
+  verifyFace(userEmail: string, file: Blob): Observable<FacialAnalysisResponse> {
+    const formData = new FormData();
+    formData.append('user_email', userEmail);
+    formData.append('file', file, 'face.jpg');
+    return this.http.post<FacialAnalysisResponse>(`${this.apiUrl}/verify`, formData)
       .pipe(catchError(this.handleError));
   }
 
   /**
    * Enregistrer le visage (inscription)
+   * POST /api/v1/faces/register
    */
-  registerFace(userId: string, frames: Blob[]): Observable<RegisterFaceResponse> {
+  registerFace(userEmail: string, file: Blob): Observable<RegisterFaceResponse> {
     const formData = new FormData();
-    formData.append('user_id', userId);
-    frames.forEach((frame, i) => {
-      formData.append('frames', frame, `frame_${i}.jpg`);
-    });
+    formData.append('user_email', userEmail);
+    formData.append('file', file, 'face.jpg');
     return this.http.post<RegisterFaceResponse>(`${this.apiUrl}/register`, formData)
-      .pipe(catchError(this.handleError));
-  }
-
-  /**
-   * Authentifier le visage (connexion)
-   */
-  authenticateFace(userId: string, frames: Blob[]): Observable<any> {
-    const formData = new FormData();
-    formData.append('user_id', userId);
-    frames.forEach((frame, i) => {
-      formData.append('frames', frame, `frame_${i}.jpg`);
-    });
-    return this.http.post(`${this.apiUrl}/authenticate`, formData)
       .pipe(catchError(this.handleError));
   }
 
@@ -95,7 +77,7 @@ export class FacialAIService {
       errorMessage = `Erreur: ${error.error.message}`;
     } else {
       if (error.status === 0) {
-        errorMessage = 'Impossible de se connecter au service Facial AI. Vérifiez que le serveur est démarré sur http://localhost:8000';
+        errorMessage = `Impossible de se connecter au service Facial AI. Vérifiez que le serveur est démarré sur ${this.apiBaseUrl}`;
       } else if (error.status === 422) {
         errorMessage = error.error.detail?.message || 'Erreur d\'analyse faciale';
       } else {

@@ -1,9 +1,10 @@
-import { Component, ChangeDetectorRef, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, Inject, PLATFORM_ID, ViewChild, ElementRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { FacialAIService } from '../../../services/facial-ai.service';
 
 interface ProfilResponse {
   userId:        string;
@@ -72,10 +73,21 @@ export class ProfilStagiaireComponent implements OnInit {
   private toastTimer: any;
   pendingFile: File | null = null;
 
+  // ── Reconnaissance faciale ────────────────────────────────────
+  @ViewChild('facialVideo') facialVideo!: ElementRef<HTMLVideoElement>;
+  hasFacialRecognition: boolean = false;
+  showFacialSetup: boolean = false;
+  isCameraActive: boolean = false;
+  isCapturing: boolean = false;
+  facialError: string = '';
+  facialSuccess: string = '';
+  private facialStream: MediaStream | null = null;
+
   constructor(
     private cdr:  ChangeDetectorRef,
     private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private facialAIService: FacialAIService
   ) {}
 
   ngOnInit(): void {
@@ -338,5 +350,108 @@ export class ProfilStagiaireComponent implements OnInit {
       this.toastVisible = false;
       this.cdr.detectChanges();
     }, 3000);
+  }
+
+  // ── Reconnaissance faciale ─────────────────────────────────────
+
+  startFacialCamera(): void {
+    this.facialError = '';
+    this.facialSuccess = '';
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+      .then(stream => {
+        this.facialStream = stream;
+        this.isCameraActive = true;
+        setTimeout(() => {
+          if (this.facialVideo && this.facialVideo.nativeElement) {
+            this.facialVideo.nativeElement.srcObject = stream;
+          }
+        }, 100);
+      })
+      .catch(err => {
+        console.error('❌ Erreur caméra:', err);
+        this.facialError = 'Impossible d\'accéder à la caméra. Vérifiez les permissions.';
+      });
+  }
+
+  stopFacialCamera(): void {
+    if (this.facialStream) {
+      this.facialStream.getTracks().forEach(track => track.stop());
+      this.facialStream = null;
+    }
+    this.isCameraActive = false;
+  }
+
+  captureFace(): void {
+    if (!this.facialVideo || !this.facialVideo.nativeElement) {
+      this.facialError = 'Caméra non disponible';
+      return;
+    }
+
+    this.isCapturing = true;
+    this.facialError = '';
+
+    const video = this.facialVideo.nativeElement;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      this.facialError = 'Erreur lors de la capture';
+      this.isCapturing = false;
+      return;
+    }
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        this.facialError = 'Erreur lors de la conversion de l\'image';
+        this.isCapturing = false;
+        return;
+      }
+      this.registerFace(blob);
+    }, 'image/jpeg', 0.9);
+  }
+
+  private registerFace(blob: Blob): void {
+    const userEmail = localStorage.getItem('user_email') || this.email;
+
+    this.facialAIService.registerFace(userEmail, blob).subscribe({
+      next: (response) => {
+        console.log('✅ Visage enregistré:', response);
+        this.hasFacialRecognition = true;
+        this.facialSuccess = 'Reconnaissance faciale activée avec succès !';
+        this.isCapturing = false;
+        this.stopFacialCamera();
+        this.showFacialSetup = false;
+        localStorage.setItem('has_facial_recognition', 'true');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('❌ Erreur enregistrement visage:', error);
+        this.facialError = error.message || 'Erreur lors de l\'enregistrement du visage';
+        this.isCapturing = false;
+      }
+    });
+  }
+
+  cancelFacialSetup(): void {
+    this.stopFacialCamera();
+    this.showFacialSetup = false;
+    this.facialError = '';
+    this.facialSuccess = '';
+  }
+
+  disableFacialRecognition(): void {
+    if (!confirm('Êtes-vous sûr de vouloir désactiver la reconnaissance faciale ?')) {
+      return;
+    }
+    this.hasFacialRecognition = false;
+    localStorage.removeItem('has_facial_recognition');
+    this.facialSuccess = 'Reconnaissance faciale désactivée';
+    this.showToast('Reconnaissance faciale désactivée');
+    setTimeout(() => this.facialSuccess = '', 3000);
   }
 }

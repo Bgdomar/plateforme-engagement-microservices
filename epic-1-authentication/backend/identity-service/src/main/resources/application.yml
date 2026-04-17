@@ -1,0 +1,38 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: identity-service
+  
+  datasource:
+    url: jdbc:postgresql://identity-db:5432/identity_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# JWT Configuration
+jwt:
+  secret: engagementSecretKey2024
+  expiration: 86400000  # 24 hours in milliseconds
+
+# File Upload Configuration
+app:
+  upload:
+    path: /app/assets/images
+    url-prefix: /uploads/
+
+# Logging
+logging:
+  level:
+    com.engagement.identity: DEBUG
+    org.springframework.security: DEBUG

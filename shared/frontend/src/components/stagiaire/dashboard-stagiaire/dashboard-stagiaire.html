@@ -1,80 +1,268 @@
 <div class="dashboard-container">
   <app-header-stagiaire></app-header-stagiaire>
-  <!-- Header -->
-  <header class="dashboard-header">
-    <div class="header-content">
-      <h1>Tableau de bord Stagiaire</h1>
-      <div class="user-info">
-        <span class="user-name">{{ stagiaireInfo.prenom }} {{ stagiaireInfo.nom }}</span>
-        <button class="logout-btn" (click)="logout()">Déconnexion</button>
-      </div>
-    </div>
-  </header>
 
-  <div class="dashboard-content">
-    <!-- Profil Card -->
-    <div class="profile-card">
-      <div class="profile-icon">
-        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
-      </div>
-      <h2>{{ stagiaireInfo.prenom }} {{ stagiaireInfo.nom }}</h2>
-      <p class="email">{{ stagiaireInfo.email }}</p>
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="label">Promotion</span>
-          <span class="value">{{ stagiaireInfo.promotion }}</span>
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>Chargement de votre espace...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dashboard-layout" *ngIf="!isLoading">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <a routerLink="/dashboard/stagiaire" class="nav-item active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+        <a routerLink="/stagiaire/profil" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span>Mon Profil</span>
+        </a>
+        <a routerLink="/missions" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+          <span>Mes Missions</span>
+        </a>
+        <a routerLink="/badges" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span>Badges</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Welcome Header -->
+      <header class="content-header">
+        <div class="welcome-section">
+          <h1>Bonjour, {{ stagiaireInfo.prenom }} ! 👋</h1>
+          <p class="subtitle">Voici votre progression aujourd'hui</p>
         </div>
-        <div class="info-item">
-          <span class="label">Tuteur</span>
-          <span class="value">{{ stagiaireInfo.tuteur }}</span>
+        <div class="quick-actions">
+          <button class="btn-primary" (click)="goToMissions()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Nouvelle mission
+          </button>
         </div>
-      </div>
-    </div>
+      </header>
 
-    <!-- Statistiques -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">⭐</div>
-        <div class="stat-value">{{ points.total }}</div>
-        <div class="stat-label">Points totaux</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🏆</div>
-        <div class="stat-value">{{ points.badges }}</div>
-        <div class="stat-label">Badges obtenus</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">📊</div>
-        <div class="stat-value">{{ points.classement }}</div>
-        <div class="stat-label">Classement</div>
-      </div>
-    </div>
-
-    <!-- Missions -->
-    <div class="missions-section">
-      <h3>Mes missions</h3>
-      <div class="missions-list">
-        <div *ngFor="let mission of missions" class="mission-card">
-          <div class="mission-header">
-            <h4>{{ mission.titre }}</h4>
-            <span class="mission-status" [class]="mission.statut.toLowerCase().replace(' ', '-')">
-              {{ mission.statut }}
-            </span>
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-box primary">
+          <div class="stat-icon-bg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
           </div>
-          <div class="mission-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="mission.progression"></div>
+          <div class="stat-info">
+            <span class="stat-number">{{ points.total | number:'1.0-0' }}</span>
+            <span class="stat-label">Points XP</span>
+          </div>
+        </div>
+
+        <div class="stat-box success">
+          <div class="stat-icon-bg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-number">{{ completedMissions }}</span>
+            <span class="stat-label">Missions terminées</span>
+          </div>
+        </div>
+
+        <div class="stat-box warning">
+          <div class="stat-icon-bg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-number">{{ inProgressMissions }}</span>
+            <span class="stat-label">En cours</span>
+          </div>
+        </div>
+
+        <div class="stat-box info">
+          <div class="stat-icon-bg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-number">#{{ points.classement }}</span>
+            <span class="stat-label">Classement</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two Column Layout -->
+      <div class="content-grid">
+        <!-- Left Column: Missions -->
+        <div class="column-main">
+          <div class="card">
+            <div class="card-header">
+              <h2>Mes Missions en cours</h2>
+              <a routerLink="/missions" class="link-view-all">Voir tout →</a>
             </div>
-            <div class="progress-info">
-              <span>Progression: {{ mission.progression }}%</span>
-              <span>Deadline: {{ mission.deadline }}</span>
+            <div class="missions-list">
+              <div *ngFor="let mission of activeMissions" class="mission-item">
+                <div class="mission-info">
+                  <h4>{{ mission.titre }}</h4>
+                  <div class="mission-meta">
+                    <span class="badge" [class]="'status-' + getStatusClass(mission.statut)">
+                      {{ mission.statut }}
+                    </span>
+                    <span class="deadline">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
+                      {{ formatDate(mission.deadline) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="mission-progress">
+                  <div class="progress-ring">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                      <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                      <path class="circle" [attr.stroke-dasharray]="mission.progression + ', 100'" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    </svg>
+                    <span class="progress-text">{{ mission.progression }}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="activeMissions.length === 0" class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+                  <path d="M9 11l3 3L22 4"/>
+                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                </svg>
+                <p>Aucune mission active pour le moment</p>
+                <button class="btn-outline" (click)="goToMissions()">Découvrir les missions</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Activité récente</h2>
+            </div>
+            <div class="activity-list">
+              <div *ngFor="let activity of recentActivities" class="activity-item">
+                <div class="activity-icon" [class]="'activity-' + activity.type">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path *ngIf="activity.type === 'mission'" d="M9 11l3 3L22 4"/>
+                    <path *ngIf="activity.type === 'badge'" d="M9 11l3 3L22 4"/>
+                    <path *ngIf="activity.type === 'points'" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </div>
+                <div class="activity-content">
+                  <p class="activity-title">{{ activity.title }}</p>
+                  <span class="activity-time">{{ activity.time }}</span>
+                </div>
+                <span *ngIf="activity.points" class="activity-points">+{{ activity.points }} XP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Profile & Info -->
+        <div class="column-side">
+          <!-- Profile Card -->
+          <div class="card profile-card">
+            <div class="profile-header">
+              <div class="avatar">
+                <img *ngIf="stagiaireInfo.avatar" [src]="stagiaireInfo.avatar" alt="">
+                <span *ngIf="!stagiaireInfo.avatar">{{ getInitials() }}</span>
+              </div>
+              <div class="profile-info">
+                <h3>{{ stagiaireInfo.prenom }} {{ stagiaireInfo.nom }}</h3>
+                <span class="role-badge">Stagiaire</span>
+              </div>
+            </div>
+            <div class="profile-details">
+              <div class="detail-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span>{{ stagiaireInfo.email }}</span>
+              </div>
+              <div class="detail-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>{{ stagiaireInfo.etablissement || 'Non renseigné' }}</span>
+              </div>
+              <div class="detail-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+                </svg>
+                <span>{{ stagiaireInfo.filiere || 'Filière non renseignée' }}</span>
+              </div>
+            </div>
+            <button class="btn-outline full-width" routerLink="/stagiaire/profil">
+              Modifier mon profil
+            </button>
+          </div>
+
+          <!-- Level Progress -->
+          <div class="card level-card">
+            <div class="level-header">
+              <span class="level-badge-large">Niveau {{ currentLevel }}</span>
+              <span class="level-points">{{ points.total }} / {{ nextLevelPoints }} XP</span>
+            </div>
+            <div class="level-progress-bar">
+              <div class="level-fill" [style.width.%]="levelProgressPercentage"></div>
+            </div>
+            <p class="level-message">{{ levelProgressMessage }}</p>
+          </div>
+
+          <!-- Next Badge -->
+          <div class="card badge-card" *ngIf="nextBadge">
+            <div class="badge-preview">
+              <div class="badge-icon">{{ nextBadge.icon }}</div>
+              <div class="badge-info">
+                <h4>Prochain badge</h4>
+                <p>{{ nextBadge.name }}</p>
+              </div>
+            </div>
+            <div class="badge-progress">
+              <div class="progress-bar-small">
+                <div class="progress-fill" [style.width.%]="nextBadge.progress"></div>
+              </div>
+              <span class="progress-text">{{ nextBadge.current }} / {{ nextBadge.target }}</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </div>

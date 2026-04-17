@@ -25,19 +25,6 @@ services:
       - kafka_data:/var/lib/kafka/data
 
   # ===== DATABASES =====
-  postgres-iam:
-    image: postgres:16
-    container_name: postgres-com.engagement.iam
-    restart: always
-    environment:
-      POSTGRES_DB: iam_db
-      POSTGRES_USER: iam_user
-      POSTGRES_PASSWORD: iam_pass
-    ports:
-      - "5435:5432"
-    volumes:
-      - pg_iam_data:/var/lib/postgresql/data
-
   postgres-mission:
     image: postgres:16
     container_name: postgres-mission
@@ -72,80 +59,44 @@ services:
       start_period: 30s
 
 
-  # ===== IAM SERVICE =====
-  iam-service:
+  # ===== IDENTITY SERVICE (IAM + User Profile fusionné) =====
+  identity-service:
     build:
-      context: ./epic-1-authentication/backend/iam-service
+      context: ./epic-1-authentication/backend/identity-service
       dockerfile: Dockerfile
-    container_name: com.engagement.iam-service
+    container_name: com.engagement.identity-service
     restart: always
     ports:
       - "8081:8081"
-    environment:
-      SPRING_APPLICATION_NAME: iam-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-com.engagement.iam:5432/iam_db
-      SPRING_DATASOURCE_USERNAME: iam_user
-      SPRING_DATASOURCE_PASSWORD: iam_pass
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
-      APP_JWT_SECRET: YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==
-      APP_JWT_EXPIRATION: 86400000
-      IAM_AUTO_APPROVE: "true"
-    depends_on:
-      postgres-iam:
-        condition: service_started
-      discovery-service:
-        condition: service_healthy
-      kafka:
-        condition: service_started
-
-
-  # ===== USER PROFILE DATABASE =====
-  postgres-user-profile:
-    image: postgres:16
-    container_name: postgres-user-profile
-    restart: always
-    environment:
-      POSTGRES_DB: user_profile_db
-      POSTGRES_USER: user_profile_user
-      POSTGRES_PASSWORD: user_profile_pass
-    ports:
-      - "5436:5432"
     volumes:
-      - pg_user_profile_data:/var/lib/postgresql/data
-
-
-  # ===== USER PROFILE SERVICE =====
-  user-profile-service:
-    build:
-      context: ./epic-1-authentication/backend/user-profile-service
-      dockerfile: Dockerfile
-    container_name: user-profile-service
-    restart: always
-    ports:
-      - "8084:8084"
-    volumes:
-      - user_profile_images:/app/assets/images  # Volume persistant pour les images
+      - identity_uploads:/app/assets/images  # Volume persistant pour les images
     environment:
-      SPRING_APPLICATION_NAME: user-profile-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-user-profile:5432/user_profile_db
-      SPRING_DATASOURCE_USERNAME: user_profile_user
-      SPRING_DATASOURCE_PASSWORD: user_profile_pass
+      SPRING_APPLICATION_NAME: identity-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-identity:5432/identity_db
+      SPRING_DATASOURCE_USERNAME: identity_user
+      SPRING_DATASOURCE_PASSWORD: identity_pass
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
       JWT_SECRET: YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==
-      APP_JWT_SECRET: YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==
-      APP_JWT_EXPIRATION: 86400000
+      JWT_EXPIRATION: 86400000
+      APP_UPLOAD_PATH: /app/assets/images
+      APP_UPLOAD_URL_PREFIX: /uploads/
     depends_on:
-      postgres-user-profile:
+      postgres-identity:
         condition: service_started
-      discovery-service:
-        condition: service_healthy
-      kafka:
-        condition: service_started
+
+  # ===== IDENTITY DATABASE =====
+  postgres-identity:
+    image: postgres:16
+    container_name: postgres-identity
+    restart: always
+    environment:
+      POSTGRES_DB: identity_db
+      POSTGRES_USER: identity_user
+      POSTGRES_PASSWORD: identity_pass
+    ports:
+      - "5437:5432"
+    volumes:
+      - pg_identity_data:/var/lib/postgresql/data
 
 
   # ===== MISSION SERVICE ===
@@ -189,11 +140,9 @@ services:
     depends_on:
       discovery-service:
         condition: service_healthy
-      iam-service:
+      identity-service:
         condition: service_started
       mission-service:
-        condition: service_started
-      user-profile-service:
         condition: service_started
 
 
@@ -205,7 +154,7 @@ services:
       dockerfile: Dockerfile
       args:
         API_URL: http://localhost:8080
-        FACIAL_AI_URL: http://localhost:8000
+        FACIAL_AI_URL: http://localhost:8082
     container_name: frontend
     restart: always
     ports:
@@ -217,9 +166,11 @@ services:
 volumes:
   pg_iam_data:
   pg_user_profile_data:
+  pg_identity_data:
   pg_mission_data:
   kafka_data:
   user_profile_images:
+  identity_uploads:
 
 
 

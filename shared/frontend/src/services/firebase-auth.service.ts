@@ -7,7 +7,6 @@ import {
   Auth,
   getAuth,
   createUserWithEmailAndPassword,
-  sendEmailVerification,
   sendPasswordResetEmail,
   User,
   UserCredential
@@ -53,8 +52,7 @@ export class FirebaseAuthService {
         password
       );
 
-      await sendEmailVerification(userCredential.user);
-      console.log('✅ Email de vérification envoyé à:', email);
+      console.log('ℹ️ Vérification email désactivée pour cet environnement:', email);
       return userCredential;
 
     } catch (error: any) {
@@ -112,7 +110,7 @@ export class FirebaseAuthService {
 
     const user = this.auth.currentUser;
     if (user && !user.emailVerified) {
-      await sendEmailVerification(user);
+      return;
     }
   }
 

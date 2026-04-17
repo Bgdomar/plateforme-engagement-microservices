@@ -10,7 +10,7 @@ RUN npm install --no-audit --no-fund
 COPY . .
 
 ARG API_URL=http://localhost:8080
-ARG FACIAL_AI_URL=http://localhost:8000
+ARG FACIAL_AI_URL=http://localhost:8082
 
 RUN echo "window.__env = {" > src/env.js && \
     echo "  API_URL: '${API_URL}'," >> src/env.js && \

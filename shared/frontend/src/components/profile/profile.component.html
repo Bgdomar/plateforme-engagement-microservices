@@ -207,6 +207,126 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Facial Recognition Section -->
+              <div class="bg-white border border-slate-200 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-bold text-slate-900">
+                    <i class="fas fa-id-card mr-2 text-cyan-600"></i>
+                    Reconnaissance faciale
+                  </h3>
+                  <span
+                    [class.bg-green-100]="hasFacialRecognition"
+                    [class.text-green-700]="hasFacialRecognition"
+                    [class.bg-slate-100]="!hasFacialRecognition"
+                    [class.text-slate-600]="!hasFacialRecognition"
+                    class="px-3 py-1 rounded-full text-sm font-medium">
+                    {{ hasFacialRecognition ? 'Activée' : 'Non activée' }}
+                  </span>
+                </div>
+
+                <p class="text-slate-600 text-sm mb-6">
+                  Activez la reconnaissance faciale pour une connexion plus rapide et sécurisée. Vous pourrez vous connecter simplement en montrant votre visage à la caméra.
+                </p>
+
+                <!-- Messages -->
+                <div *ngIf="facialError" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                  <i class="fas fa-exclamation-circle mr-2"></i>{{ facialError }}
+                </div>
+                <div *ngIf="facialSuccess" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
+                  <i class="fas fa-check-circle mr-2"></i>{{ facialSuccess }}
+                </div>
+
+                <!-- Activation Button -->
+                <button
+                  *ngIf="!hasFacialRecognition && !showFacialSetup"
+                  (click)="showFacialSetup = true"
+                  class="w-full sm:w-auto px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-xl transition flex items-center justify-center gap-2">
+                  <i class="fas fa-camera"></i>
+                  Activer la reconnaissance faciale
+                </button>
+
+                <!-- Facial Setup Interface -->
+                <div *ngIf="showFacialSetup" class="mt-6 p-6 bg-slate-50 rounded-xl">
+                  <h4 class="font-semibold text-slate-900 mb-4">Configuration de la reconnaissance faciale</h4>
+
+                  <div class="flex flex-col items-center gap-4">
+                    <!-- Camera Preview -->
+                    <div class="relative w-full max-w-md">
+                      <video
+                        #facialVideo
+                        [class.hidden]="!isCameraActive"
+                        autoplay
+                        playsinline
+                        class="w-full h-64 rounded-xl object-cover bg-black">
+                      </video>
+
+                      <!-- Placeholder when camera is off -->
+                      <div *ngIf="!isCameraActive" class="w-full h-64 bg-slate-200 rounded-xl flex flex-col items-center justify-center">
+                        <i class="fas fa-camera text-4xl text-slate-400 mb-3"></i>
+                        <p class="text-slate-500">Caméra inactive</p>
+                      </div>
+
+                      <!-- Capture Button Overlay -->
+                      <div *ngIf="isCameraActive && !isCapturing" class="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                        <button
+                          (click)="captureFace()"
+                          class="w-16 h-16 bg-white rounded-full border-4 border-cyan-600 flex items-center justify-center hover:bg-cyan-50 transition">
+                          <div class="w-12 h-12 bg-cyan-600 rounded-full"></div>
+                        </button>
+                      </div>
+
+                      <!-- Loading State -->
+                      <div *ngIf="isCapturing" class="absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
+                        <div class="text-white text-center">
+                          <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+                          <p>Analyse en cours...</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="text-center max-w-md">
+                      <p class="text-slate-600 text-sm mb-2">
+                        <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
+                        Positionnez votre visage au centre du cadre et assurez-vous d'avoir une bonne luminosité.
+                      </p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3 w-full max-w-md">
+                      <button
+                        *ngIf="!isCameraActive"
+                        (click)="startFacialCamera()"
+                        class="flex-1 px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-xl transition">
+                        <i class="fas fa-video mr-2"></i>
+                        Démarrer la caméra
+                      </button>
+                      <button
+                        *ngIf="isCameraActive"
+                        (click)="stopFacialCamera()"
+                        class="flex-1 px-4 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-xl transition">
+                        <i class="fas fa-stop mr-2"></i>
+                        Arrêter
+                      </button>
+                      <button
+                        (click)="cancelFacialSetup()"
+                        class="flex-1 px-4 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-xl transition">
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Disable Button (if already enabled) -->
+                <button
+                  *ngIf="hasFacialRecognition"
+                  (click)="disableFacialRecognition()"
+                  class="w-full sm:w-auto px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl transition flex items-center justify-center gap-2">
+                  <i class="fas fa-trash-alt"></i>
+                  Désactiver la reconnaissance faciale
+                </button>
+              </div>
             </div>
 
             <!-- Save/Cancel Buttons (Edit Mode) -->

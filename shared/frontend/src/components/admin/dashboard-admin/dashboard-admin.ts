@@ -24,7 +24,7 @@ export class DashboardAdminComponent implements OnInit {
   erreurChargement = '';
 
   // ── Filtres locaux (tout vient du backend, on filtre en mémoire) ──────────
-  filtreStatut: StatutDemande | 'TOUS' = 'EN_ATTENTE';
+  filtreStatut: StatutDemande | 'TOUS' = 'TOUS';
   filtreRole: 'TOUS' | 'STAGIAIRE' | 'ENCADRANT' = 'TOUS';
   recherche = '';
 
@@ -42,24 +42,37 @@ export class DashboardAdminComponent implements OnInit {
   constructor(private demandeService: DemandeInscriptionService) {}
 
   ngOnInit(): void {
-    this.chargerDemandes();
+    this.chargerDonnees();
   }
 
   // ── Chargement ────────────────────────────────────────────────────────────
-  chargerDemandes(): void {
+  chargerDonnees(): void {
     this.loading = true;
     this.erreurChargement = '';
 
-    this.demandeService.listerDemandes("EN_ATTENTE").subscribe({
-      next: (data) => {
+    // Charger TOUTES les demandes
+    this.demandeService.listerDemandes().subscribe({
+      next: (data: DemandeInscription[]) => {
         this.demandes = data;
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.erreurChargement = err?.error?.message || 'Impossible de charger les demandes.';
         this.loading = false;
       }
     });
+  }
+
+  // ── Stats Utilisateurs ───────────────────────────────────────────────────
+  // Calcul basé sur les demandes VALIDEE (approuvées) pour avoir des stats cohérentes
+  get statsUsers() {
+    const demandesApprouvees = this.demandes.filter(d => d.statut === 'VALIDEE');
+    return {
+      total: demandesApprouvees.length,
+      stagiaires: demandesApprouvees.filter(d => d.role === 'STAGIAIRE').length,
+      encadrants: demandesApprouvees.filter(d => d.role === 'ENCADRANT').length,
+      admins: 0, // Les admins ne passent pas par les demandes d'inscription
+    };
   }
 
   // ── Filtrage local ────────────────────────────────────────────────────────
@@ -88,12 +101,12 @@ export class DashboardAdminComponent implements OnInit {
     this.traitementEnCours = true;
 
     this.demandeService.traiterDemande(demande.id, { decision: 'VALIDEE' }).subscribe({
-      next: (updated) => {
+      next: (updated: DemandeInscription) => {
         this.mettreAJourDemande(updated);
         this.toast(`✅ Demande de ${demande.prenom} ${demande.nom} approuvée`, 'success');
         this.traitementEnCours = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.toast(err?.error?.message || 'Erreur lors de l\'approbation', 'error');
         this.traitementEnCours = false;
       }
@@ -121,13 +134,13 @@ export class DashboardAdminComponent implements OnInit {
       decision: 'REFUSEE',
       commentaire: this.noteRejet.trim()
     }).subscribe({
-      next: (updated) => {
+      next: (updated: DemandeInscription) => {
         this.mettreAJourDemande(updated);
         this.toast(`❌ Demande de ${this.demandeSelectionnee!.prenom} ${this.demandeSelectionnee!.nom} rejetée`, 'error');
         this.fermerModalRejet();
         this.traitementEnCours = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.toast(err?.error?.message || 'Erreur lors du rejet', 'error');
         this.traitementEnCours = false;
       }

@@ -7,7 +7,7 @@
           <div class="login-illustration">
             <div class="illustration-content">
               <div class="illustration-icon">
-                <img src="/assets/logoDXC.jpg" alt="Logo DXC Technology" class="site-logo">
+                <img src="/favicon.ico" alt="Logo" class="site-logo">
               </div>
               <h3 class="illustration-title">Rejoignez DXC Technology</h3>
               <p class="illustration-text">
@@ -406,12 +406,12 @@
               </div>
             </div>
 
-            <!-- ÉTAPE 4: Capture faciale -->
+            <!-- ÉTAPE 4: Capture faciale (OPTIONNELLE) -->
             <div *ngIf="currentStep === 4" class="step-content">
               <div class="step-header">
                 <h2>Enregistrement facial</h2>
-                <p>Pour renforcer la sécurité, veuillez enregistrer votre visage</p>
-                <p class="step-subheader">L'authentification faciale est obligatoire pour activer votre compte</p>
+                <p>Sécurisez votre connexion avec la reconnaissance faciale</p>
+                <p class="step-subheader">Cette étape est optionnelle. Vous pouvez l'activer plus tard dans votre profil.</p>
               </div>
 
               <!-- Instructions en haut -->
@@ -465,6 +465,19 @@
                       Activer la caméra
                     </button>
                     <p class="camera-hint">Autorisez l'accès à votre caméra pour continuer</p>
+
+                    <!-- Option pour passer cette étape -->
+                    <div class="skip-facial-option" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                      <button type="button" class="btn-secondary" (click)="skipFacialStep()" [disabled]="loading">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                          <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                        Passer cette étape
+                      </button>
+                      <p class="camera-hint" style="margin-top: 8px; font-size: 12px;">
+                        Vous pourrez activer la reconnaissance faciale plus tard depuis votre profil
+                      </p>
+                    </div>
                   </div>
 
                   <!-- État: Caméra active - Capture en continu -->
@@ -549,3 +562,4 @@
     </div>
   </div>
 </section>
+CD 

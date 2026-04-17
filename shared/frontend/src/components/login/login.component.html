@@ -4,8 +4,7 @@
     <div class="login-illustration">
       <div class="illustration-content">
         <div class="illustration-icon">
-          <img src="/assets/logoDXC.jpg" alt="Logo DXC Technology" class="site-logo"
-               onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=site-logo-placeholder>DXC</div>';">
+          <img src="/favicon.ico" alt="Logo" class="site-logo">
         </div>
         <h3 class="illustration-title">Plateforme DXC Stagiaires</h3>
         <p class="illustration-text">
@@ -82,7 +81,7 @@
                   {{ showPassword ? 'Masquer' : 'Afficher' }}
                 </button>
               </div>
-              <a href="#" class="forgot-password" (click)="$event.preventDefault()">Mot de passe oublié ?</a>
+              <a href="#" class="forgot-password" (click)="forgotPassword($event)">Mot de passe oublié ?</a>
             </div>
 
             <div *ngIf="error" class="alert-error" [ngClass]="{

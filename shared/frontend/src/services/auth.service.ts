@@ -37,6 +37,11 @@ export class AuthService {
       );
   }
 
+  resetPassword(email: string, nouveauMotDePasse: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, { email, nouveauMotDePasse })
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
 
@@ -45,7 +50,9 @@ export class AuthService {
       errorMessage = error.error.message;
     } else {
       // Erreur côté serveur
-      if (error.status === 401) {
+      if (error.status === 0) {
+        errorMessage = 'Le service de connexion est indisponible pour le moment. Vérifiez que les services backend sont démarrés.';
+      } else if (error.status === 401) {
         if (error.error && error.error.message) {
           errorMessage = error.error.message;
         } else if (error.error && typeof error.error === 'string') {
@@ -53,8 +60,16 @@ export class AuthService {
         } else {
           errorMessage = 'Email ou mot de passe incorrect';
         }
+      } else if (error.status === 503) {
+        errorMessage = 'Le service IAM est en cours de redémarrage. Réessayez dans quelques secondes.';
+      } else if (error.status === 404) {
+        errorMessage = 'Service de connexion introuvable. Vérifiez la configuration API Gateway.';
       } else if (error.status === 403) {
         errorMessage = 'Accès non autorisé';
+      } else if (error.status === 400) {
+        if (error.error && error.error.message) {
+          errorMessage = error.error.message;
+        }
       } else if (error.status === 500) {
         errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
       }
@@ -67,10 +82,10 @@ export class AuthService {
   /**
    * Connexion par reconnaissance faciale.
    * Appelé après validation réussie par le service Python.
-   * Le backend Spring Boot vérifie que l'userId existe et retourne un token JWT.
+   * Le backend Spring Boot vérifie que l'user_email existe et retourne un token JWT.
    */
-  facialLogin(userId: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/facial-login`, { userId })
+  facialLogin(userEmail: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/facial-login`, { user_email: userEmail })
       .pipe(
         tap(response => {
           localStorage.setItem('token',  response.token);

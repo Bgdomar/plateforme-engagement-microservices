@@ -44,6 +44,13 @@
   justify-content: center;
   color: white;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.logo-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .logo-text {

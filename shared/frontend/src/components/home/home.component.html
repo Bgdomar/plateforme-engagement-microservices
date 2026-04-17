@@ -16,10 +16,10 @@
   </div>
 
   <!-- CONTENU HERO -->
-  <div class="relative z-20 max-w-7xl mx-auto px-6 h-screen flex items-center">
+  <div class="relative z-20 max-w-[1400px] mx-auto px-6 h-screen flex items-center">
     
     <!-- COLONNE GAUCHE: TEXTE & ACTIONS -->
-    <div class="flex-1 mr-12">
+    <div class="flex-1 mr-8">
       <div class="space-y-8">
         <!-- Titre Principal -->
         <div class="space-y-4">
@@ -65,33 +65,34 @@
       </div>
     </div>
 
-    <!-- COLONNE DROITE: VIDEO + CONTEXTE (STYLE SCREENSHOT) -->
-    <div class="hidden lg:block w-[520px]">
+    <!-- COLONNE DROITE: VIDEO + CONTEXTE -->
+    <div class="hidden lg:block w-[680px]">
       <div class="bg-white/80 backdrop-blur-xl border border-primary-100 rounded-2xl p-6 shadow-sm">
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+        <div class="space-y-5">
+          <!-- Vidéo plus grande -->
           <div class="rounded-2xl overflow-hidden border border-primary-100 bg-white">
-            <div class="relative w-full" style="padding-top: 56.25%;">
+            <div class="relative w-full" style="padding-top: 60%;">
               <iframe
                 class="absolute inset-0 w-full h-full"
-                [src]="getSafeYoutubeUrl('https://www.youtube.com/embed/e30Vpub8QgQ?start=42&rel=0')"
+                src="https://www.youtube.com/embed/e30Vpub8QgQ?start=42&rel=0"
                 title="Présentation DXC"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen
-                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
               ></iframe>
             </div>
           </div>
 
-          <div class="space-y-4">
-            <div class="text-brand-dark text-3xl font-black leading-tight">
+          <div class="space-y-3">
+            <div class="text-brand-dark text-2xl font-black leading-tight">
               Un peu d'histoire<br />
-              <span class="italic">et de contexte</span>
+              <span class="italic text-primary-600">et de contexte</span>
             </div>
-            <p class="text-brand-gray text-sm leading-relaxed">
+            <p class="text-brand-gray text-base leading-relaxed">
               DXC Technology accompagne les organisations dans leur transformation digitale avec des solutions innovantes, sécurisées et orientées performance.
             </p>
-            <p class="text-brand-gray text-sm leading-relaxed">
+            <p class="text-brand-gray text-base leading-relaxed">
               Notre plateforme met l'accent sur le suivi, la gamification et l'authentification pour offrir une expérience moderne aux stagiaires et aux encadrants.
             </p>
           </div>

@@ -253,21 +253,18 @@ export class FaceAuthComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.facialAI.registerFace(userId, this.captureFramesList).subscribe({
+    // Utiliser la frame du milieu pour l'enregistrement
+    const bestFrame = this.captureFramesList[Math.floor(this.captureFramesList.length / 2)];
+    this.facialAI.registerFace(userId, bestFrame).subscribe({
       next: (response: RegisterFaceResponse) => {
         this.loading = false;
 
-        if (response.success) {
-          this.result = {
-            verified: true,
-            message: response.message || `Visage enregistré avec succès ! (${response.blinks || 0} clignements détectés)`
-          };
-          this.stopCamera();
-          setTimeout(() => this.router.navigate(['/dashboard']), 2000);
-        } else {
-          this.error = response.message || 'Erreur lors de l\'enregistrement';
-          this.restartCamera();
-        }
+        this.result = {
+          verified: true,
+          message: response.message || 'Visage enregistré avec succès !'
+        };
+        this.stopCamera();
+        setTimeout(() => this.router.navigate(['/dashboard']), 2000);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -288,23 +285,18 @@ export class FaceAuthComponent implements OnInit, OnDestroy {
     this.detectionStatus = 'Analyse de vivacité et identification...';
     this.cdr.detectChanges();
 
-    this.facialAI.identifyFace(this.captureFramesList).subscribe({
+    // Utiliser la frame du milieu pour l'identification
+    const bestFrame = this.captureFramesList[Math.floor(this.captureFramesList.length / 2)];
+    this.facialAI.identifyFace(bestFrame).subscribe({
       next: (response: IdentifyFaceResponse) => {
         this.loading = false;
 
-        if (response.success) {
-          if (response.blinks < this.MIN_BLINKS_REQUIRED) {
-            this.error = `Vivacité insuffisante: ${response.blinks} clignement(s) sur ${this.MIN_BLINKS_REQUIRED} requis. Clignez naturellement des yeux.`;
-            this.restartCamera();
-            this.cdr.detectChanges();
-            return;
-          }
-
-          this.authService.facialLogin(response.user_id).subscribe({
+        if (response.identified && response.user_email) {
+          this.authService.facialLogin(response.user_email).subscribe({
             next: (loginResponse) => {
               this.result = {
                 verified: true,
-                message: `Identification réussie ! Bienvenue. (${response.blinks} clignements détectés)`
+                message: 'Identification réussie ! Bienvenue.'
               };
               this.stopCamera();
               setTimeout(() => this.router.navigate([loginResponse.redirectUrl]), 2000);

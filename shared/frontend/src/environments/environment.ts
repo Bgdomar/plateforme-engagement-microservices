@@ -21,7 +21,7 @@ export const environment = {
     if (typeof window !== 'undefined' && window.__env && window.__env.FACIAL_AI_URL) {
       return window.__env.FACIAL_AI_URL;
     }
-    return 'http://localhost:8000';
+    return 'http://localhost:8082';
   },
 
 };

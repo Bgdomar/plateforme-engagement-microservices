@@ -114,6 +114,49 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
+  async forgotPassword(event: Event): Promise<void> {
+    event.preventDefault();
+    this.error = '';
+    this.successMessage = '';
+
+    if (!this.email) {
+      this.error = 'Veuillez saisir votre email avant de réinitialiser le mot de passe';
+      this.errorType = 'other';
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.email)) {
+      this.error = 'Veuillez entrer une adresse email valide';
+      this.errorType = 'other';
+      return;
+    }
+
+    if (!this.password || this.password.length < 6) {
+      this.error = 'Saisissez le nouveau mot de passe dans le champ mot de passe (minimum 6 caractères)';
+      this.errorType = 'other';
+      return;
+    }
+
+    this.loading = true;
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        this.authService.resetPassword(this.email, this.password).subscribe({
+          next: () => resolve(),
+          error: (err) => reject(err)
+        });
+      });
+      this.successMessage = '✅ Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.';
+    } catch (err: any) {
+      this.error = err?.message || 'Impossible de réinitialiser le mot de passe';
+      this.errorType = 'other';
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════
   // AUTH FACIALE
   // ═══════════════════════════════════════════════════════════
@@ -189,31 +232,40 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.stopCamera();
     this.cdr.detectChanges();
 
-    this.facialAI.identifyFace(this.collectedFrames).subscribe({
+    // Utiliser une frame du milieu des frames collectées
+    const bestFrameIndex = Math.floor(this.collectedFrames.length / 2);
+    const bestFrame = this.collectedFrames[bestFrameIndex];
+
+    this.facialAI.identifyFace(bestFrame).subscribe({
       next: (response) => {
-        this.getFacialJwtToken(response.user_id);
+        if (response.identified && response.user_email) {
+          this.getFacialJwtToken(response.user_email);
+        } else {
+          this.facialStep = 'error';
+          this.faceError = response.message || 'Visage non reconnu. Votre profil biométrique est peut-être absent.';
+          this.cdr.detectChanges();
+        }
       },
-      error: (err) => {
+      error: (err: any) => {
         this.facialStep = 'error';
         const detail = err?.error?.detail;
+        const message = err?.error?.message || err?.message || '';
 
-        if (detail?.code === 'LIVENESS_FAILED') {
-          const blinks = detail.blinks ?? 0;
-          this.faceError = `Vivacité insuffisante — ${blinks} clignement(s) détecté(s) sur 2 requis. Clignez naturellement des yeux.`;
-        } else if (detail?.code === 'FACE_NOT_RECOGNIZED') {
-          this.faceError = 'Visage non reconnu. Votre profil biométrique est peut-être absent.';
-        } else if (detail?.code === 'EMBEDDING_FAILED') {
+        if (message.includes('No face detected') || detail?.includes('No face detected')) {
           this.faceError = 'Aucun visage détecté. Vérifiez l\'éclairage et votre position.';
+        } else if (message.includes('Face not recognized') || detail?.includes('Face not recognized')) {
+          this.faceError = 'Visage non reconnu. Votre profil biométrique est peut-être absent.';
         } else {
-          this.faceError = err?.message || 'Erreur lors de la vérification faciale.';
+          this.faceError = message || 'Erreur lors de la vérification faciale.';
         }
         this.cdr.detectChanges();
       }
     });
   }
 
-  private getFacialJwtToken(userId: string): void {
-    this.authService.facialLogin(userId).subscribe({
+  private getFacialJwtToken(userEmail: string): void {
+    // Envoyer l'email au backend (qui accepte maintenant UUID ou email)
+    this.authService.facialLogin(userEmail).subscribe({
       next: (response) => {
         this.facialStep = 'success';
         this.successMessage = 'Identification réussie ! Redirection...';
