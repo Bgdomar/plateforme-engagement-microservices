@@ -44,7 +44,7 @@ public class SecurityConfig {
                         ).permitAll()
                         // Routes par rôle /api/admin/inscriptions
                         .requestMatchers("/api/admin/inscriptions/**").hasRole("ADMINISTRATEUR")
-                        .requestMatchers("/api/admin/**").hasRole("ADMINISTRATEUR")  // ← Changement clé
+                        .requestMatchers("/api/admin/**").hasRole("ADMINISTRATEUR")
                         .requestMatchers("/api/stagiaire/**").hasRole("STAGIAIRE")
                         .requestMatchers("/api/encadrant/**").hasRole("ENCADRANT")
                         .requestMatchers("/api/profil/**").hasAnyRole("STAGIAIRE", "ENCADRANT", "ADMINISTRATEUR")

@@ -53,8 +53,9 @@ export class FirebaseAuthService {
         password
       );
 
-      await sendEmailVerification(userCredential.user);
-      console.log('✅ Email de vérification envoyé à:', email);
+      // ⚠️ [TEMPORAIRE] Vérification email désactivée
+      // await sendEmailVerification(userCredential.user);
+      // console.log('✅ Email de vérification envoyé à:', email);
       return userCredential;
 
     } catch (error: any) {

@@ -1,17 +1,18 @@
+// demande-inscreption.service.ts - Version complète
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
+// ✅ Exporter l'enum StatutDemande
 export type StatutDemande = 'EN_ATTENTE' | 'VALIDEE' | 'REFUSEE';
-export type RoleDemande = 'STAGIAIRE' | 'ENCADRANT' | 'ADMINISTRATEUR';
 
 export interface DemandeInscription {
-  id: string;
+  id: number;
   nom: string;
   prenom: string;
   email: string;
-  role: RoleDemande;
+  role: 'STAGIAIRE' | 'ENCADRANT';
   statut: StatutDemande;
   dateDemande: string;
   dateTraitement?: string;
@@ -25,26 +26,51 @@ export interface DemandeInscription {
 }
 
 export interface TraiterDemandeRequest {
-  decision: 'VALIDEE' | 'REFUSEE';  // ← corriger ici
+  decision: 'VALIDEE' | 'REFUSEE';
   commentaire?: string;
 }
 
-@Injectable({ providedIn: 'root' })
-export class DemandeInscriptionService {
+export interface DeleteDemandesResponse {
+  totalSupprimees: number;
+  totalNonSupprimees: number;
+  erreurs: string[];
+}
 
-  private readonly base = `${environment.apiUrl}/api/admin/inscriptions`;
+@Injectable({
+  providedIn: 'root'
+})
+export class DemandeInscriptionService {
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  /** Récupère toutes les demandes, filtrables par statut */
-  listerDemandes(statut?: StatutDemande): Observable<DemandeInscription[]> {
-    let params = new HttpParams();
-    if (statut) params = params.set('statut', statut);
-    return this.http.get<DemandeInscription[]>(this.base, { params });
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
   }
 
-  /** Approuve ou rejette une demande */
-  traiterDemande(id: string, body: TraiterDemandeRequest): Observable<DemandeInscription> {
-    return this.http.patch<DemandeInscription>(`${this.base}/${id}/traiter`, body);
+  listerDemandes(statut?: string): Observable<DemandeInscription[]> {
+    let url = `${this.apiUrl}/api/admin/inscriptions`;
+    if (statut) {
+      url += `?statut=${statut}`;
+    }
+    return this.http.get<DemandeInscription[]>(url, { headers: this.getHeaders() });
+  }
+
+  traiterDemande(id: number, request: TraiterDemandeRequest): Observable<DemandeInscription> {
+    return this.http.patch<DemandeInscription>(
+      `${this.apiUrl}/api/admin/inscriptions/${id}/traiter`,
+      request,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  supprimerDemandes(demandeIds: number[]): Observable<DeleteDemandesResponse> {
+    return this.http.delete<DeleteDemandesResponse>(`${this.apiUrl}/api/admin/inscriptions`, {
+      headers: this.getHeaders(),
+      body: { demandeIds: demandeIds }
+    });
   }
 }

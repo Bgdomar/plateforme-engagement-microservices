@@ -1,8 +1,7 @@
 package com.engagement.iam.service.implimentaion;
 
 
-import com.engagement.iam.dto.DemandeInscriptionResponse;
-import com.engagement.iam.dto.TraiterDemandeRequest;
+import com.engagement.iam.dto.*;
 import com.engagement.iam.entity.*;
 import com.engagement.iam.entity.enums.StatutCompte;
 import com.engagement.iam.entity.enums.StatutDemande;
@@ -15,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,10 @@ public class DemandeInscriptionService {
     private final EncadrantRepository infoEncadrantRepo;
     private final StagiaireDemandeRepository infoStagiaireDemandeRepo;
     private final EncadrantDemandeRepository infoEncadrantDemandeRepo;
+
+    private final ProfilUtilisateurRepository profilUtilisateurRepo;
+    private final StagiaireRepository stagiaireRepo;
+    private final EncadrantRepository encadrantRepo;
 
     @Transactional(readOnly = true)
     public List<DemandeInscriptionResponse> listerDemandes(StatutDemande statut) {
@@ -153,6 +159,168 @@ public class DemandeInscriptionService {
                 .departement(departement)
                 .specialite(specialite)
                 .urlImage(d.getAvatarUrl())
+                .build();
+    }
+
+    /**
+     * Récupère tous les utilisateurs (stagiaires et encadrants)
+     * Exclut les administrateurs
+     */
+    @Transactional(readOnly = true)
+    public List<UserInfoResponse> getAllUsers() {
+        List<Utilisateur> utilisateurs = utilisateurRepo.findAll().stream()
+                .filter(u -> u.getTypeCompte() != TypeCompte.ADMINISTRATEUR)
+                .collect(Collectors.toList());
+
+        return utilisateurs.stream()
+                .map(this::buildUserInfoResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Met à jour le statut d'un utilisateur
+     */
+    @Transactional
+    public UserInfoResponse updateUserStatut(Long userId, UpdateStatutRequest request) {
+        Utilisateur utilisateur = utilisateurRepo.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Utilisateur introuvable avec l'ID: " + userId
+                ));
+
+        // Vérifier qu'on ne modifie pas un administrateur
+        if (utilisateur.getTypeCompte() == TypeCompte.ADMINISTRATEUR) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Impossible de modifier le statut d'un administrateur"
+            );
+        }
+
+        // Vérifier la transition de statut valide
+        validateStatutTransition(utilisateur.getStatut(), request.getStatut());
+
+        StatutCompte ancienStatut = utilisateur.getStatut();
+        utilisateur.setStatut(request.getStatut());
+        utilisateur = utilisateurRepo.save(utilisateur);
+
+        log.info("✅ Statut utilisateur {} changé de {} à {} (motif: {})",
+                utilisateur.getEmail(),
+                ancienStatut,
+                request.getStatut(),
+                request.getMotif() != null ? request.getMotif() : "Aucun motif fourni");
+
+        return buildUserInfoResponse(utilisateur);
+    }
+
+    /**
+     * Valide que la transition de statut est autorisée
+     */
+    private void validateStatutTransition(StatutCompte ancien, StatutCompte nouveau) {
+        // Toutes les transitions sont autorisées sauf:
+
+        // On ne peut pas "désactiver" un compte déjà désactivé
+        if (ancien == StatutCompte.DESACTIVE && nouveau == StatutCompte.DESACTIVE) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Ce compte est déjà désactivé."
+            );
+        }
+
+        // On ne peut pas "suspendre" un compte déjà suspendu
+        if (ancien == StatutCompte.SUSPENDU && nouveau == StatutCompte.SUSPENDU) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Ce compte est déjà suspendu."
+            );
+        }
+
+        // On ne peut pas "activer" un compte déjà actif
+        if (ancien == StatutCompte.ACTIF && nouveau == StatutCompte.ACTIF) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Ce compte est déjà actif."
+            );
+        }
+    }
+
+    /**
+     * Construit la réponse UserInfoResponse à partir d'un utilisateur
+     */
+    private UserInfoResponse buildUserInfoResponse(Utilisateur utilisateur) {
+        ProfilUtilisateur profil = profilUtilisateurRepo
+                .findByUtilisateurId(utilisateur.getId())
+                .orElse(null);
+
+        UserInfoResponse.UserInfoResponseBuilder builder = UserInfoResponse.builder()
+                .id(utilisateur.getId())
+                .email(utilisateur.getEmail())
+                .typeCompte(utilisateur.getTypeCompte())
+                .statut(utilisateur.getStatut())
+                .dateCreation(utilisateur.getDateCreation())
+                .derniereConnexion(utilisateur.getDerniereConnexion());
+
+        if (profil != null) {
+            builder.nom(profil.getNom())
+                    .prenom(profil.getPrenom())
+                    .avatarUrl(profil.getAvatarUrl());
+
+            // Ajouter les infos spécifiques selon le rôle
+            if (utilisateur.getTypeCompte() == TypeCompte.STAGIAIRE) {
+                stagiaireRepo.findByProfilUserId(utilisateur.getId()).ifPresent(stagiaire -> {
+                    builder.niveauEtudes(stagiaire.getNiveauEtudes())
+                            .filiere(stagiaire.getFiliere())
+                            .etablissement(stagiaire.getEtablissement());
+                });
+            } else if (utilisateur.getTypeCompte() == TypeCompte.ENCADRANT) {
+                encadrantRepo.findByProfilUserId(utilisateur.getId()).ifPresent(encadrant -> {
+                    builder.departement(encadrant.getDepartement())
+                            .specialite(encadrant.getSpecialite());
+                });
+            }
+        }
+
+        return builder.build();
+    }
+
+    // DemandeInscriptionService.java - Ajoutez cette méthode
+    @Transactional
+    public DeleteDemandesResponse supprimerDemandes(List<Long> demandeIds) {
+        List<String> erreurs = new ArrayList<>();
+        int totalSupprimees = 0;
+
+        for (Long id : demandeIds) {
+            try {
+                DemandeInscription demande = demandeRepo.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Demande introuvable: " + id));
+
+                // Vérifier que la demande n'est pas en attente
+                if (demande.getStatut() == StatutDemande.EN_ATTENTE) {
+                    erreurs.add("La demande ID " + id + " est en attente et ne peut pas être supprimée");
+                    continue;
+                }
+
+                // Supprimer les informations spécifiques associées
+                infoStagiaireDemandeRepo.findByDemandeId(id).ifPresent(info ->
+                        infoStagiaireDemandeRepo.delete(info));
+                infoEncadrantDemandeRepo.findByDemandeId(id).ifPresent(info ->
+                        infoEncadrantDemandeRepo.delete(info));
+
+                // Supprimer la demande
+                demandeRepo.delete(demande);
+                totalSupprimees++;
+
+                log.info("✅ Demande ID {} supprimée (statut: {})", id, demande.getStatut());
+
+            } catch (Exception e) {
+                erreurs.add("Erreur lors de la suppression de la demande ID " + id + ": " + e.getMessage());
+                log.error("❌ Erreur suppression demande {}: {}", id, e.getMessage());
+            }
+        }
+
+        return DeleteDemandesResponse.builder()
+                .totalSupprimees(totalSupprimees)
+                .totalNonSupprimees(demandeIds.size() - totalSupprimees)
+                .erreurs(erreurs)
                 .build();
     }
 }

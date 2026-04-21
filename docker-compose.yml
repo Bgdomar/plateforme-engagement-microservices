@@ -98,6 +98,64 @@ services:
     networks:
       - plateforme-engagement-network
 
+  postgres-team:
+    image: postgres:16-alpine  # ← PostgreSQL normal, pas pgvector
+    container_name: postgres-team
+    restart: always
+    environment:
+      POSTGRES_DB: team_db
+      POSTGRES_USER: team_user
+      POSTGRES_PASSWORD: team_pass
+    ports:
+      - "5437:5432"  # Port différent du identity-service (5436)
+    volumes:
+      - pg_team_data:/var/lib/postgresql/data
+      - ./epic-2-teams-missions/backend/init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U team_user -d team_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - plateforme-engagement-network
+
+  # ===== TEAM-MISSION-SERVICE (Spring Boot) =====
+  team-mission-service:
+    build:
+      context: ./epic-2-teams-missions/backend/team-mission-service
+      dockerfile: Dockerfile
+    container_name: team-mission-service
+    restart: always
+    ports:
+      - "8085:8082"
+    volumes:
+      - team_images:/app/assets/images
+    environment:
+      SPRING_APPLICATION_NAME: team-mission-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-team:5432/team_db
+      SPRING_DATASOURCE_USERNAME: team_user
+      SPRING_DATASOURCE_PASSWORD: team_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
+      JWT_SECRET: YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==
+      SERVER_PORT: 8082
+    depends_on:
+      postgres-team:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - plateforme-engagement-network
+
 
   # ===== API GATEWAY =====
   api-gateway:
@@ -115,6 +173,8 @@ services:
       discovery-service:
         condition: service_healthy
       identity-service:
+        condition: service_healthy
+      team-mission-service:
         condition: service_healthy
 
     healthcheck:
@@ -142,7 +202,10 @@ services:
 volumes:
   pg_identity_data:
   identity_images:
+  pg_team_data: # Nouveau volume pour team-mission-service
+  team_images:
   kafka_data:
+
 
 networks:
   plateforme-engagement-network:

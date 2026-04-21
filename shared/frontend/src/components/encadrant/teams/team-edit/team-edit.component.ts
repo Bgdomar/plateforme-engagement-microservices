@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamService, TeamRequest, TeamResponse } from '../../../../services/team.service';
+import { HeaderEncadrantComponent } from '../../header-encadrant/header-encadrant';
 
 @Component({
   selector: 'app-team-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, HeaderEncadrantComponent],
   templateUrl: './team-edit.component.html',
-  styleUrls: ['./team-edit.component.css']
+  styleUrls: ['./team-edit.component.css'],
 })
 export class TeamEditComponent implements OnInit {
   teamId: string = '';
@@ -17,7 +18,8 @@ export class TeamEditComponent implements OnInit {
   teamRequest: TeamRequest = {
     nom: '',
     sujet: '',
-    membresIds: []
+    encadrantId: 0, // ← AJOUTER CETTE LIGNE
+    membresIds: [],
   };
   isLoading = true;
   isSubmitting = false;
@@ -26,7 +28,7 @@ export class TeamEditComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private teamService: TeamService
+    private teamService: TeamService,
   ) {}
 
   ngOnInit(): void {
@@ -44,21 +46,22 @@ export class TeamEditComponent implements OnInit {
         this.teamRequest = {
           nom: team.nom,
           sujet: team.sujet || '',
-          membresIds: team.membres.map(m => m.stagiaireId)
+          encadrantId: Number(team.encadrantId),
+          membresIds: team.membres.map((m) => m.stagiaireId),
         };
         this.isLoading = false;
       },
       error: (err) => {
         console.error('Erreur chargement équipe', err);
-        this.errorMessage = 'Impossible de charger l\'équipe';
+        this.errorMessage = "Impossible de charger l'équipe";
         this.isLoading = false;
-      }
+      },
     });
   }
 
   onSubmit(): void {
     if (!this.teamRequest.nom.trim()) {
-      this.errorMessage = 'Le nom de l\'équipe est requis';
+      this.errorMessage = "Le nom de l'équipe est requis";
       return;
     }
 
@@ -74,7 +77,7 @@ export class TeamEditComponent implements OnInit {
         console.error('Erreur mise à jour', err);
         this.errorMessage = err.error?.message || 'Erreur lors de la mise à jour';
         this.isSubmitting = false;
-      }
+      },
     });
   }
 }

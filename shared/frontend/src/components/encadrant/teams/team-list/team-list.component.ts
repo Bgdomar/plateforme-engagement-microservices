@@ -17,6 +17,7 @@ export class TeamListComponent implements OnInit {
   showDeleteModal = false;
   teamToDelete: TeamResponse | null = null;
 
+
   constructor(
     private teamService: TeamService,
     private router: Router,
@@ -75,7 +76,8 @@ export class TeamListComponent implements OnInit {
   }
 
   getMemberCount(team: TeamResponse): number {
-    return team.nombreMembres || team.membres?.length || 0;
+    // Utiliser directement la longueur du tableau membres
+    return team.membres?.length || 0;
   }
 
   getFormattedDate(date: string): string {

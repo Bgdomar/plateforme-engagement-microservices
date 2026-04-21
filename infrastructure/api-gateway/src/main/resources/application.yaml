@@ -37,7 +37,12 @@ spring:
         - id: identity-service
           uri: lb://identity-service
           predicates:
-            - Path=/auth/**,/admin/**,/users/**,/inscriptions/**,/api/admin/**,/api/profil/**,/uploads/**
+            - Path=/auth/**,/admin/**,/users/**,/inscriptions/**,/api/admin/**,/api/admin/inscriptions/**,/api/profil/**,/uploads/**
+
+        - id: team-mission-service
+          uri: lb://team-mission-service
+          predicates:
+            - Path=/api/equipes/**,/api/stagiaires-equipes/**,/api/missions/**
 
         - id: facial-ai-service
           uri: http://host.docker.internal:8000   # ← Pour accéder à localhost depuis Docker

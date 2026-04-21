@@ -1,3 +1,4 @@
+<app-header-encadrant></app-header-encadrant>
 <div class="team-detail-container">
   <div *ngIf="isLoading" class="loading-state">
     <div class="spinner"></div>
@@ -52,7 +53,7 @@
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
             </svg>
-            {{ team.nombreMembres }} membre(s)
+            {{ team.membres.length }} membre(s)
           </span>
         </div>
       </div>
@@ -78,9 +79,9 @@
       </div>
 
       <div class="members-grid">
-        <div *ngFor="let member of team.membres" class="member-card">
+        <div *ngFor="let member of membresComplets" class="member-card">
           <div class="member-avatar">
-            <img [src]="member.avatar || 'assets/default-avatar.png'" [alt]="member.prenom">
+            <img [src]="member.avatar" [alt]="member.prenom">
           </div>
           <div class="member-details">
             <h3 class="member-name">{{ member.prenom }} {{ member.nom }}</h3>

@@ -1,9 +1,19 @@
-import { Component, ChangeDetectorRef, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  ChangeDetectorRef,
+  OnInit,
+  Inject,
+  PLATFORM_ID,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { HeaderStagiaireComponent } from '../header-stagiaire/header-stagiaire';
+import { FacialAIService } from '../../../services/facial-ai.service';
 
 interface ProfilResponse {
   userId:        string;
@@ -24,58 +34,69 @@ interface ProfilResponse {
 @Component({
   selector: 'app-profil',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HeaderStagiaireComponent],
   templateUrl: './profil-stagiaire.html',
-  styleUrls: ['./profil-stagiaire.css']
+  styleUrls: ['./profil-stagiaire.css'],
 })
 export class ProfilStagiaireComponent implements OnInit {
-
   activeTab: string = 'missions';
 
   // ── Données affichage ─────────────────────────────────────────
-  prenom:      string = '';
-  nom:         string = '';
+  prenom: string = '';
+  nom: string = '';
   displayName: string = '';
-  initiales:   string = '';
-  email:       string = '';
-  typeCompte:  string = '';        // 'STAGIAIRE' | 'ENCADRANT'
+  initiales: string = '';
+  email: string = '';
+  typeCompte: string = ''; // 'STAGIAIRE' | 'ENCADRANT'
 
   // ── Champs formulaire communs ─────────────────────────────────
   inpPrenom: string = '';
-  inpNom:    string = '';
+  inpNom: string = '';
 
   // ── Champs Stagiaire ──────────────────────────────────────────
-  inpNiveau:  string = '';
-  inpEtab:    string = '';
+  inpNiveau: string = '';
+  inpEtab: string = '';
   inpFiliere: string = '';
 
   // ── Champs Encadrant ──────────────────────────────────────────
   inpDepartement: string = '';
-  inpSpecialite:  string = '';
+  inpSpecialite: string = '';
 
   // ── Photo ─────────────────────────────────────────────────────
   currentPhoto: string | null = null;
   pendingPhoto: string | null = null;
-  modalOpen:    boolean = false;
+  modalOpen: boolean = false;
 
   // ── Notifications ─────────────────────────────────────────────
-  notifInApp:  boolean = true;
-  notifEmail:  boolean = true;
+  notifInApp: boolean = true;
+  notifEmail: boolean = true;
 
   // ── État chargement ───────────────────────────────────────────
-  isLoading:  boolean = true;
-  loadError:  string  = '';
+  isLoading: boolean = true;
+  loadError: string = '';
 
   // ── Toast ─────────────────────────────────────────────────────
-  toastMsg:     string  = '';
+  toastMsg: string = '';
   toastVisible: boolean = false;
   private toastTimer: any;
   pendingFile: File | null = null;
 
+  // Reconnaissance faciale
+  @ViewChild('facialVideo') facialVideo!: ElementRef<HTMLVideoElement>;
+  hasFacialRecognition: boolean = false;
+  showFacialSetup: boolean = false;
+  isCameraActive: boolean = false;
+  isCapturing: boolean = false;
+  facialError: string = '';
+  facialSuccess: string = '';
+  private facialStream: MediaStream | null = null;
+
+
   constructor(
-    private cdr:  ChangeDetectorRef,
+    private cdr: ChangeDetectorRef,
     private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object
+    private facialAIService: FacialAIService,
+  @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 
   ngOnInit(): void {
@@ -86,8 +107,12 @@ export class ProfilStagiaireComponent implements OnInit {
 
   // ── Helpers ───────────────────────────────────────────────────
 
-  get isStagiaire(): boolean { return this.typeCompte === 'STAGIAIRE'; }
-  get isEncadrant(): boolean { return this.typeCompte === 'ENCADRANT'; }
+  get isStagiaire(): boolean {
+    return this.typeCompte === 'STAGIAIRE';
+  }
+  get isEncadrant(): boolean {
+    return this.typeCompte === 'ENCADRANT';
+  }
 
   get roleLabel(): string {
     return this.isStagiaire ? 'Stagiaire' : this.isEncadrant ? 'Encadrant' : '';
@@ -97,7 +122,7 @@ export class ProfilStagiaireComponent implements OnInit {
 
   private loadUserProfile(): void {
     const userId = localStorage.getItem('userId');
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     if (!userId || !token) {
       this.loadError = 'Session introuvable. Veuillez vous reconnecter.';
@@ -120,17 +145,17 @@ export class ProfilStagiaireComponent implements OnInit {
           this.loadError = 'Impossible de charger le profil. Veuillez réessayer.';
           this.isLoading = false;
           this.cdr.detectChanges();
-        }
+        },
       });
   }
 
   private mapProfilToView(data: ProfilResponse): void {
-    this.typeCompte  = data.typeCompte ?? '';
-    this.prenom      = data.prenom     ?? '';
-    this.nom         = data.nom        ?? '';
-    this.email       = data.email      ?? '';
+    this.typeCompte = data.typeCompte ?? '';
+    this.prenom = data.prenom ?? '';
+    this.nom = data.nom ?? '';
+    this.email = data.email ?? '';
     this.displayName = `${this.prenom} ${this.nom}`.trim();
-    this.initiales   = this.buildInitiales(this.prenom, this.nom);
+    this.initiales = this.buildInitiales(this.prenom, this.nom);
 
     if (data.avatar) {
       this.currentPhoto = data.avatar.startsWith('http')
@@ -140,21 +165,21 @@ export class ProfilStagiaireComponent implements OnInit {
       this.currentPhoto = null;
     }
     this.inpPrenom = this.prenom;
-    this.inpNom    = this.nom;
+    this.inpNom = this.nom;
 
     if (this.isStagiaire) {
-      this.inpNiveau  = data.niveauEtudes  ?? '';
-      this.inpEtab    = data.etablissement ?? '';
-      this.inpFiliere = data.filiere       ?? '';
+      this.inpNiveau = data.niveauEtudes ?? '';
+      this.inpEtab = data.etablissement ?? '';
+      this.inpFiliere = data.filiere ?? '';
     } else if (this.isEncadrant) {
       this.inpDepartement = data.departement ?? '';
-      this.inpSpecialite  = data.specialite  ?? '';
+      this.inpSpecialite = data.specialite ?? '';
     }
   }
 
   private buildInitiales(prenom: string, nom: string): string {
     const p = prenom?.trim()[0] ?? '';
-    const n = nom?.trim()[0]    ?? '';
+    const n = nom?.trim()[0] ?? '';
     return (p + n).toUpperCase();
   }
 
@@ -170,15 +195,15 @@ export class ProfilStagiaireComponent implements OnInit {
   // ✅ FIX : appel cdr.detectChanges() immédiatement pour ouvrir le modal sans délai
   openPhotoModal(): void {
     this.pendingPhoto = this.currentPhoto;
-    this.pendingFile  = null;
-    this.modalOpen    = true;
-    this.cdr.detectChanges();   // ← force l'affichage immédiat du modal
+    this.pendingFile = null;
+    this.modalOpen = true;
+    this.cdr.detectChanges(); // ← force l'affichage immédiat du modal
   }
 
   closeModal(): void {
     this.pendingPhoto = null;
-    this.pendingFile  = null;
-    this.modalOpen    = false;
+    this.pendingFile = null;
+    this.modalOpen = false;
     this.cdr.detectChanges();
   }
 
@@ -197,7 +222,9 @@ export class ProfilStagiaireComponent implements OnInit {
     input.value = '';
   }
 
-  onDragOver(event: DragEvent): void { event.preventDefault(); }
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
@@ -215,15 +242,18 @@ export class ProfilStagiaireComponent implements OnInit {
     const reader = new FileReader();
     reader.onload = (e) => {
       this.pendingPhoto = e.target?.result as string;
-      this.cdr.detectChanges();   // ← indispensable : callback hors zone Angular
+      this.cdr.detectChanges(); // ← indispensable : callback hors zone Angular
     };
     reader.readAsDataURL(file);
   }
 
   applyPhoto(): void {
-    if (!this.pendingFile) { this.closeModal(); return; }
+    if (!this.pendingFile) {
+      this.closeModal();
+      return;
+    }
 
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     if (!token || !userId) return;
 
@@ -231,43 +261,47 @@ export class ProfilStagiaireComponent implements OnInit {
     formData.append('file', this.pendingFile);
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.http.post<ProfilResponse>(
-      `${environment.apiUrl}/api/profil/${userId}/avatar`, formData, { headers }
-    ).subscribe({
-      next: (data) => {
-        this.currentPhoto = data.avatar
-          ? (data.avatar.startsWith('http') ? data.avatar : `http://localhost:8080${data.avatar}`)
-          : null;
-        this.pendingFile  = null;
-        this.pendingPhoto = null;
-        this.modalOpen    = false;
-        this.cdr.detectChanges();
-        this.showToast('Photo de profil mise à jour !');
-      },
-      error: () => this.showToast('Erreur lors de l\'upload.')
-    });
+    this.http
+      .post<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}/avatar`, formData, {
+        headers,
+      })
+      .subscribe({
+        next: (data) => {
+          this.currentPhoto = data.avatar
+            ? data.avatar.startsWith('http')
+              ? data.avatar
+              : `http://localhost:8080${data.avatar}`
+            : null;
+          this.pendingFile = null;
+          this.pendingPhoto = null;
+          this.modalOpen = false;
+          this.cdr.detectChanges();
+          this.showToast('Photo de profil mise à jour !');
+        },
+        error: () => this.showToast("Erreur lors de l'upload."),
+      });
   }
 
   removePhoto(): void {
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     if (!token || !userId) return;
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.http.delete<ProfilResponse>(
-      `${environment.apiUrl}/api/profil/${userId}/avatar`, { headers }
-    ).subscribe({
-      next: () => {
-        this.currentPhoto = null;
-        this.pendingPhoto = null;
-        this.pendingFile  = null;
-        this.syncInitiales();
-        this.modalOpen = false;
-        this.cdr.detectChanges();
-        this.showToast('Photo supprimée.');
-      },
-      error: () => this.showToast('Erreur lors de la suppression.')
-    });
+    this.http
+      .delete<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}/avatar`, { headers })
+      .subscribe({
+        next: () => {
+          this.currentPhoto = null;
+          this.pendingPhoto = null;
+          this.pendingFile = null;
+          this.syncInitiales();
+          this.modalOpen = false;
+          this.cdr.detectChanges();
+          this.showToast('Photo supprimée.');
+        },
+        error: () => this.showToast('Erreur lors de la suppression.'),
+      });
   }
 
   private syncInitiales(): void {
@@ -277,24 +311,27 @@ export class ProfilStagiaireComponent implements OnInit {
   // ── Sauvegarde paramètres ─────────────────────────────────────
 
   saveSettings(): void {
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
-    if (!token || !userId) { this.showToast('Session expirée.'); return; }
+    if (!token || !userId) {
+      this.showToast('Session expirée.');
+      return;
+    }
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     const payload: any = {
       prenom: this.inpPrenom.trim() || this.prenom,
-      nom:    this.inpNom.trim()    || this.nom,
+      nom: this.inpNom.trim() || this.nom,
     };
 
     if (this.isStagiaire) {
-      payload['niveauEtudes']  = this.inpNiveau.trim();
+      payload['niveauEtudes'] = this.inpNiveau.trim();
       payload['etablissement'] = this.inpEtab.trim();
-      payload['filiere']       = this.inpFiliere.trim();
+      payload['filiere'] = this.inpFiliere.trim();
     } else if (this.isEncadrant) {
       payload['departement'] = this.inpDepartement.trim();
-      payload['specialite']  = this.inpSpecialite.trim();
+      payload['specialite'] = this.inpSpecialite.trim();
     }
 
     this.http
@@ -308,12 +345,12 @@ export class ProfilStagiaireComponent implements OnInit {
         error: (err) => {
           console.error('Erreur sauvegarde :', err);
           this.showToast('Erreur lors de la sauvegarde.');
-        }
+        },
       });
   }
 
   saveNotifications(): void {
-    const token  = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     if (!token || !userId) return;
 
@@ -324,14 +361,14 @@ export class ProfilStagiaireComponent implements OnInit {
       .put<any>(`${environment.apiUrl}/api/profil/${userId}/notifications`, payload, { headers })
       .subscribe({
         next: () => this.showToast('Préférences de notifications enregistrées !'),
-        error: () => this.showToast('Erreur lors de la sauvegarde des notifications.')
+        error: () => this.showToast('Erreur lors de la sauvegarde des notifications.'),
       });
   }
 
   // ── Toast ─────────────────────────────────────────────────────
 
   showToast(msg: string): void {
-    this.toastMsg     = '✓ ' + msg;
+    this.toastMsg = '✓ ' + msg;
     this.toastVisible = true;
     clearTimeout(this.toastTimer);
     this.toastTimer = setTimeout(() => {
@@ -339,4 +376,110 @@ export class ProfilStagiaireComponent implements OnInit {
       this.cdr.detectChanges();
     }, 3000);
   }
+
+  startFacialCamera(): void {
+    this.facialError = '';
+    this.facialSuccess = '';
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+      .then(stream => {
+        this.facialStream = stream;
+        this.isCameraActive = true;
+        setTimeout(() => {
+          if (this.facialVideo && this.facialVideo.nativeElement) {
+            this.facialVideo.nativeElement.srcObject = stream;
+          }
+        }, 100);
+      })
+      .catch(err => {
+        console.error('❌ Erreur caméra:', err);
+        this.facialError = 'Impossible d\'accéder à la caméra. Vérifiez les permissions.';
+      });
+  }
+
+  stopFacialCamera(): void {
+    if (this.facialStream) {
+      this.facialStream.getTracks().forEach(track => track.stop());
+      this.facialStream = null;
+    }
+    this.isCameraActive = false;
+  }
+
+// Remplacer la méthode captureFace existante par celle-ci
+  captureFace(): void {
+    if (!this.facialVideo || !this.facialVideo.nativeElement) {
+      this.facialError = 'Caméra non disponible';
+      return;
+    }
+
+    this.isCapturing = true;
+    this.facialError = '';
+
+    const video = this.facialVideo.nativeElement;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      this.facialError = 'Erreur lors de la capture';
+      this.isCapturing = false;
+      return;
+    }
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        this.facialError = 'Erreur lors de la conversion de l\'image';
+        this.isCapturing = false;
+        return;
+      }
+      // ✅ La seule modification : mettre le blob dans un tableau
+      this.registerFace([blob]);
+    }, 'image/jpeg', 0.9);
+  }
+
+// registerFace reste identique, elle reçoit maintenant un tableau
+  private registerFace(frames: Blob[]): void {
+    const userEmail = localStorage.getItem('user_email') || this.email;
+
+    this.facialAIService.registerFace(userEmail, frames).subscribe({
+      next: (response) => {
+        console.log('✅ Visage enregistré:', response);
+        this.hasFacialRecognition = true;
+        this.facialSuccess = 'Reconnaissance faciale activée avec succès !';
+        this.isCapturing = false;
+        this.stopFacialCamera();
+        this.showFacialSetup = false;
+        localStorage.setItem('has_facial_recognition', 'true');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('❌ Erreur enregistrement visage:', error);
+        this.facialError = error.message || 'Erreur lors de l\'enregistrement du visage';
+        this.isCapturing = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  cancelFacialSetup(): void {
+    this.stopFacialCamera();
+    this.showFacialSetup = false;
+    this.facialError = '';
+    this.facialSuccess = '';
+  }
+
+  disableFacialRecognition(): void {
+    if (!confirm('Êtes-vous sûr de vouloir désactiver la reconnaissance faciale ?')) {
+      return;
+    }
+    this.hasFacialRecognition = false;
+    localStorage.removeItem('has_facial_recognition');
+    this.facialSuccess = 'Reconnaissance faciale désactivée';
+    this.showToast('Reconnaissance faciale désactivée');
+    setTimeout(() => this.facialSuccess = '', 3000);
+  }
+
 }

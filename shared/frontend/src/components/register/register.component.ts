@@ -203,12 +203,16 @@ export class RegisterComponent implements OnInit, OnDestroy {
       const userCredential = await this.firebaseAuth.register(this.email, this.password);
       this.firebaseUser = userCredential.user;
 
-      this.successMessage = '✅ Un email de vérification a été envoyé à ' + this.email +
-        '. Veuillez vérifier votre boîte mail pour continuer l\'inscription.';
+      // ⚠️ [TEMPORAIRE] Vérification email désactivée — passage direct à l'étape 4
+      // this.successMessage = '✅ Un email de vérification a été envoyé à ' + this.email +
+      //   '. Veuillez vérifier votre boîte mail pour continuer l\'inscription.';
+      // this.waitingForVerification = true;
+      // this.cdr.detectChanges();
+      // this.startEmailVerificationCheck();
 
-      this.waitingForVerification = true;
+      this.successMessage = '✅ Compte créé avec succès ! Passez à l\'étape suivante.';
+      this.currentStep = 4;
       this.cdr.detectChanges();
-      this.startEmailVerificationCheck();
 
     } catch (err: any) {
       console.error('❌ Erreur création compte Firebase:', err);
@@ -571,129 +575,129 @@ export class RegisterComponent implements OnInit, OnDestroy {
    * Soumet l'inscription sans données biométriques
    */
   private async submitRegistrationWithoutFacial(): Promise<void> {
-      this.loading = true;
-      this.error = '';
+    this.loading = true;
+    this.error = '';
 
-      try {
-          const data = {
-              nom: this.nom,
-              prenom: this.prenom,
-              email: this.email,
-              motDePasse: this.password,
-              typeCompte: this.userType.toUpperCase(),
-              // ❌ avatarUrl: this.profileImagePreview || null,  // ← SUPPRIMER
-              ...(this.userType.toLowerCase() === 'stagiaire' ? {
-                  niveauEtudes: this.niveauEtudes,
-                  filiere: this.filiere,
-                  etablissement: this.etablissement
-              } : {
-                  departement: this.departement,
-                  specialite: this.poste
-              })
-          };
+    try {
+      const data = {
+        nom: this.nom,
+        prenom: this.prenom,
+        email: this.email,
+        motDePasse: this.password,
+        typeCompte: this.userType.toUpperCase(),
+        // ❌ avatarUrl: this.profileImagePreview || null,  // ← SUPPRIMER
+        ...(this.userType.toLowerCase() === 'stagiaire' ? {
+          niveauEtudes: this.niveauEtudes,
+          filiere: this.filiere,
+          etablissement: this.etablissement
+        } : {
+          departement: this.departement,
+          specialite: this.poste
+        })
+      };
 
-          const formData = new FormData();
-          formData.append(
-              'data',
-              new Blob([JSON.stringify(data)], { type: 'application/json' })
-          );
+      const formData = new FormData();
+      formData.append(
+        'data',
+        new Blob([JSON.stringify(data)], { type: 'application/json' })
+      );
 
-          // ✅ Image de profil comme fichier
-          if (this.profileImageFile) {
-              formData.append('profileImage', this.profileImageFile, this.profileImageFile.name);
-          }
-
-          console.log('📤 Envoi IAM Service (sans facial)...');
-          await this.inscriptionService.createDemande(formData).toPromise();
-
-          alert('✅ Inscription envoyée ! Votre compte sera activé par l\'administrateur.');
-          this.router.navigate(['/login']);
-
-      } catch (err: any) {
-          console.error('❌ Erreur inscription:', err);
-          this.error = err.error?.message || 'Erreur lors de l\'inscription';
-      } finally {
-          this.loading = false;
+      // ✅ Image de profil comme fichier
+      if (this.profileImageFile) {
+        formData.append('profileImage', this.profileImageFile, this.profileImageFile.name);
       }
+
+      console.log('📤 Envoi IAM Service (sans facial)...');
+      await this.inscriptionService.createDemande(formData).toPromise();
+
+      alert('✅ Inscription envoyée ! Votre compte sera activé par l\'administrateur.');
+      this.router.navigate(['/login']);
+
+    } catch (err: any) {
+      console.error('❌ Erreur inscription:', err);
+      this.error = err.error?.message || 'Erreur lors de l\'inscription';
+    } finally {
+      this.loading = false;
+    }
   }
 
 // Modifier confirmFaceAndSubmit() pour qu'elle envoie aussi avatarUrl
 // Dans register.component.ts - confirmFaceAndSubmit() corrigée
-    async confirmFaceAndSubmit(): Promise<void> {
-        if (!this.capturedImageBlob) {
-            this.error = 'Veuillez capturer votre visage';
-            return;
-        }
-
-        this.loading = true;
-        this.error = '';
-
-        try {
-            // ⚠️ NE PAS inclure avatarUrl dans le JSON - on va l'envoyer comme fichier
-            const data = {
-                nom: this.nom,
-                prenom: this.prenom,
-                email: this.email,
-                motDePasse: this.password,
-                typeCompte: this.userType.toUpperCase(),
-                // ❌ avatarUrl: this.profileImagePreview || null,  // ← SUPPRIMER
-                // Les champs spécifiques au rôle
-                ...(this.userType.toLowerCase() === 'stagiaire' ? {
-                    niveauEtudes: this.niveauEtudes,
-                    filiere: this.filiere,
-                    etablissement: this.etablissement
-                } : {
-                    departement: this.departement,
-                    specialite: this.poste
-                })
-            };
-
-            const formData = new FormData();
-
-            // Ajouter les données JSON
-            formData.append(
-                'data',
-                new Blob([JSON.stringify(data)], { type: 'application/json' })
-            );
-
-            // ✅ Ajouter la photo faciale (pour la reconnaissance)
-            formData.append('photo', this.capturedImageBlob, 'face.jpg');
-
-            // ✅ Ajouter l'image de profil (avatar) comme fichier séparé
-            if (this.profileImageFile) {
-                formData.append('profileImage', this.profileImageFile, this.profileImageFile.name);
-            }
-
-            console.log('📤 Envoi IAM Service...');
-            const iamResponse: any = await this.inscriptionService.createDemande(formData).toPromise();
-
-            console.log('✅ IAM OK:', iamResponse);
-
-            const userId = iamResponse?.userId;
-
-            // Enregistrement facial
-            if (userId && this.capturedFrames && this.capturedFrames.length > 0) {
-                console.log('🧠 Stockage embedding pour userId:', userId);
-                try {
-                    const facialResponse = await this.facialAIService
-                        .registerFace(userId, this.capturedFrames)
-                        .toPromise();
-                    console.log('✅ Embedding stocké:', facialResponse);
-                } catch (facialErr: any) {
-                    console.warn('⚠️ Embedding non stocké (non bloquant):', facialErr);
-                }
-            }
-
-            alert('✅ Inscription envoyée ! Votre compte sera activé par l\'administrateur.');
-            this.router.navigate(['/login']);
-
-        } catch (err: any) {
-            console.error('❌ Erreur inscription:', err);
-            this.error = err.error?.message || 'Erreur lors de l\'inscription';
-        } finally {
-            this.loading = false;
-        }
+  async confirmFaceAndSubmit(): Promise<void> {
+    if (!this.capturedImageBlob) {
+      this.error = 'Veuillez capturer votre visage';
+      return;
     }
+
+    this.loading = true;
+    this.error = '';
+
+    try {
+      // ⚠️ NE PAS inclure avatarUrl dans le JSON - on va l'envoyer comme fichier
+      const data = {
+        nom: this.nom,
+        prenom: this.prenom,
+        email: this.email,
+        motDePasse: this.password,
+        typeCompte: this.userType.toUpperCase(),
+        // ❌ avatarUrl: this.profileImagePreview || null,  // ← SUPPRIMER
+        // Les champs spécifiques au rôle
+        ...(this.userType.toLowerCase() === 'stagiaire' ? {
+          niveauEtudes: this.niveauEtudes,
+          filiere: this.filiere,
+          etablissement: this.etablissement
+        } : {
+          departement: this.departement,
+          specialite: this.poste
+        })
+      };
+
+      const formData = new FormData();
+
+      // Ajouter les données JSON
+      formData.append(
+        'data',
+        new Blob([JSON.stringify(data)], { type: 'application/json' })
+      );
+
+      // ✅ Ajouter la photo faciale (pour la reconnaissance)
+      formData.append('photo', this.capturedImageBlob, 'face.jpg');
+
+      // ✅ Ajouter l'image de profil (avatar) comme fichier séparé
+      if (this.profileImageFile) {
+        formData.append('profileImage', this.profileImageFile, this.profileImageFile.name);
+      }
+
+      console.log('📤 Envoi IAM Service...');
+      const iamResponse: any = await this.inscriptionService.createDemande(formData).toPromise();
+
+      console.log('✅ IAM OK:', iamResponse);
+
+      const userId = iamResponse?.userId;
+
+      // Enregistrement facial
+      if (userId && this.capturedFrames && this.capturedFrames.length > 0) {
+        console.log('🧠 Stockage embedding pour userId:', userId);
+        try {
+          const facialResponse = await this.facialAIService
+            .registerFace(userId, this.capturedFrames)
+            .toPromise();
+          console.log('✅ Embedding stocké:', facialResponse);
+        } catch (facialErr: any) {
+          console.warn('⚠️ Embedding non stocké (non bloquant):', facialErr);
+        }
+      }
+
+      alert('✅ Inscription envoyée ! Votre compte sera activé par l\'administrateur.');
+      this.router.navigate(['/login']);
+
+    } catch (err: any) {
+      console.error('❌ Erreur inscription:', err);
+      this.error = err.error?.message || 'Erreur lors de l\'inscription';
+    } finally {
+      this.loading = false;
+    }
+  }
 
   onSubmit(event: Event): void {
     event.preventDefault();

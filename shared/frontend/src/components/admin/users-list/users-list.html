@@ -1,0 +1,340 @@
+<app-header-admin></app-header-admin>
+<div class="users-management">
+
+  <!-- Stats Header -->
+  <section class="stats-header">
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.total }}</span>
+          <span class="stat-label">Total utilisateurs</span>
+        </div>
+      </div>
+
+      <div class="stat-card active" (click)="filterStatut = 'ACTIF'; onFilterChange()">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.actifs }}</span>
+          <span class="stat-label">Actifs</span>
+        </div>
+      </div>
+
+      <div class="stat-card suspended" (click)="filterStatut = 'SUSPENDU'; onFilterChange()">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.suspendus }}</span>
+          <span class="stat-label">Suspendus</span>
+        </div>
+      </div>
+
+      <div class="stat-card inactive" (click)="filterStatut = 'DESACTIVE'; onFilterChange()">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.desactives }}</span>
+          <span class="stat-label">Désactivés</span>
+        </div>
+      </div>
+
+      <div class="stat-card pending" (click)="filterStatut = 'EN_ATTENTE'; onFilterChange()">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.enAttente }}</span>
+          <span class="stat-label">En attente</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="filters-section">
+    <div class="filters-bar">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+          placeholder="Rechercher par nom, prénom ou email..."
+        >
+        <button *ngIf="searchTerm" class="clear-search" (click)="searchTerm = ''; applyFilters()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="filter-group">
+        <label>Rôle :</label>
+        <select [(ngModel)]="filterRole" (change)="onFilterChange()">
+          <option value="TOUS">Tous</option>
+          <option value="STAGIAIRE">Stagiaires</option>
+          <option value="ENCADRANT">Encadrants</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Statut :</label>
+        <select [(ngModel)]="filterStatut" (change)="onFilterChange()">
+          <option value="TOUS">Tous</option>
+          <option value="ACTIF">Actifs</option>
+          <option value="SUSPENDU">Suspendus</option>
+          <option value="DESACTIVE">Désactivés</option>
+          <option value="EN_ATTENTE">En attente</option>
+        </select>
+      </div>
+
+      <button class="btn-refresh" (click)="loadUsers()" title="Rafraîchir">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 4v6h-6"/>
+          <path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="results-count">
+      {{ filteredUsers.length }} utilisateur{{ filteredUsers.length > 1 ? 's' : '' }} trouvé{{ filteredUsers.length > 1 ? 's' : '' }}
+    </div>
+  </section>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement des utilisateurs...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-state" *ngIf="!loading && errorMessage">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <h3>Erreur de chargement</h3>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-retry" (click)="loadUsers()">Réessayer</button>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-container" *ngIf="!loading && !errorMessage">
+    <table class="users-table">
+      <thead>
+      <tr>
+        <th>Utilisateur</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Statut</th>
+        <th>Date d'inscription</th>
+        <th>Dernière connexion</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let user of filteredUsers">
+        <td class="user-cell">
+          <div class="user-avatar">{{ initiales(user.prenom, user.nom) }}</div>
+          <div class="user-info">
+            <div class="user-name">{{ user.prenom }} {{ user.nom }}</div>
+            <div class="user-details" *ngIf="user.typeCompte === 'STAGIAIRE'">
+              {{ user.filiere || '' }} {{ user.niveauEtudes ? '— ' + user.niveauEtudes : '' }}
+            </div>
+            <div class="user-details" *ngIf="user.typeCompte === 'ENCADRANT'">
+              {{ user.departement || '' }} {{ user.specialite ? '— ' + user.specialite : '' }}
+            </div>
+          </div>
+        </td>
+        <td class="email-cell">{{ user.email }}</td>
+        <td>
+            <span class="role-badge" [class]="getRoleClass(user.typeCompte)">
+              {{ getRoleLabel(user.typeCompte) }}
+            </span>
+        </td>
+        <td>
+            <span class="status-badge" [class]="getStatutClass(user.statut)">
+              {{ getStatutLabel(user.statut) }}
+            </span>
+        </td>
+        <td>{{ formatDate(user.dateCreation) }}</td>
+        <td>{{ formatDate(user.derniereConnexion) }}</td>
+        <td class="actions-cell">
+          <div class="action-buttons">
+            <!-- Activer -->
+            <button
+              *ngFor="let action of getAvailableActions(user)"
+              class="btn-action"
+              [class.btn-green]="action.action === 'ACTIF'"
+              [class.btn-orange]="action.action === 'SUSPENDU'"
+              [class.btn-red]="action.action === 'DESACTIVE'"
+              (click)="openStatutModal(user, action.action)"
+              [title]="action.label">
+              <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <ng-container [ngSwitch]="action.icon">
+                  <ng-container *ngSwitchCase="'check'">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'pause'">
+                    <rect x="6" y="4" width="4" height="16"/>
+                    <rect x="14" y="4" width="4" height="16"/>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'lock'">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0110 0v4"/>
+                  </ng-container>
+                </ng-container>
+              </svg>
+              <span>{{ action.label }}</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="filteredUsers.length === 0">
+        <td colspan="7" class="empty-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          <p>Aucun utilisateur trouvé</p>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Confirmation -->
+<div class="modal-overlay" *ngIf="showStatutModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon">
+        <svg *ngIf="newStatut === 'ACTIF'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <svg *ngIf="newStatut === 'SUSPENDU'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <svg *ngIf="newStatut === 'DESACTIVE'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+      </div>
+      <h2>
+        <span *ngIf="newStatut === 'ACTIF'">Activer le compte</span>
+        <span *ngIf="newStatut === 'SUSPENDU'">Suspendre le compte</span>
+        <span *ngIf="newStatut === 'DESACTIVE'">Désactiver le compte</span>
+      </h2>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedUser">
+      <div class="user-preview">
+        <div class="user-avatar-large">{{ initiales(selectedUser.prenom, selectedUser.nom) }}</div>
+        <div class="user-details">
+          <div class="user-name">{{ selectedUser.prenom }} {{ selectedUser.nom }}</div>
+          <div class="user-email">{{ selectedUser.email }}</div>
+          <div class="user-role">{{ getRoleLabel(selectedUser.typeCompte) }}</div>
+        </div>
+      </div>
+
+      <div class="warning-box" *ngIf="newStatut === 'SUSPENDU'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div>
+          <strong>Attention :</strong> L'utilisateur ne pourra pas se connecter tant que son compte est suspendu.
+        </div>
+      </div>
+
+      <div class="warning-box danger" *ngIf="newStatut === 'DESACTIVE'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+        <div>
+          <strong>Action irréversible :</strong> Un compte désactivé ne peut plus être réactivé.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Motif (optionnel)</label>
+        <textarea
+          [(ngModel)]="motif"
+          rows="3"
+          placeholder="Expliquez la raison de cette action..."
+          class="motif-input"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeModal()" [disabled]="actionInProgress">
+        Annuler
+      </button>
+      <button
+        class="btn-confirm"
+        [class.btn-confirm-green]="newStatut === 'ACTIF'"
+        [class.btn-confirm-orange]="newStatut === 'SUSPENDU'"
+        [class.btn-confirm-red]="newStatut === 'DESACTIVE'"
+        (click)="confirmStatutChange()"
+        [disabled]="actionInProgress">
+        <span *ngIf="!actionInProgress">Confirmer</span>
+        <span *ngIf="actionInProgress" class="spinner-small"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" [class.show]="showToast" [class.toast-success]="toastType === 'success'" [class.toast-error]="toastType === 'error'">
+  <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <polyline *ngIf="toastType === 'success'" points="20 6 9 17 4 12"/>
+    <circle *ngIf="toastType === 'error'" cx="12" cy="12" r="10"/>
+    <line *ngIf="toastType === 'error'" x1="12" y1="8" x2="12" y2="12"/>
+    <line *ngIf="toastType === 'error'" x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span>{{ toastMessage }}</span>
+</div>

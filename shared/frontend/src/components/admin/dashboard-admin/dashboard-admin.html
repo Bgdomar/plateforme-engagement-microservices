@@ -1,3 +1,4 @@
+<!-- dashboard-admin.html -->
 <app-header-admin></app-header-admin>
 
 <div class="admin-page">
@@ -11,12 +12,13 @@
       </div>
 
       <!-- Loading skeleton stats -->
-      <div class="stats-grid" *ngIf="loading">
-        <div class="stat-card skeleton" *ngFor="let i of [1,2,3,4]"></div>
+      <div class="stats-grid stats-grid-8" *ngIf="loading">
+        <div class="stat-card skeleton" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
       </div>
 
       <!-- Real stats -->
       <div class="stats-grid" *ngIf="!loading">
+        <!-- Stats Demandes -->
         <div class="stat-card stat-total">
           <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -30,7 +32,8 @@
             <span class="stat-label">Total demandes</span>
           </div>
         </div>
-        <div class="stat-card stat-attente clickable" (click)="filtreStatut = 'EN_ATTENTE'">
+
+        <div class="stat-card stat-attente clickable" (click)="filtreStatut = 'EN_ATTENTE'; onFilterChange()">
           <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -42,7 +45,8 @@
           </div>
           <div class="stat-pulse" *ngIf="stats.attente > 0"></div>
         </div>
-        <div class="stat-card stat-approuve clickable" (click)="filtreStatut = 'VALIDEE'">
+
+        <div class="stat-card stat-approuve clickable" (click)="filtreStatut = 'VALIDEE'; onFilterChange()">
           <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
@@ -53,7 +57,8 @@
             <span class="stat-label">Approuvées</span>
           </div>
         </div>
-        <div class="stat-card stat-rejete clickable" (click)="filtreStatut = 'REFUSEE'">
+
+        <div class="stat-card stat-rejete clickable" (click)="filtreStatut = 'REFUSEE'; onFilterChange()">
           <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
@@ -63,6 +68,58 @@
           <div class="stat-info">
             <span class="stat-value">{{ stats.rejetes }}</span>
             <span class="stat-label">Rejetées</span>
+          </div>
+        </div>
+
+        <!-- Stats Utilisateurs Actifs -->
+        <div class="stat-card stat-users">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ statsUsers.total }}</span>
+            <span class="stat-label">Utilisateurs actifs</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-stagiaires">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ statsUsers.stagiaires }}</span>
+            <span class="stat-label">Stagiaires</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-encadrants">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ statsUsers.encadrants }}</span>
+            <span class="stat-label">Encadrants</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-admin">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ statsUsers.admins }}</span>
+            <span class="stat-label">Administrateurs</span>
           </div>
         </div>
       </div>
@@ -79,33 +136,33 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
           </svg>
-          <input type="text" [(ngModel)]="recherche" placeholder="Rechercher par nom ou email...">
-          <button *ngIf="recherche" class="clear-search" (click)="recherche = ''">✕</button>
+          <input type="text" [(ngModel)]="recherche" (input)="applyFilters()" placeholder="Rechercher par nom ou email...">
+          <button *ngIf="recherche" class="clear-search" (click)="recherche = ''; applyFilters()">✕</button>
         </div>
 
         <div class="filter-tabs">
-          <button class="tab-btn" [class.active]="filtreStatut === 'TOUS'" (click)="filtreStatut = 'TOUS'">Tous</button>
-          <button class="tab-btn" [class.active]="filtreStatut === 'EN_ATTENTE'" (click)="filtreStatut = 'EN_ATTENTE'">
+          <button class="tab-btn" [class.active]="filtreStatut === 'TOUS'" (click)="filtreStatut = 'TOUS'; onFilterChange()">Tous</button>
+          <button class="tab-btn" [class.active]="filtreStatut === 'EN_ATTENTE'" (click)="filtreStatut = 'EN_ATTENTE'; onFilterChange()">
             <span class="dot dot-orange"></span>En attente
             <span class="count-badge" *ngIf="stats.attente > 0">{{ stats.attente }}</span>
           </button>
-          <button class="tab-btn" [class.active]="filtreStatut === 'VALIDEE'" (click)="filtreStatut = 'VALIDEE'">
+          <button class="tab-btn" [class.active]="filtreStatut === 'VALIDEE'" (click)="filtreStatut = 'VALIDEE'; onFilterChange()">
             <span class="dot dot-green"></span>Approuvées
           </button>
-          <button class="tab-btn" [class.active]="filtreStatut === 'REFUSEE'" (click)="filtreStatut = 'REFUSEE'">
+          <button class="tab-btn" [class.active]="filtreStatut === 'REFUSEE'" (click)="filtreStatut = 'REFUSEE'; onFilterChange()">
             <span class="dot dot-red"></span>Rejetées
           </button>
         </div>
 
         <div class="role-filter">
-          <select [(ngModel)]="filtreRole">
+          <select [(ngModel)]="filtreRole" (change)="onFilterChange()">
             <option value="TOUS">Tous les rôles</option>
             <option value="STAGIAIRE">Stagiaires</option>
             <option value="ENCADRANT">Encadrants</option>
           </select>
         </div>
 
-        <button class="btn-refresh" (click)="chargerDemandes()" title="Rafraîchir">
+        <button class="btn-refresh" (click)="chargerDonnees()" title="Rafraîchir">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="23 4 23 10 17 10"/>
             <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
@@ -113,9 +170,32 @@
         </button>
       </div>
 
+      <!-- Barre de sélection multiple -->
+      <div class="selection-bar" *ngIf="!loading && !erreurChargement && filteredDemandes.length > 0">
+        <label class="checkbox-label" *ngIf="hasSelectableDemandes()">
+          <input
+            type="checkbox"
+            [checked]="selectAllMode"
+            (change)="toggleSelectAll()"
+            [disabled]="traitementEnCours">
+          <span>Sélectionner toutes les demandes traitables</span>
+        </label>
+
+        <div class="selection-actions" *ngIf="getNombreSelectionnees() > 0">
+          <span class="selection-count">{{ getNombreSelectionnees() }} demande(s) sélectionnée(s)</span>
+          <button class="btn-delete-selected" (click)="ouvrirModalSuppression()" [disabled]="traitementEnCours">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            </svg>
+            Supprimer la sélection
+          </button>
+        </div>
+      </div>
+
       <!-- Résultats count -->
       <div class="results-count" *ngIf="!loading">
-        <span>{{ demandesFiltrees.length }} demande{{ demandesFiltrees.length > 1 ? 's' : '' }} affichée{{ demandesFiltrees.length > 1 ? 's' : '' }}</span>
+        <span>{{ filteredDemandes.length }} demande{{ filteredDemandes.length > 1 ? 's' : '' }} affichée{{ filteredDemandes.length > 1 ? 's' : '' }}</span>
       </div>
 
       <!-- Loading skeletons -->
@@ -131,24 +211,33 @@
       <!-- Erreur -->
       <div class="error-state" *ngIf="!loading && erreurChargement">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
         <h3>Erreur de chargement</h3>
         <p>{{ erreurChargement }}</p>
-        <button class="btn-retry" (click)="chargerDemandes()">Réessayer</button>
+        <button class="btn-retry" (click)="chargerDonnees()">Réessayer</button>
       </div>
 
-      <!-- Cards -->
+      <!-- Cartes des demandes -->
       <div class="demandes-grid" *ngIf="!loading && !erreurChargement">
-
-        <div *ngFor="let demande of demandesFiltrees"
+        <div *ngFor="let demande of filteredDemandes"
              class="demande-card"
              [class.card-attente]="demande.statut === 'EN_ATTENTE'"
              [class.card-approuve]="demande.statut === 'VALIDEE'"
-             [class.card-rejete]="demande.statut === 'REFUSEE'">
+             [class.card-rejete]="demande.statut === 'REFUSEE'"
+             [class.card-selected]="demandesSelectionnees.has(demande.id)">
 
-          <!-- Header -->
+          <!-- En-tête avec case à cocher -->
           <div class="card-header">
+            <div class="checkbox-wrapper" *ngIf="demande.statut !== 'EN_ATTENTE'">
+              <input
+                type="checkbox"
+                [checked]="demandesSelectionnees.has(demande.id)"
+                (change)="toggleSelection(demande.id)"
+                [disabled]="traitementEnCours">
+            </div>
             <div class="user-avatar">{{ initiales(demande.prenom, demande.nom) }}</div>
             <div class="user-info">
               <h3 class="user-name">{{ demande.prenom }} {{ demande.nom }}</h3>
@@ -158,7 +247,7 @@
               <span class="role-badge"
                     [class.badge-stagiaire]="demande.role === 'STAGIAIRE'"
                     [class.badge-encadrant]="demande.role === 'ENCADRANT'">
-                {{ demande.role }}
+                {{ demande.role === 'STAGIAIRE' ? 'Stagiaire' : 'Encadrant' }}
               </span>
               <span class="statut-badge"
                     [class.badge-attente]="demande.statut === 'EN_ATTENTE'"
@@ -169,7 +258,7 @@
             </div>
           </div>
 
-          <!-- Infos -->
+          <!-- Corps de la carte -->
           <div class="card-body">
             <div class="info-row" *ngIf="demande.etablissement">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -185,6 +274,14 @@
               </svg>
               <span>{{ demande.filiere }}{{ demande.niveauEtudes ? ' — ' + demande.niveauEtudes : '' }}</span>
             </div>
+            <div class="info-row" *ngIf="demande.departement">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>{{ demande.departement }}{{ demande.specialite ? ' — ' + demande.specialite : '' }}</span>
+            </div>
             <div class="info-row">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -197,7 +294,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
-              <span>Traitée le {{ formatDate(demande.dateTraitement!) }}</span>
+              <span>Traitée le {{ formatDate(demande.dateTraitement) }}</span>
             </div>
 
             <!-- Note de rejet -->
@@ -233,16 +330,18 @@
           </div>
 
           <div class="card-done" *ngIf="demande.statut !== 'EN_ATTENTE'">
-            <span *ngIf="demande.statut === 'VALIDEE'" class="done-green">✅ Demande approuvée</span>
-            <span *ngIf="demande.statut === 'REFUSEE'" class="done-red">❌ Demande rejetée</span>
+            <span *ngIf="demande.statut === 'VALIDEE'" class="done-green">✓ Demande approuvée</span>
+            <span *ngIf="demande.statut === 'REFUSEE'" class="done-red">✗ Demande rejetée</span>
           </div>
         </div>
 
-        <!-- Empty state -->
-        <div class="empty-state" *ngIf="demandesFiltrees.length === 0">
+        <!-- État vide -->
+        <div class="empty-state" *ngIf="filteredDemandes.length === 0">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
           </svg>
           <h3>Aucune demande trouvée</h3>
           <p>Modifiez vos filtres ou attendez de nouvelles inscriptions</p>
@@ -253,14 +352,17 @@
   </section>
 </div>
 
-<!-- ═══ Modal Rejet ═══ -->
+<!-- ═══ Modal de rejet ═══ -->
 <div class="modal-overlay" *ngIf="showRejetModal" (click)="fermerModalRejet()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <div class="modal-title">
-        <div class="modal-icon">❌</div>
-        <h2>Rejeter la demande</h2>
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
       </div>
+      <h2>Rejeter la demande</h2>
       <button class="modal-close" (click)="fermerModalRejet()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -307,7 +409,69 @@
   </div>
 </div>
 
-<!-- ═══ Toast ═══ -->
+<!-- ═══ Modal de suppression multiple ═══ -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="fermerModalSuppression()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+        </svg>
+      </div>
+      <h2>Confirmer la suppression</h2>
+      <button class="modal-close" (click)="fermerModalSuppression()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="warning-box danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div>
+          <strong>Attention :</strong> Cette action est irréversible. Les demandes supprimées ne pourront pas être récupérées.
+        </div>
+      </div>
+
+      <p>Vous allez supprimer <strong>{{ demandesASupprimer.length }} demande(s)</strong> :</p>
+
+      <div class="demandes-preview">
+        <div *ngFor="let demande of demandesASupprimer" class="preview-item">
+          <span class="preview-name">{{ demande.prenom }} {{ demande.nom }}</span>
+          <span class="preview-status" [class.status-validee]="demande.statut === 'VALIDEE'" [class.status-refusee]="demande.statut === 'REFUSEE'">
+            {{ demande.statut === 'VALIDEE' ? 'Approuvé' : 'Rejeté' }}
+          </span>
+        </div>
+      </div>
+
+      <p class="confirm-text">Êtes-vous sûr de vouloir supprimer ces demandes ?</p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" (click)="fermerModalSuppression()" [disabled]="traitementEnCours">
+        Annuler
+      </button>
+      <button class="btn-modal-confirm btn-confirm-red" (click)="confirmerSuppression()" [disabled]="traitementEnCours">
+        <span *ngIf="!traitementEnCours">Confirmer la suppression</span>
+        <span *ngIf="traitementEnCours" class="spinner"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Toast notification ═══ -->
 <div class="toast" [class.show]="showToast" [class.toast-success]="toastType === 'success'" [class.toast-error]="toastType === 'error'">
-  {{ toastMessage }}
+  <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <polyline *ngIf="toastType === 'success'" points="20 6 9 17 4 12"/>
+    <circle *ngIf="toastType === 'error'" cx="12" cy="12" r="10"/>
+    <line *ngIf="toastType === 'error'" x1="12" y1="8" x2="12" y2="12"/>
+    <line *ngIf="toastType === 'error'" x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span>{{ toastMessage }}</span>
 </div>
