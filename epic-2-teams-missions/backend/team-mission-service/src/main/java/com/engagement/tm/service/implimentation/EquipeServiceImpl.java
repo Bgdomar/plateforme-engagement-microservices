@@ -27,7 +27,6 @@ public class EquipeServiceImpl implements EquipeService {
     private final EquipeRepository equipeRepository;
     private final MembreEquipeRepository membreEquipeRepository;
 
-
     @Override
     @Transactional
     public EquipeResponse creerEquipe(EquipeRequest request) {
@@ -42,15 +41,12 @@ public class EquipeServiceImpl implements EquipeService {
         equipe = equipeRepository.save(equipe);
         log.info("✅ Équipe créée avec ID: {}", equipe.getId());
 
-        // ✅ AJOUT : Ajouter les membres sélectionnés
         if (request.getMembresIds() != null && !request.getMembresIds().isEmpty()) {
             for (Long stagiaireId : request.getMembresIds()) {
-                // Vérifier si le stagiaire n'est pas déjà dans une autre équipe
                 if (membreEquipeRepository.findByStagiaireId(stagiaireId).isPresent()) {
                     log.warn("⚠️ Le stagiaire {} est déjà dans une équipe", stagiaireId);
                     continue;
                 }
-
                 MembreEquipe membre = MembreEquipe.builder()
                         .equipe(equipe)
                         .stagiaireId(stagiaireId)
@@ -59,6 +55,14 @@ public class EquipeServiceImpl implements EquipeService {
                 log.info("✅ Stagiaire {} ajouté à l'équipe {}", stagiaireId, equipe.getId());
             }
         }
+
+        // ✅ FIX CRITIQUE : Recharger l'équipe depuis la BDD avec ses membres
+        // Sans ce rechargement, equipe.getMembres() reste vide en mémoire
+        // car les membres ont été sauvegardés séparément → membres: [] dans la réponse JSON
+        // → Angular ne trouve aucun membre → membreEquipeId reste 0 → null au backend
+        equipe = equipeRepository.findByIdWithMembres(equipe.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Erreur lors du rechargement de l'équipe"));
 
         return toResponse(equipe);
     }
@@ -71,7 +75,6 @@ public class EquipeServiceImpl implements EquipeService {
         Equipe equipe = equipeRepository.findById(equipeId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Équipe introuvable"));
 
-        // Vérifier si le stagiaire est déjà dans l'équipe
         if (membreEquipeRepository.existsByEquipeIdAndStagiaireId(equipeId, request.getStagiaireId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ce stagiaire est déjà membre de l'équipe");
         }
@@ -96,7 +99,7 @@ public class EquipeServiceImpl implements EquipeService {
     public void supprimerMembre(Long equipeId, Long stagiaireId) {
         log.info("🗑️ Suppression du stagiaire {} de l'équipe {}", stagiaireId, equipeId);
 
-        Equipe equipe = equipeRepository.findById(equipeId)
+        equipeRepository.findById(equipeId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Équipe introuvable"));
 
         if (!membreEquipeRepository.existsByEquipeIdAndStagiaireId(equipeId, stagiaireId)) {
@@ -163,9 +166,6 @@ public class EquipeServiceImpl implements EquipeService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Convertit une entité Equipe en DTO EquipeResponse
-     */
     private EquipeResponse toResponse(Equipe equipe) {
         List<MembreEquipeResponse> membresResponse = equipe.getMembres().stream()
                 .map(membre -> MembreEquipeResponse.builder()
@@ -186,7 +186,6 @@ public class EquipeServiceImpl implements EquipeService {
                 .build();
     }
 
-
     @Override
     @Transactional
     public EquipeResponse updateEquipe(Long equipeId, EquipeRequest request) {
@@ -195,7 +194,6 @@ public class EquipeServiceImpl implements EquipeService {
         Equipe equipe = equipeRepository.findById(equipeId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Équipe introuvable"));
 
-        // Vérifier que l'encadrant est le même (sécurité)
         if (!equipe.getEncadrantId().equals(request.getEncadrantId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous n'êtes pas autorisé à modifier cette équipe");
         }

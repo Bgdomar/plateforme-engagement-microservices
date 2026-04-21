@@ -84,7 +84,7 @@ export class MissionsStagiaireComponent implements OnInit {
             const membre = equipe.membres?.find(
               // ✅ FIX 3 : MembreResponse.stagiaireId est un string dans TeamService
               // → comparer en string des deux côtés
-              (m) => m.stagiaireId === String(this.stagiaireId)
+                (m) => Number(m.stagiaireId) === this.stagiaireId
             );
             if (membre) {
               membreTrouve = membre;

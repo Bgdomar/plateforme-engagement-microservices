@@ -17,6 +17,6 @@ public interface EquipeRepository extends JpaRepository<Equipe, Long> {
     @Query("SELECT e FROM Equipe e LEFT JOIN FETCH e.membres WHERE e.id = :id")
     Optional<Equipe> findByIdWithMembres(@Param("id") Long id);
 
-    @Query("SELECT e FROM Equipe e LEFT JOIN FETCH e.membres m WHERE m.stagiaireId = :stagiaireId")
+    @Query("SELECT DISTINCT e FROM Equipe e LEFT JOIN FETCH e.membres m WHERE m.stagiaireId = :stagiaireId")
     List<Equipe> findEquipesByStagiaireId(@Param("stagiaireId") Long stagiaireId);
 }
