@@ -2,45 +2,41 @@
 
 ## Overview
 
-The **Plateforme d'Engagement** is a microservices-based platform built with:
+La **Plateforme d'Engagement** est une plateforme microservices pour la gestion de stagiaires.
 
-- **Backend:** Spring Boot 3.x (Java) + FastAPI (Python)
-- **Frontend:** Angular 19 + TailwindCSS
-- **Infrastructure:** Spring Cloud Gateway, Eureka, Kafka, PostgreSQL, MinIO
-- **AI:** MediaPipe (client-side face detection) + face_recognition (server-side encoding/matching)
+- **Backend:** Spring Boot 3.x (Java 21) + FastAPI (Python 3.11)
+- **Frontend:** Angular 19 (application unifiée)
+- **Infrastructure:** Spring Cloud Gateway, Eureka, Kafka, PostgreSQL (×4), pgvector
+- **AI:** DeepFace/FaceNet (server-side) + MediaPipe (client-side liveness)
 
 ## Architecture Style
-- **Microservices** with service discovery (Eureka)
-- **Event-driven** communication via Apache Kafka
-- **API Gateway** pattern for unified entry point
-- **JWT-based** authentication and authorization
+- **Microservices** avec service discovery (Eureka)
+- **API Gateway** comme point d'entrée unique
+- **JWT** pour l'authentification et l'autorisation
+- **WebSocket** (STOMP + SockJS) pour le chat temps réel
+- **Kafka** pour la communication événementielle
 
-## Service Communication
+## Communication des services
 
 ```
-[Frontend :4200]
+[Angular Frontend :4200]
       │
       ▼
 [API Gateway :8080]  ──── Eureka Discovery :8761
       │
-      ├── com.engagement.iam-service :8081          (PostgreSQL)
-      ├── facial-ai-service :8082    (SQLite)
-      ├── mission-service :8083      (PostgreSQL)
-      ├── team-service (planned)
-      ├── gamification-service (planned)
-      ├── dashboard-service (planned)
-      ├── chat-service (planned)
-      └── notification-service (planned)
+      ├── identity-service :8081         (PostgreSQL :5436)
+      ├── facial-ai-service :8000        (PostgreSQL + pgvector)
+      ├── team-mission-service :8082     (PostgreSQL :5437)
+      ├── chat-service :8083             (PostgreSQL :5438)
+      ├── notification-service :8084     (PostgreSQL :5439)
+      └── kafka :29092
 ```
 
-## Epic Breakdown
+## Epics
 
-| Epic | Domain | Backend | Frontend | Status |
-|------|--------|---------|----------|--------|
-| 1 | Authentication | com.engagement.iam-service, facial-ai-service | auth-ui | ✅ Active |
-| 2 | Team Management | team-service | team-ui | 📋 Planned |
-| 3 | Missions | mission-service | mission-ui | ✅ Active |
-| 4 | Gamification | gamification-service | gamification-ui | 📋 Planned |
-| 5 | Dashboard | dashboard-service | dashboard-ui | 🔄 Partial |
-| 6 | Chat | chat-service | chat-ui | 📋 Planned |
-| 7 | Notifications | notification-service | notification-ui | 📋 Planned |
+| Epic | Domaine           | Backend                                   | Frontend              | Statut     |
+|------|-------------------|-------------------------------------------|-----------------------|------------|
+| 1    | Authentification  | identity-service, facial-ai-service       | login, register, face-auth | ✅ Actif |
+| 2    | Équipes & Missions| team-mission-service                      | encadrant, stagiaire  | ✅ Actif   |
+| 6    | Chat              | chat-service (texte, images, fichiers)    | chat component        | ✅ Actif   |
+| 7    | Notifications     | notification-service                      | intégré dans headers  | ✅ Actif   |

@@ -27,6 +27,7 @@ public class Conversation {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "conversation_participants", joinColumns = @JoinColumn(name = "conversation_id"))
     @Column(name = "user_id")
+    @Builder.Default
     private List<Long> participantIds = new ArrayList<>();
 
     @Column(updatable = false)

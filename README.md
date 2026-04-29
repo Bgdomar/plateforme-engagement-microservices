@@ -16,10 +16,6 @@ plateforme-engagement/
 │   └── backend/
 │       └── team-mission-service/       # Spring Boot — CRUD équipes, missions, livrables
 │
-├── epic-4-gamification/                # Points, badges, classements (prévu)
-│   ├── backend/
-│   └── frontend/
-│
 ├── epic-6-chat/                        # Messagerie temps réel
 │   └── backend/
 │       └── chat-service/               # Spring Boot — WebSocket (STOMP), messages, upload fichiers/images
