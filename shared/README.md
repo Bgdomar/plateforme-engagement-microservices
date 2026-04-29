@@ -1,20 +1,32 @@
 # Shared
 
-Cross-cutting concerns and shared resources used across all epics.
+Ressources partagées utilisées par tous les epics.
 
-## Modules
+## frontend/ — Angular 19 (:4200)
 
-### frontend/
-The main Angular 19 application serving all UI pages. This monolithic frontend
-will progressively be decomposed into micro-frontends per epic.
+Application frontend unifiée servant toutes les pages de la plateforme.
 
-**Port:** 4200
+### Composants principaux
 
-### common-models/
-> Planned — shared DTOs, enums, and domain models used by multiple services.
+| Dossier                 | Description                                    |
+|-------------------------|------------------------------------------------|
+| `components/admin/`     | Header admin (notifications), dashboard, gestion inscriptions |
+| `components/stagiaire/` | Header stagiaire (notifications), profil, missions |
+| `components/encadrant/` | Header encadrant, profil, équipes              |
+| `components/chat/`      | Messagerie temps réel (texte, images, fichiers)|
+| `components/face-auth/` | Authentification par reconnaissance faciale     |
+| `components/login/`     | Page de connexion                               |
+| `components/register/`  | Formulaire d'inscription                        |
+| `components/home/`      | Page d'accueil                                  |
 
-### security/
-> Planned — shared JWT utilities, security filters, and authentication helpers.
+### Services
 
-### utils/
-> Planned — shared utility classes and helper functions.
+| Fichier                     | Rôle                                          |
+|-----------------------------|-----------------------------------------------|
+| `auth.service.ts`           | Authentification JWT, login/logout             |
+| `chat.service.ts`           | Messages REST + WebSocket, upload fichiers     |
+| `notification.service.ts`   | Notifications avec polling                     |
+| `mission.service.ts`        | CRUD missions                                  |
+| `team.service.ts`           | CRUD équipes                                   |
+| `facial-ai.service.ts`      | Enregistrement/identification faciale          |
+| `inscription.service.ts`    | Soumission de demandes d'inscription           |

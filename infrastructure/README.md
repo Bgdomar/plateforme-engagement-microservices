@@ -1,27 +1,31 @@
 # Infrastructure
 
-Shared infrastructure services for the platform.
+Services d'infrastructure partagés pour la plateforme.
 
 ## Services
 
-### api-gateway (Spring Cloud Gateway)
-Central API gateway routing requests to microservices via Eureka discovery.
-- Route-based load balancing
-- CORS configuration
-- Request deduplication
+### api-gateway — Spring Cloud Gateway (:8080)
+Passerelle API centrale qui route les requêtes vers les microservices via Eureka.
+- Routage par path : `/auth/**`, `/api/chat/**`, `/api/notifications/**`, `/uploads/**`, etc.
+- CORS configuré pour `localhost:4200`
+- Support WebSocket (`/ws/**` → chat-service)
+- Support upload fichiers (max 12 MB)
 
-**Port:** 8080
+### discovery-service — Eureka Server (:8761)
+Registre de services pour la découverte et le health monitoring.
 
-### discovery-service (Eureka Server)
-Service registry for microservice discovery and health monitoring.
+## Routes principales
 
-**Port:** 8761
-
-### config-server
-> Planned — centralized configuration management (Spring Cloud Config).
-
-### docker/
-Docker Compose files and environment configurations.
-
-### monitoring/
-> Planned — Prometheus, Grafana, ELK stack for observability.
+| Path                    | Service              |
+|-------------------------|----------------------|
+| `/auth/**`              | identity-service     |
+| `/api/profil/**`        | identity-service     |
+| `/api/admin/**`         | identity-service     |
+| `/uploads/chat/**`      | chat-service         |
+| `/uploads/**`           | identity-service     |
+| `/api/chat/**`          | chat-service         |
+| `/ws/**`                | chat-service (WS)    |
+| `/api/notifications/**` | notification-service |
+| `/api/equipes/**`       | team-mission-service |
+| `/api/missions/**`      | team-mission-service |
+| `/facial-ai/**`         | facial-ai-service    |

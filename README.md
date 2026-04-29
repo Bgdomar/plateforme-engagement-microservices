@@ -1,122 +1,116 @@
-# Plateforme d'Engagement
+# Plateforme d'Engagement — StagiaireDXC
 
-A microservices-based engagement platform built with Spring Boot, Angular, and Python (FastAPI).
+Plateforme de gestion de stagiaires basée sur une architecture microservices. Elle permet l'authentification (y compris par reconnaissance faciale), la gestion d'équipes et de missions, la messagerie en temps réel, les notifications, et la gamification.
 
-## 📁 Project Structure
+## 📁 Structure du projet
 
 ```
 plateforme-engagement/
 │
-├── epic-1-authentication/          # User authentication & identity
+├── epic-1-authentication/              # Authentification & identité
 │   ├── backend/
-│   │   ├── com.engagement.iam-service/            # Spring Boot — JWT, RBAC, profile management
-│   │   └── facial-ai-service/      # FastAPI — face recognition (register/identify)
-│   └── frontend/
-│       └── auth-ui/                # (stub) Login, Register, FaceID pages
+│   │   └── iam-service/                # Spring Boot — JWT, RBAC, inscription, profils
+│   └── PFE_FACIAL_AI/                  # FastAPI — reconnaissance faciale (DeepFace, pgvector)
 │
-├── epic-2-team-management/         # Team lifecycle
+├── epic-2-teams-missions/              # Équipes & missions
+│   └── backend/
+│       └── team-mission-service/       # Spring Boot — CRUD équipes, missions, livrables
+│
+├── epic-4-gamification/                # Points, badges, classements (prévu)
 │   ├── backend/
-│   │   └── team-service/           # (planned)
 │   └── frontend/
-│       └── team-ui/                # (planned)
 │
-├── epic-3-missions/                # Mission management
-│   ├── backend/
-│   │   └── mission-service/        # Spring Boot — CRUD, assignment, tracking
-│   └── frontend/
-│       └── mission-ui/             # (stub)
+├── epic-6-chat/                        # Messagerie temps réel
+│   └── backend/
+│       └── chat-service/               # Spring Boot — WebSocket (STOMP), messages, upload fichiers/images
 │
-├── epic-4-gamification/            # Points, badges, leaderboards
-│   ├── backend/
-│   │   └── gamification-service/   # (planned)
-│   └── frontend/
-│       └── gamification-ui/        # (planned)
+├── epic-7-notifications/               # Notifications in-app
+│   └── backend/
+│       └── notification-service/       # Spring Boot — CRUD notifications, polling
 │
-├── epic-5-dashboard/               # KPIs, analytics, activity feed
-│   ├── backend/
-│   │   └── dashboard-service/      # (planned)
-│   └── frontend/
-│       └── dashboard-ui/           # (stub)
+├── infrastructure/                     # Services d'infrastructure
+│   ├── api-gateway/                    # Spring Cloud Gateway (:8080)
+│   └── discovery-service/              # Eureka Server (:8761)
 │
-├── epic-6-chat/                    # Real-time messaging
-│   ├── backend/
-│   │   └── chat-service/           # (planned)
-│   └── frontend/
-│       └── chat-ui/                # (planned)
+├── shared/                             # Ressources partagées
+│   └── frontend/                       # Angular 19 — application frontend unifiée (:4200)
+│       └── src/
+│           ├── components/
+│           │   ├── admin/              # Header admin (avec notifications), dashboard, inscriptions
+│           │   ├── stagiaire/          # Header, profil, missions stagiaire
+│           │   ├── encadrant/          # Header, profil, équipes encadrant
+│           │   ├── chat/               # Messagerie (texte, images, fichiers)
+│           │   ├── face-auth/          # Connexion par reconnaissance faciale
+│           │   ├── login/              # Page de connexion
+│           │   ├── register/           # Formulaire d'inscription
+│           │   ├── home/               # Page d'accueil
+│           │   └── ...
+│           └── services/
+│               ├── auth.service.ts
+│               ├── chat.service.ts
+│               ├── notification.service.ts
+│               ├── mission.service.ts
+│               ├── team.service.ts
+│               └── ...
 │
-├── epic-7-notifications/           # Push & in-app notifications
-│   ├── backend/
-│   │   └── notification-service/   # (planned)
-│   └── frontend/
-│       └── notification-ui/        # (planned)
-│
-├── infrastructure/                 # Cross-cutting infra services
-│   ├── api-gateway/                # Spring Cloud Gateway (:8080)
-│   ├── discovery-service/          # Eureka Server (:8761)
-│   ├── config-server/              # (planned) Spring Cloud Config
-│   ├── docker/                     # Docker Compose files
-│   └── monitoring/                 # (planned) Prometheus, Grafana
-│
-├── shared/                         # Shared resources
-│   ├── frontend/                   # Angular 19 monolithic frontend (:4200)
-│   ├── common-models/              # (planned) Shared DTOs & enums
-│   ├── security/                   # (planned) Shared JWT/auth utilities
-│   └── utils/                      # (planned) Shared helpers
-│
-├── docs/                           # Documentation
-│   ├── architecture/               # Architecture decisions & overview
-│   └── diagrams/                   # System & sequence diagrams
-│
-├── docker-compose.yml              # Full-stack orchestration
+├── docs/                               # Documentation
+├── docker-compose.yml                  # Orchestration complète
+├── init-admin.sql                      # Script d'initialisation admin
 └── .gitignore
 ```
 
-## 🛠 Tech Stack
+## 🛠 Stack technique
 
-| Layer          | Technology                                      |
-|----------------|--------------------------------------------------|
-| Frontend       | Angular 19, TailwindCSS, MediaPipe (WASM)       |
-| Backend        | Spring Boot 3.x (Java 17+), FastAPI (Python)    |
-| API Gateway    | Spring Cloud Gateway                             |
-| Discovery      | Netflix Eureka                                   |
-| Messaging      | Apache Kafka (KRaft mode)                        |
-| Databases      | PostgreSQL 16, SQLite                            |
-| Object Storage | MinIO (S3-compatible)                            |
-| AI/ML          | face_recognition (dlib), MediaPipe Face Detection|
-| Containers     | Docker, Docker Compose                           |
+| Couche         | Technologie                                             |
+|----------------|----------------------------------------------------------|
+| Frontend       | Angular 19, CSS custom, MediaPipe (WASM)                |
+| Backend        | Spring Boot 3.x (Java 21), FastAPI (Python 3.11)        |
+| API Gateway    | Spring Cloud Gateway (reactive)                          |
+| Discovery      | Netflix Eureka                                           |
+| Messaging      | Apache Kafka (KRaft), WebSocket (STOMP + SockJS)         |
+| Bases de données| PostgreSQL 16 (× 4 instances), pgvector                 |
+| AI/ML          | DeepFace (FaceNet), MediaPipe Face Detection             |
+| Conteneurs     | Docker, Docker Compose                                   |
 
-## 🚀 Quick Start
+## 🚀 Démarrage rapide
 
 ```bash
-# Create the Docker network (first time only)
-docker network create plateforme-engagement-network
-
-# Start all services
+# Démarrer tous les services
 docker compose up -d --build
 
-# Access
-# Frontend:   http://localhostlocalhost:4200
-# API Gateway: http://localhost:8080
-# Eureka:     http://localhost:8761
-# MinIO:      http://localhost:9001
+# Accès
+# Frontend:        http://localhost:4200
+# API Gateway:     http://localhost:8080
+# Eureka Dashboard: http://localhost:8761
 ```
 
-## 📌 Service Ports
+## 📌 Ports des services
 
-| Service                 | Port |
-|------------------------|------|
-| Frontend               | 4200 |
-| API Gateway            | 8080 |
-| IAM Service            | 8081 |
-| Facial AI Service      | 8082 |
-| Mission Service        | 8083 |
-| Eureka Discovery       | 8761 |
-| PostgreSQL (IAM)       | 5432 |
-| PostgreSQL (Missions)  | 5433 |
-| Kafka                  | 29092|
-| MinIO API              | 9000 |
-| MinIO Console          | 9001 |
+| Service                     | Port  |
+|-----------------------------|-------|
+| Frontend (Angular)          | 4200  |
+| API Gateway                 | 8080  |
+| IAM Service (identity)      | 8081  |
+| Team-Mission Service        | 8082  |
+| Chat Service                | 8083  |
+| Notification Service        | 8084  |
+| Facial AI Service (FastAPI) | 8000  |
+| Eureka Discovery            | 8761  |
+| Kafka                       | 29092 |
+| PostgreSQL (identity)       | 5436  |
+| PostgreSQL (teams)          | 5437  |
+| PostgreSQL (chat)           | 5438  |
+| PostgreSQL (notifications)  | 5439  |
+
+## ✨ Fonctionnalités principales
+
+- **Authentification** — JWT, login classique, inscription avec validation admin
+- **Reconnaissance faciale** — Enregistrement et identification via DeepFace + liveness detection
+- **Rôles** — Admin, Encadrant, Stagiaire avec dashboards dédiés
+- **Équipes & missions** — Création, affectation, suivi, livrables
+- **Chat temps réel** — Messages texte, envoi d'images et fichiers, WebSocket + polling fallback
+- **Notifications** — Notifications admin (nouvelles inscriptions), notifications utilisateur (validation/rejet), notifications chat
 
 ## 📐 Architecture
 
-See [docs/architecture/README.md](docs/architecture/README.md) for full architecture documentation.
+Voir [docs/architecture/README.md](docs/architecture/README.md) pour la documentation d'architecture complète.
