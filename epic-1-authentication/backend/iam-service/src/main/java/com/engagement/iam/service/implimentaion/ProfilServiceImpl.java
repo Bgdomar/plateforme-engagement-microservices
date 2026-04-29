@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 public class ProfilServiceImpl implements ProfilService {
 
     private final ProfilUtilisateurRepository profilRepo;
-    private final UtilisateurRepository utilisateurRepo;
     private final StagiaireRepository infoStagiaireRepo;
     private final EncadrantRepository infoEncadrantRepo;
     private final FileUploadUtil fileUploadUtil;
@@ -112,6 +111,18 @@ public class ProfilServiceImpl implements ProfilService {
             throw new RuntimeException("L'utilisateur n'est pas un stagiaire");
         }
         return convertToStagiaireInfo(profil);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProfilResponse> getAllContacts() {
+        return profilRepo.findAll().stream()
+                .filter(p -> {
+                    String type = p.getUtilisateur().getTypeCompte().name();
+                    return type.equals("STAGIAIRE") || type.equals("ENCADRANT");
+                })
+                .map(this::buildProfilResponse)
+                .collect(Collectors.toList());
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -1,37 +1,19 @@
-/* ========== NAVBAR ANIMATIONS ========== */
+:host {
+  display: block;
+}
 
-@keyframes slideDown {
+@keyframes dropdown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-6px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Smooth utilities */
-:host ::ng-deep {
-  .duration-300 {
-    transition-duration: 300ms;
-  }
-  
-  .duration-200 {
-    transition-duration: 200ms;
-  }
-  
-  .text-decoration-none {
-    text-decoration: none;
-  }
+.animate-dropdown {
+  animation: dropdown 0.15s ease-out;
 }
 

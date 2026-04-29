@@ -4,14 +4,8 @@
 
       <!-- Logo -->
       <a routerLink="/dashboard/encadrant" class="logo">
-        <div class="logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <h1 class="logo-text">EngageTrack<span class="logo-dot">.</span></h1>
+        <img src="favicon.ico" alt="StagiaireDXC" style="width:36px;height:36px;object-fit:contain;" />
+        <h1 class="logo-text">Stagiaire<span class="logo-dot">DXC</span></h1>
         <span class="role-badge-header">Encadrant</span>
       </a>
 
@@ -45,11 +39,11 @@
           </svg>
           <span>Livrables</span>
         </a>
-        <a routerLink="/dashboard/encadrant/chat" class="nav-link" routerLinkActive="active">
+        <a routerLink="/chat/encadrant" class="nav-link" routerLinkActive="active">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
           </svg>
-          <span>Chat</span>
+          <span>Messagerie</span>
         </a>
       </nav>
 
@@ -83,8 +77,8 @@
               <div *ngFor="let notif of notifications" class="notif-item" [class.unread]="!notif.read">
                 <div class="notif-dot" *ngIf="!notif.read"></div>
                 <div class="notif-content">
-                  <p class="notif-text">{{ notif.message }}</p>
-                  <span class="notif-time">{{ notif.time }}</span>
+                  <p class="notif-text"><strong>{{ notif.title }}</strong> {{ notif.message }}</p>
+                  <span class="notif-time">{{ getTimeAgo(notif.createdAt) }}</span>
                 </div>
               </div>
               <div *ngIf="notifications.length === 0" class="notif-empty">Aucune notification</div>

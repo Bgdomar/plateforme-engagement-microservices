@@ -47,6 +47,12 @@ public class ProfilController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/contacts")
+    @PreAuthorize("hasAnyRole('STAGIAIRE', 'ENCADRANT', 'ADMINISTRATEUR')")
+    public ResponseEntity<List<ProfilResponse>> getAllContacts() {
+        return ResponseEntity.ok(profilService.getAllContacts());
+    }
+
     @GetMapping("/stagiaires/all")
     @PreAuthorize("hasAnyRole('ENCADRANT', 'ADMINISTRATEUR')")
     public ResponseEntity<List<StagiaireInfo>> getAllStagiaires() {

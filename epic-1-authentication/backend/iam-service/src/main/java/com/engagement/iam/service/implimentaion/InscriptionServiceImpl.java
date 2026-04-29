@@ -12,6 +12,7 @@ import com.engagement.iam.repository.DemandeInscriptionRepository;
 import com.engagement.iam.repository.EncadrantDemandeRepository;
 import com.engagement.iam.repository.StagiaireDemandeRepository;
 import com.engagement.iam.repository.UtilisateurRepository;
+import com.engagement.iam.client.NotificationClient;
 import com.engagement.iam.service.interfaces.InscriptionService;
 import com.engagement.iam.util.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +29,11 @@ public class InscriptionServiceImpl implements InscriptionService {
 
     private final UtilisateurRepository utilisateurRepo;
     private final DemandeInscriptionRepository demandeRepo;
-    private final StagiaireDemandeRepository infoStagiaireDemandeRepo;   // ✅ AJOUT
-    private final EncadrantDemandeRepository infoEncadrantDemandeRepo;   // ✅ AJOUT
+    private final StagiaireDemandeRepository infoStagiaireDemandeRepo;   // 
+    private final EncadrantDemandeRepository infoEncadrantDemandeRepo;   // 
     private final BCryptPasswordEncoder passwordEncoder;
     private final FileUploadUtil fileUploadUtil;
+    private final NotificationClient notificationClient;
 
     @Override
     @Transactional
@@ -48,7 +50,7 @@ public class InscriptionServiceImpl implements InscriptionService {
         if (profileImage != null && !profileImage.isEmpty()) {
             String prefix = "avatar_" + System.currentTimeMillis();
             avatarUrl = fileUploadUtil.saveImage(profileImage, prefix);
-            log.info("🖼️ Avatar sauvegardé: {}", avatarUrl);
+            log.info(" Avatar sauvegardé: {}", avatarUrl);
         }
 
         // 3. Créer l'utilisateur (statut EN_ATTENTE)
@@ -57,12 +59,21 @@ public class InscriptionServiceImpl implements InscriptionService {
         // 4. Créer la demande d'inscription avec l'URL de l'avatar
         DemandeInscription demande = createDemandeInscription(request, utilisateur, avatarUrl);
 
-        // 5. ✅ Sauvegarder les infos spécifiques au rôle (tables temporaires)
+        // 5.  Sauvegarder les infos spécifiques au rôle (tables temporaires)
         saveRoleInfo(request, demande);
 
-        log.info("✅ Demande d'inscription complétée pour : {}", utilisateur.getEmail());
+        log.info(" Demande d'inscription complétée pour : {}", utilisateur.getEmail());
 
-        // 6. Retourner la réponse
+        // 6. Notifier l'admin (userId=3) d'une nouvelle demande
+        String role = request.getTypeCompte().equalsIgnoreCase("STAGIAIRE") ? "stagiaire" : "encadrant";
+        notificationClient.send(
+                3L,
+                "Nouvelle demande d'inscription",
+                request.getPrenom() + " " + request.getNom() + " souhaite rejoindre la plateforme en tant que " + role,
+                "SYSTEM"
+        );
+
+        // 7. Retourner la réponse
         return buildInscriptionResponse(utilisateur, demande);
     }
 

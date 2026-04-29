@@ -28,13 +28,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       color: '#00ABE4'
     },
     {
-      image: 'face.jpg',
-      title: 'Présentation de la Plateforme',
-      description: 'Une démonstration rapide pour découvrir les fonctionnalités clés.',
-      color: '#60a5fa',
-      youtubeEmbedUrl: 'https://www.youtube.com/embed/e30Vpub8QgQ?start=42&rel=0'
-    },
-    {
       image: 'gamification.jpg',
       title: 'Gamification de l\'Engagement',
       description: 'Gagnez des points, débloquez des badges et gravissez les échelons de réussite.',
@@ -91,5 +84,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  scrollTo(id: string) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 }

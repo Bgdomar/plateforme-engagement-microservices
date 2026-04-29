@@ -4,14 +4,8 @@
 
       <!-- Logo -->
       <a routerLink="/dashboard/admin" class="logo">
-        <div class="logo-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <h1 class="logo-text">EngageTrack<span class="logo-dot">.</span></h1>
+        <img src="favicon.ico" alt="StagiaireDXC" style="width:36px;height:36px;object-fit:contain;" />
+        <h1 class="logo-text">Stagiaire<span class="logo-dot">DXC</span></h1>
         <span class="admin-badge">Admin</span>
       </a>
 
@@ -59,6 +53,35 @@
 
       <!-- Actions -->
       <div class="actions">
+
+        <!-- Notifications -->
+        <div class="notif-wrapper">
+          <button class="icon-button" (click)="toggleNotifications()" aria-label="Notifications">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+            <span class="icon-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+          </button>
+
+          <div class="notif-dropdown" [class.show]="isNotifOpen">
+            <div class="notif-header">
+              <span class="notif-title">Notifications</span>
+              <button class="mark-all" (click)="markAllRead()">Tout lire</button>
+            </div>
+            <div class="notif-list">
+              <div *ngFor="let notif of notifications" class="notif-item" [class.unread]="!notif.read">
+                <div class="notif-dot" *ngIf="!notif.read"></div>
+                <div class="notif-content">
+                  <p class="notif-text"><strong>{{ notif.title }}</strong> {{ notif.message }}</p>
+                  <span class="notif-time">{{ getTimeAgo(notif.createdAt) }}</span>
+                </div>
+              </div>
+              <div *ngIf="notifications.length === 0" class="notif-empty">Aucune notification</div>
+            </div>
+          </div>
+        </div>
+
         <div class="user-dropdown">
           <button class="user-trigger icon-button" (click)="toggleDropdown()" aria-label="Profil admin">
             <div class="admin-avatar">

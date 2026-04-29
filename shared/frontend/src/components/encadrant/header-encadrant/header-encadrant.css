@@ -34,28 +34,17 @@
   color: inherit;
 }
 
-.logo-icon {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #2b6cb0 0%, #1A4A8A 100%);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  flex-shrink: 0;
-}
-
 .logo-text {
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 1.4rem;
-  font-weight: bold;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 900;
   color: #1a202c;
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .logo-dot {
-  color: #2b6cb0;
+  color: #2563eb;
 }
 
 .encadrant-badge {

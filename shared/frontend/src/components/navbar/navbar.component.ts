@@ -1,22 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
-import { LogoComponent } from '../logo/logo.component';
+import { RouterLink, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, LogoComponent],
+  imports: [CommonModule, RouterLink],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   isScrolled = false;
   isMobileMenuOpen = false;
   isUserMenuOpen = false;
   isAuthenticated = false;
   userName: string | null = null;
   userEmail: string | null = null;
+  userRole: string = '';
+  profileRoute: string = '/profile';
+  private currentUrl = '/';
+  private routeSub?: Subscription;
 
   constructor(private router: Router) {}
 
@@ -27,6 +32,19 @@ export class NavbarComponent implements OnInit {
       });
     }
     this.checkAuthStatus();
+
+    this.routeSub = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.currentUrl = event.urlAfterRedirects;
+      this.isMobileMenuOpen = false;
+      this.isUserMenuOpen = false;
+      this.checkAuthStatus();
+    });
+  }
+
+  ngOnDestroy() {
+    this.routeSub?.unsubscribe();
   }
 
   checkAuthStatus() {
@@ -37,21 +55,28 @@ export class NavbarComponent implements OnInit {
     if (user) {
       try {
         const userData = JSON.parse(user);
-        this.userName = userData.firstName + ' ' + userData.lastName;
-        this.userEmail = userData.email;
+        this.userName = (userData.firstName || '') + ' ' + (userData.lastName || '');
+        this.userEmail = userData.email || '';
+        const role = (userData.typeCompte || userData.role || '').toUpperCase();
+        if (role.includes('ADMIN')) {
+          this.userRole = 'Administrateur';
+          this.profileRoute = '/profile';
+        } else if (role.includes('ENCADRANT')) {
+          this.userRole = 'Encadrant';
+          this.profileRoute = '/encadrant/profil';
+        } else {
+          this.userRole = 'Stagiaire';
+          this.profileRoute = '/stagiaire/profil';
+        }
       } catch (e) {
         this.isAuthenticated = false;
       }
     }
   }
 
-  isHomePage(): boolean {
-    return this.router.url === '/' || this.router.url === '';
-  }
-
-  isAuthPage(): boolean {
-    const url = this.router.url;
-    return url === '/login' || url === '/register';
+  isActive(path: string): boolean {
+    if (path === '/') return this.currentUrl === '/' || this.currentUrl === '';
+    return this.currentUrl.startsWith(path);
   }
 
   toggleMobileMenu() {
@@ -73,14 +98,18 @@ export class NavbarComponent implements OnInit {
   logout() {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
+    localStorage.removeItem('userId');
     this.isAuthenticated = false;
+    this.userName = null;
+    this.userEmail = null;
+    this.userRole = '';
     this.closeUserMenu();
     this.router.navigate(['/']);
   }
 
   getInitials(): string {
     if (this.userName) {
-      return this.userName.split(' ').map(n => n[0]).join('').toUpperCase();
+      return this.userName.trim().split(' ').filter(n => n).map(n => n[0]).join('').toUpperCase().substring(0, 2);
     }
     return '?';
   }

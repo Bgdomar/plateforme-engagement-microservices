@@ -95,7 +95,7 @@ docker network create plateforme-engagement-network
 docker compose up -d --build
 
 # Access
-# Frontend:   http://localhost:4200
+# Frontend:   http://localhostlocalhost:4200
 # API Gateway: http://localhost:8080
 # Eureka:     http://localhost:8761
 # MinIO:      http://localhost:9001

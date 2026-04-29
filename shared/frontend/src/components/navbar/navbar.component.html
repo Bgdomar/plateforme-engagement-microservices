@@ -1,114 +1,180 @@
-<!-- NAVBAR PROFESSIONNEL TAILWIND -->
-<nav class="fixed top-4 left-4 right-4 z-50 bg-black/20 backdrop-blur-lg border border-white/10 h-24 transition-all duration-300 rounded-2xl"
-     [ngClass]="{ 'h-16': isScrolled }">
+<!-- ============================================================ -->
+<!-- NAVBAR PRINCIPALE — s'adapte selon la page et l'auth         -->
+<!-- ============================================================ -->
+<nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+     [ngClass]="{
+       'bg-white border-b border-slate-200 shadow-sm': isScrolled,
+       'bg-white/95 backdrop-blur-xl border-b border-slate-100': !isScrolled
+     }">
 
-  <div class="max-w-7xl mx-auto px-6 h-full flex justify-between items-center">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
 
-    <!-- LOGO & BRANDING (LEFT) -->
-    <div class="flex items-center gap-4 min-w-fit">
-      <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center">
-        <img src="/favicon.ico" alt="Logo StagiaireDXC" class="w-full h-full object-contain" />
+    <!-- ═══ LOGO ═══ -->
+    <a routerLink="/" class="flex items-center gap-2.5 flex-shrink-0 group">
+      <img src="favicon.ico" alt="StagiaireDXC" class="w-9 h-9 object-contain group-hover:scale-105 transition-transform" />
+      <div class="hidden sm:flex flex-col leading-none">
+        <span class="text-brand-dark font-black text-[17px] tracking-tight">Stagiaire<span class="text-primary-600">DXC</span></span>
+        <span class="text-[10px] text-brand-gray font-medium tracking-wider uppercase">Plateforme d'engagement</span>
       </div>
-      <div class="hidden">
-        <app-logo [size]="48"></app-logo>
-      </div>
-      <div class="hidden sm:flex flex-col leading-tight">
-        <span class="text-white font-bold text-lg">Stagiaire<span class="text-primary-400">DXC</span></span>
-        <span class="text-xs text-slate-300 font-semibold uppercase tracking-wider">Engagement Biométrique</span>
-      </div>
+    </a>
+
+    <!-- ═══ NAVIGATION CENTRALE ═══ -->
+    <div class="hidden md:flex items-center gap-1 bg-slate-50/80 rounded-xl px-1.5 py-1 border border-slate-100">
+      <a routerLink="/"
+         class="px-4 py-1.5 text-[13px] font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
+         [ngClass]="isActive('/') ? 'bg-white text-primary-600 shadow-sm font-semibold' : 'text-brand-gray hover:text-brand-dark hover:bg-white/60'">
+        <i class="fa-solid fa-house text-[11px]"></i> Accueil
+      </a>
+
+      <!-- Page courante = login → mettre en avant Connexion -->
+      <a routerLink="/login"
+         class="px-4 py-1.5 text-[13px] font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
+         [ngClass]="isActive('/login') ? 'bg-white text-primary-600 shadow-sm font-semibold' : 'text-brand-gray hover:text-brand-dark hover:bg-white/60'">
+        <i class="fa-solid fa-right-to-bracket text-[11px]"></i> Connexion
+      </a>
+
+      <!-- Page courante = register → mettre en avant Inscription -->
+      <a routerLink="/register"
+         class="px-4 py-1.5 text-[13px] font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
+         [ngClass]="isActive('/register') ? 'bg-white text-primary-600 shadow-sm font-semibold' : 'text-brand-gray hover:text-brand-dark hover:bg-white/60'">
+        <i class="fa-solid fa-user-plus text-[11px]"></i> Inscription
+      </a>
+
+      <a routerLink="/face-auth"
+         class="px-4 py-1.5 text-[13px] font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
+         [ngClass]="isActive('/face-auth') ? 'bg-white text-primary-600 shadow-sm font-semibold' : 'text-brand-gray hover:text-brand-dark hover:bg-white/60'">
+        <i class="fa-solid fa-face-smile text-[11px]"></i> FaceID
+      </a>
     </div>
 
-    <!-- CENTER NAV -->
-    <div class="hidden lg:flex gap-12 flex-1 justify-center items-center">
-      <a routerLink="/" class="text-white hover:text-primary-400 font-semibold text-base transition-colors duration-300">
-        Accueil
-      </a>
-      <a routerLink="/face-auth" class="text-white hover:text-primary-400 font-semibold text-base transition-colors duration-300 flex items-center gap-2">
-        <span>Essayer</span>
-        <span>FaceID</span>
-      </a>
-    </div>
+    <!-- ═══ DROITE ═══ -->
+    <div class="flex items-center gap-2.5">
 
-    <!-- RIGHT SECTION -->
-    <div class="flex items-center gap-6">
-
-      <!-- USER INFO (afficher si authentifié) -->
-      <div *ngIf="isAuthenticated" class="hidden md:flex items-center gap-3 text-white">
-        <span class="text-sm font-semibold">
-          <span class="text-slate-400">USER:</span>
-          <span class="ml-2 text-white">{{ userName }}</span>
-        </span>
-      </div>
-
-      <!-- AUTH BUTTONS -->
-      <div *ngIf="!isAuthenticated" class="flex gap-4">
-        <a routerLink="/login" class="px-6 py-2 text-white font-semibold hover:bg-white/10 rounded-lg transition-all duration-300 border border-white/20">
-          Connexion
+      <!-- NON-AUTH : CTA boutons -->
+      <ng-container *ngIf="!isAuthenticated">
+        <a routerLink="/login" *ngIf="!isActive('/login')"
+           class="hidden sm:inline-flex px-4 py-2 text-[13px] font-semibold text-brand-dark hover:text-primary-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-all items-center gap-2">
+          <i class="fa-solid fa-right-to-bracket text-[11px]"></i> Se connecter
         </a>
-        <a routerLink="/register" class="px-8 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold rounded-full hover:shadow-lg hover:shadow-primary-500/50 transition-all duration-300">
-          Nous Rejoindre
+        <a routerLink="/register" *ngIf="!isActive('/register')"
+           class="px-5 py-2 bg-primary-600 text-white text-[13px] font-bold rounded-lg hover:bg-primary-700 shadow-sm hover:shadow-md hover:-translate-y-px transition-all inline-flex items-center gap-2">
+          <i class="fa-solid fa-rocket text-[11px]"></i> S'inscrire
         </a>
-      </div>
+      </ng-container>
 
-      <!-- USER DROPDOWN (si authentifié) -->
+      <!-- AUTH : User pill + dropdown -->
       <div *ngIf="isAuthenticated" class="relative">
-        <button class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/10 transition-all duration-300"
+        <button class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-slate-50 border border-slate-200 transition-all group"
                 (click)="toggleUserMenu()">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-sm font-bold">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
             {{ getInitials() }}
           </div>
-          <i class="fa-solid fa-chevron-down text-white text-xs transition-transform duration-300" [ngClass]="isUserMenuOpen ? 'rotate-180' : ''"></i>
+          <div class="hidden sm:block text-left">
+            <div class="text-[13px] font-semibold text-brand-dark leading-tight">{{ userName }}</div>
+            <div class="text-[10px] text-brand-gray leading-tight">{{ userRole }}</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-brand-gray text-[9px] ml-0.5 transition-transform duration-200 group-hover:text-primary-500" [ngClass]="isUserMenuOpen ? 'rotate-180' : ''"></i>
         </button>
 
-        <!-- DROPDOWN MENU -->
+        <!-- DROPDOWN -->
         <div *ngIf="isUserMenuOpen"
-             class="absolute top-full right-0 mt-2 w-72 bg-slate-900/95 backdrop-blur-xl rounded-lg border border-white/10 shadow-2xl overflow-hidden z-50">
+             class="absolute top-[calc(100%+8px)] right-0 w-72 bg-white rounded-xl border border-slate-200 shadow-2xl overflow-hidden z-50 animate-dropdown">
 
-          <!-- Header -->
-          <div class="px-6 py-4 bg-gradient-to-r from-primary-500/20 to-primary-600/20 border-b border-white/10">
-            <p class="text-white font-bold">{{ userName }}</p>
-            <p class="text-slate-400 text-sm">{{ userEmail }}</p>
+          <!-- User info header -->
+          <div class="px-5 py-4 bg-gradient-to-r from-primary-50 to-slate-50 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                {{ getInitials() }}
+              </div>
+              <div>
+                <p class="text-sm font-bold text-brand-dark">{{ userName }}</p>
+                <p class="text-xs text-brand-gray">{{ userEmail }}</p>
+              </div>
+            </div>
+            <div class="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-bold rounded-md uppercase tracking-wider">
+              <i class="fa-solid fa-shield-halved text-[8px]"></i> {{ userRole }}
+            </div>
           </div>
 
-          <!-- Menu Items -->
-          <a routerLink="/dashboard" class="block px-6 py-3 text-slate-200 hover:bg-white/10 transition-colors duration-200" (click)="closeUserMenu()">
-            <i class="fa-solid fa-chart-line mr-3 text-primary-400"></i> Dashboard
-          </a>
-          <a routerLink="/profile" class="block px-6 py-3 text-slate-200 hover:bg-white/10 transition-colors duration-200" (click)="closeUserMenu()">
-            <i class="fa-solid fa-user-gear mr-3 text-primary-400"></i> Mon Profil
-          </a>
-          <div class="border-t border-white/10"></div>
-          <button class="w-full text-left px-6 py-3 text-red-400 hover:bg-red-500/10 transition-colors duration-200" (click)="logout()">
-            <i class="fa-solid fa-sign-out-alt mr-3"></i> Déconnexion
-          </button>
+          <!-- Navigation rapide -->
+          <div class="py-1.5">
+            <a routerLink="/dashboard" class="flex items-center gap-3 px-5 py-2.5 text-sm text-brand-gray hover:text-brand-dark hover:bg-slate-50 transition-colors" (click)="closeUserMenu()">
+              <i class="fa-solid fa-chart-line text-primary-500 w-4 text-center text-xs"></i>
+              <span>Dashboard</span>
+            </a>
+            <a [routerLink]="profileRoute" class="flex items-center gap-3 px-5 py-2.5 text-sm text-brand-gray hover:text-brand-dark hover:bg-slate-50 transition-colors" (click)="closeUserMenu()">
+              <i class="fa-solid fa-user-pen text-primary-500 w-4 text-center text-xs"></i>
+              <span>Mon Profil</span>
+            </a>
+            <a routerLink="/face-auth" class="flex items-center gap-3 px-5 py-2.5 text-sm text-brand-gray hover:text-brand-dark hover:bg-slate-50 transition-colors" (click)="closeUserMenu()">
+              <i class="fa-solid fa-face-smile text-primary-500 w-4 text-center text-xs"></i>
+              <span>Authentification FaceID</span>
+            </a>
+          </div>
+
+          <!-- Déconnexion -->
+          <div class="border-t border-slate-100 py-1.5">
+            <button class="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors" (click)="logout()">
+              <i class="fa-solid fa-right-from-bracket w-4 text-center text-xs"></i>
+              <span>Déconnexion</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- MOBILE MENU TOGGLE -->
-      <button class="lg:hidden flex flex-col gap-1 bg-none border-none cursor-pointer" (click)="toggleMobileMenu()">
-        <span class="w-6 h-0.5 bg-white rounded transition-all duration-300" [ngClass]="isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''"></span>
-        <span class="w-6 h-0.5 bg-white rounded transition-all duration-300" [ngClass]="isMobileMenuOpen ? 'opacity-0' : ''"></span>
-        <span class="w-6 h-0.5 bg-white rounded transition-all duration-300" [ngClass]="isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''"></span>
+      <!-- MOBILE TOGGLE -->
+      <button class="md:hidden w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-50 border border-slate-200 transition-all" (click)="toggleMobileMenu()">
+        <i class="fa-solid text-brand-dark text-sm" [ngClass]="isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'"></i>
       </button>
     </div>
   </div>
 
-  <!-- MOBILE MENU -->
-  <div *ngIf="isMobileMenuOpen" class="absolute top-24 left-4 right-4 mx-auto bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col lg:hidden">
-    <a routerLink="/" class="px-6 py-3 text-white hover:bg-white/10 transition-colors duration-200" (click)="closeMobileMenu()">
-      Accueil
-    </a>
-    <a routerLink="/face-auth" class="px-6 py-3 text-white hover:bg-white/10 transition-colors duration-200" (click)="closeMobileMenu()">
-      Essayer FaceID
-    </a>
-    <div class="border-t border-white/10"></div>
-    <div *ngIf="!isAuthenticated" class="flex flex-col gap-2 p-4">
-      <a routerLink="/login" class="px-6 py-2 text-white font-semibold border border-white/20 rounded-lg text-center" (click)="closeMobileMenu()">
-        Connexion
+  <!-- ═══ MOBILE MENU ═══ -->
+  <div *ngIf="isMobileMenuOpen" class="md:hidden bg-white border-t border-slate-100 shadow-xl">
+    <div class="px-4 py-3 space-y-0.5">
+
+      <a routerLink="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all"
+         [ngClass]="isActive('/') ? 'text-primary-600 bg-primary-50 font-semibold' : 'text-brand-gray hover:bg-slate-50'"
+         (click)="closeMobileMenu()">
+        <i class="fa-solid fa-house text-xs w-5 text-center"></i> Accueil
       </a>
-      <a routerLink="/register" class="px-6 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold rounded-full text-center" (click)="closeMobileMenu()">
-        Nous Rejoindre
+      <a routerLink="/login" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all"
+         [ngClass]="isActive('/login') ? 'text-primary-600 bg-primary-50 font-semibold' : 'text-brand-gray hover:bg-slate-50'"
+         (click)="closeMobileMenu()">
+        <i class="fa-solid fa-right-to-bracket text-xs w-5 text-center"></i> Connexion
       </a>
+      <a routerLink="/register" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all"
+         [ngClass]="isActive('/register') ? 'text-primary-600 bg-primary-50 font-semibold' : 'text-brand-gray hover:bg-slate-50'"
+         (click)="closeMobileMenu()">
+        <i class="fa-solid fa-user-plus text-xs w-5 text-center"></i> Inscription
+      </a>
+      <a routerLink="/face-auth" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all"
+         [ngClass]="isActive('/face-auth') ? 'text-primary-600 bg-primary-50 font-semibold' : 'text-brand-gray hover:bg-slate-50'"
+         (click)="closeMobileMenu()">
+        <i class="fa-solid fa-face-smile text-xs w-5 text-center"></i> FaceID
+      </a>
+
+      <!-- Auth actions mobile -->
+      <div *ngIf="isAuthenticated" class="pt-2 mt-2 border-t border-slate-100 space-y-0.5">
+        <a routerLink="/dashboard" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-brand-gray hover:bg-slate-50 rounded-xl" (click)="closeMobileMenu()">
+          <i class="fa-solid fa-chart-line text-xs w-5 text-center text-primary-500"></i> Dashboard
+        </a>
+        <a [routerLink]="profileRoute" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-brand-gray hover:bg-slate-50 rounded-xl" (click)="closeMobileMenu()">
+          <i class="fa-solid fa-user-pen text-xs w-5 text-center text-primary-500"></i> Mon Profil
+        </a>
+        <button class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl" (click)="logout()">
+          <i class="fa-solid fa-right-from-bracket text-xs w-5 text-center"></i> Déconnexion
+        </button>
+      </div>
+
+      <div *ngIf="!isAuthenticated" class="pt-3 mt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
+        <a routerLink="/login" class="text-center px-4 py-2.5 text-sm font-semibold text-brand-dark border border-slate-200 rounded-lg hover:bg-slate-50" (click)="closeMobileMenu()">
+          Se connecter
+        </a>
+        <a routerLink="/register" class="text-center px-4 py-2.5 text-sm font-bold bg-primary-600 text-white rounded-lg hover:bg-primary-700" (click)="closeMobileMenu()">
+          S'inscrire
+        </a>
+      </div>
     </div>
   </div>
 </nav>

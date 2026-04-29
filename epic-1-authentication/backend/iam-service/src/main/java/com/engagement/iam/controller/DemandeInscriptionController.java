@@ -3,16 +3,13 @@ package com.engagement.iam.controller;
 import com.engagement.iam.dto.*;
 import com.engagement.iam.entity.enums.StatutDemande;
 import com.engagement.iam.service.implimentaion.DemandeInscriptionService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin/inscriptions")

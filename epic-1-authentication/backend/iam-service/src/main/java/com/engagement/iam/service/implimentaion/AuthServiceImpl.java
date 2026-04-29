@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -46,19 +44,15 @@ public class AuthServiceImpl implements AuthService {
         validateAccountStatus(user);
 
         // 5. Générer le token JWT
-        String role = user.getTypeCompte().name();
         String token = jwtUtil.generateToken(
                 user.getEmail(),
-                role,
+                user.getTypeCompte().name(),
                 user.getId()
         );
 
-        // 6. Déterminer la redirection selon le rôle
-        String redirectUrl = getRedirectUrlByRole(role);
+        log.info("✅ Connexion réussie : {} ({})", user.getEmail(), user.getTypeCompte().name());
 
-        log.info("✅ Connexion réussie : {} ({})", user.getEmail(), role);
-
-        return buildLoginResponse(token, role, user);
+        return buildLoginResponse(token, user.getTypeCompte().name(), user);
     }
 
     @Override

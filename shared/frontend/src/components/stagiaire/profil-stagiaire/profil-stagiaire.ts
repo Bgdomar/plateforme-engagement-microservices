@@ -405,7 +405,6 @@ export class ProfilStagiaireComponent implements OnInit {
     this.isCameraActive = false;
   }
 
-// Remplacer la méthode captureFace existante par celle-ci
   captureFace(): void {
     if (!this.facialVideo || !this.facialVideo.nativeElement) {
       this.facialError = 'Caméra non disponible';
@@ -417,34 +416,35 @@ export class ProfilStagiaireComponent implements OnInit {
 
     const video = this.facialVideo.nativeElement;
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext('2d');
+    const FRAMES = 30;
+    const INTERVAL = 100;
+    const capturedBlobs: Blob[] = [];
+    let count = 0;
 
-    if (!ctx) {
-      this.facialError = 'Erreur lors de la capture';
-      this.isCapturing = false;
-      return;
-    }
+    const captureNext = () => {
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        if (blob) capturedBlobs.push(blob);
+        count++;
+        if (count < FRAMES) {
+          setTimeout(captureNext, INTERVAL);
+        } else {
+          this.registerFace(capturedBlobs);
+        }
+      }, 'image/jpeg', 0.9);
+    };
 
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        this.facialError = 'Erreur lors de la conversion de l\'image';
-        this.isCapturing = false;
-        return;
-      }
-      // ✅ La seule modification : mettre le blob dans un tableau
-      this.registerFace([blob]);
-    }, 'image/jpeg', 0.9);
+    captureNext();
   }
 
-// registerFace reste identique, elle reçoit maintenant un tableau
   private registerFace(frames: Blob[]): void {
-    const userEmail = localStorage.getItem('user_email') || this.email;
+    const userId = localStorage.getItem('userId') || '';
 
-    this.facialAIService.registerFace(userEmail, frames).subscribe({
+    this.facialAIService.registerFace(userId, frames).subscribe({
       next: (response) => {
         console.log('✅ Visage enregistré:', response);
         this.hasFacialRecognition = true;

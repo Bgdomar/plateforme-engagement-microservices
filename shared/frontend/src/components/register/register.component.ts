@@ -428,8 +428,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
     const captureFrame = () => {
       if (!this.isCapturing || this.faceCaptured) return;
 
-      canvasEl.width = videoEl.videoWidth;
-      canvasEl.height = videoEl.videoHeight;
+      canvasEl.width = videoEl.videoWidth || 640;
+      canvasEl.height = videoEl.videoHeight || 480;
       const context = canvasEl.getContext('2d');
       context?.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
 
@@ -444,6 +444,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
         if (frameIndex < this.FRAMES_TO_CAPTURE) {
           setTimeout(captureFrame, frameInterval);
         } else {
+          this.capturedFrames = [...this.captureFramesList];
           this.onCaptureComplete();
         }
       }, 'image/jpeg', 0.9);
@@ -455,7 +456,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
   onCaptureComplete(): void {
     console.log('✅ CAPTURE TERMINÉE, frames:', this.captureFramesList.length);
     this.isCapturing = false;
-    this.capturedFrames = [...this.captureFramesList];
     this.sendFramesToFacialAI();
   }
 
@@ -599,7 +599,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
       const formData = new FormData();
       formData.append(
         'data',
-        new Blob([JSON.stringify(data)], { type: 'application/json' })
+        new File([JSON.stringify(data)], 'data.json', { type: 'application/json' })
       );
 
       // ✅ Image de profil comme fichier
@@ -657,11 +657,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
       // Ajouter les données JSON
       formData.append(
         'data',
-        new Blob([JSON.stringify(data)], { type: 'application/json' })
+        new File([JSON.stringify(data)], 'data.json', { type: 'application/json' })
       );
-
-      // ✅ Ajouter la photo faciale (pour la reconnaissance)
-      formData.append('photo', this.capturedImageBlob, 'face.jpg');
 
       // ✅ Ajouter l'image de profil (avatar) comme fichier séparé
       if (this.profileImageFile) {

@@ -1,284 +1,417 @@
-<!-- SECTION HERO PROFESSIONNEL -->
-<section class="relative w-full min-h-screen bg-brand-light overflow-hidden pt-16">
-
-  <!-- ARRIÈRE-PLAN AVEC IMAGE & OVERLAY -->
-  <div class="absolute inset-0 h-full">
-    <div class="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-white/70 z-10"></div>
-    <div class="absolute inset-0 bg-cover bg-center z-0 transition-all duration-700"
-         [ngStyle]="{ 'background-image': 'url(assets/' + slides[currentSlide].image + ')' }">
+<!-- ============================================================ -->
+<!-- 1. NAVBAR FIXE                                               -->
+<!-- ============================================================ -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a routerLink="/" class="flex items-center gap-2.5">
+      <img src="favicon.ico" alt="StagiaireDXC" class="w-9 h-9 object-contain" />
+      <span class="text-brand-dark font-black text-lg tracking-tight">Stagiaire<span class="text-primary-600">DXC</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-8">
+      <a routerLink="/" class="text-sm font-semibold text-brand-dark hover:text-primary-600 transition-colors">Accueil</a>
+      <a class="text-sm font-medium text-brand-gray hover:text-brand-dark transition-colors" (click)="scrollTo('features')">Fonctionnalités</a>
+      <a class="text-sm font-medium text-brand-gray hover:text-brand-dark transition-colors" (click)="scrollTo('video')">Présentation</a>
     </div>
-    <div class="absolute inset-0 bg-gradient-to-b from-white/10 via-white/50 to-brand-light z-0"></div>
-    <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl z-0"></div>
-    <div class="absolute -bottom-24 -left-24 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-3xl z-0"></div>
+    <div class="flex items-center gap-3">
+      <a routerLink="/login" class="px-5 py-2 text-sm font-semibold text-brand-dark hover:text-primary-600 transition-colors">Connexion</a>
+      <a routerLink="/register" class="px-5 py-2 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 transition-all">S'inscrire</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- 2. HERO SECTION (CAROUSEL)                                   -->
+<!-- ============================================================ -->
+<section class="relative w-full min-h-screen overflow-hidden">
+  <!-- Background -->
+  <div class="absolute inset-0">
+    <div class="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-105"
+         [ngStyle]="{ 'background-image': 'url(assets/' + slides[currentSlide].image + ')' }"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#0f172a]/90 via-[#0f172a]/70 to-[#0f172a]/50"></div>
   </div>
 
-  <!-- CONTENU HERO -->
-  <div class="relative z-20 max-w-7xl mx-auto px-6 h-screen flex items-center gap-16">
+  <!-- Content -->
+  <div class="relative z-10 max-w-7xl mx-auto px-6 min-h-screen flex items-center">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full pt-16">
 
-    <!-- COLONNE GAUCHE: TEXTE & ACTIONS -->
-    <div class="flex-1 min-w-0">
+      <!-- Left: Text -->
       <div class="space-y-8">
-        <div class="space-y-4">
-          <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-50 border border-primary-200 rounded-full text-primary-700 text-sm font-semibold">
-            <span class="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></span>
-            DXC Technology · Plateforme RH
+        <div class="space-y-5">
+          <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 border border-white/20 rounded-full text-white/80 text-sm font-medium backdrop-blur-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse"></span>
+            DXC Technology
           </span>
-          <h1 class="text-5xl lg:text-6xl xl:text-7xl font-black text-brand-dark leading-[1.05]">
-            Suivi d'Engagement<br>
-            <span class="bg-gradient-to-r from-primary-500 to-primary-700 bg-clip-text text-transparent">Interactif</span>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight">
+            {{ slides[currentSlide].title }}
           </h1>
-          <p class="text-lg text-brand-gray max-w-xl leading-relaxed">
-            Découvrez notre plateforme de suivi d'engagement avec gamification et authentification faciale — conçue pour dynamiser l'expérience des stagiaires et des encadrants.
+          <p class="text-lg text-white/70 max-w-lg leading-relaxed">
+            {{ slides[currentSlide].description }}
           </p>
         </div>
 
-        <!-- BOUTONS D'ACTION -->
-        <div class="flex flex-wrap gap-4 pt-2">
+        <div class="flex flex-wrap gap-4">
           <a routerLink="/register"
-             class="px-10 py-4 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 hover:shadow-xl hover:shadow-primary-500/25 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2.5">
-            <i class="fa-solid fa-rocket text-sm"></i>
-            Commencer l'Aventure
+             class="px-8 py-3.5 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-400 hover:shadow-xl hover:shadow-primary-500/30 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2.5 text-sm">
+            <i class="fa-solid fa-rocket"></i>
+            Commencer
           </a>
           <a routerLink="/face-auth"
-             class="px-10 py-4 bg-white border border-slate-200 text-brand-dark font-bold rounded-xl hover:bg-slate-50 hover:border-primary-200 transition-all duration-300 flex items-center gap-2.5">
-            <i class="fa-solid fa-face-smile text-sm text-primary-500"></i>
+             class="px-8 py-3.5 bg-white/10 backdrop-blur border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all duration-300 flex items-center gap-2.5 text-sm">
+            <i class="fa-solid fa-face-smile"></i>
             Essayer FaceID
           </a>
         </div>
 
-        <!-- CAROUSEL INDICATEURS -->
-        <div class="flex gap-2 pt-2">
+        <!-- Dots -->
+        <div class="flex items-center gap-3 pt-4">
           <span *ngFor="let slide of slides; let i = index"
                 (click)="setSlide(i)"
-                class="h-1 rounded-full transition-all duration-300 cursor-pointer"
-                [ngClass]="currentSlide === i ? 'w-10 bg-primary-500' : 'w-2 bg-slate-300 hover:bg-slate-400'">
+                class="rounded-full transition-all duration-300 cursor-pointer"
+                [ngClass]="currentSlide === i ? 'w-8 h-2 bg-primary-400' : 'w-2 h-2 bg-white/30 hover:bg-white/50'">
           </span>
         </div>
       </div>
-    </div>
 
-    <!-- COLONNE DROITE: VIDEO (GRANDE) + CONTEXTE -->
-    <div class="hidden lg:block w-[580px] xl:w-[620px] flex-shrink-0">
-      <div class="bg-white/85 backdrop-blur-2xl border border-white/60 rounded-2xl overflow-hidden shadow-2xl shadow-slate-200/50">
-
-        <!-- VIDEO GRAND FORMAT -->
-        <div class="relative w-full" style="padding-top: 56.25%;">
-          <iframe
-            class="absolute inset-0 w-full h-full"
-            [src]="getSafeYoutubeUrl('https://www.youtube.com/embed/e30Vpub8QgQ?start=42&rel=0')"
-            title="Présentation DXC"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-            referrerpolicy="strict-origin-when-cross-origin"
-          ></iframe>
-        </div>
-
-        <!-- TEXTE DE CONTEXTE SOUS LA VIDEO -->
-        <div class="p-6 flex items-start gap-5">
-          <div class="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-              <path d="M2 17l10 5 10-5"/>
-              <path d="M2 12l10 5 10-5"/>
-            </svg>
+      <!-- Right: Card -->
+      <div class="hidden lg:flex justify-end">
+        <div class="w-[420px] bg-white/10 backdrop-blur-2xl border border-white/15 rounded-3xl p-10 space-y-8">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/30">
+              <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
+            </div>
+            <div>
+              <h3 class="text-white font-bold text-lg">Plateforme Sécurisée</h3>
+              <p class="text-white/50 text-sm">Authentification biométrique</p>
+            </div>
           </div>
-          <div>
-            <h3 class="text-brand-dark font-black text-lg leading-snug mb-1">
-              Un peu d'histoire <em class="font-semibold text-primary-600">et de contexte</em>
-            </h3>
-            <p class="text-brand-gray text-sm leading-relaxed">
-              DXC Technology accompagne les organisations dans leur transformation digitale. Notre plateforme met l'accent sur le suivi, la gamification et l'authentification faciale.
-            </p>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+              <div class="text-2xl font-black text-primary-400">100%</div>
+              <div class="text-xs text-white/50 mt-1">Sécurisé</div>
+            </div>
+            <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+              <div class="text-2xl font-black text-primary-400">FaceID</div>
+              <div class="text-xs text-white/50 mt-1">Biométrique</div>
+            </div>
+            <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+              <div class="text-2xl font-black text-primary-400">24/7</div>
+              <div class="text-xs text-white/50 mt-1">Disponible</div>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-check text-primary-400 text-xs"></i>
+              <span class="text-white/70 text-sm">Suivi de missions en temps réel</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-check text-primary-400 text-xs"></i>
+              <span class="text-white/70 text-sm">Gamification et badges de réussite</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-check text-primary-400 text-xs"></i>
+              <span class="text-white/70 text-sm">Reconnaissance faciale IA</span>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- NAVIGATION CAROUSEL -->
-  <button class="absolute left-6 top-1/2 -translate-y-1/2 z-30 lg:top-1/3 w-11 h-11 bg-white/90 backdrop-blur hover:bg-white rounded-full flex items-center justify-center text-brand-dark border border-slate-200 transition-all duration-300 shadow-sm hover:shadow-md"
+  <!-- Nav arrows -->
+  <button class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all"
           (click)="prevSlide()">
-    <i class="fa-solid fa-chevron-left"></i>
+    <i class="fa-solid fa-chevron-left text-sm"></i>
   </button>
-  <button class="absolute right-6 top-1/2 -translate-y-1/2 z-30 lg:top-1/3 w-11 h-11 bg-white/90 backdrop-blur hover:bg-white rounded-full flex items-center justify-center text-brand-dark border border-slate-200 transition-all duration-300 shadow-sm hover:shadow-md"
+  <button class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all"
           (click)="nextSlide()">
-    <i class="fa-solid fa-chevron-right"></i>
+    <i class="fa-solid fa-chevron-right text-sm"></i>
   </button>
 </section>
 
-<!-- SECTION FEATURES -->
-<section class="w-full py-24 bg-brand-light">
+<!-- ============================================================ -->
+<!-- 3. STATS BAR                                                 -->
+<!-- ============================================================ -->
+<section class="w-full bg-white border-b border-slate-100">
+  <div class="max-w-5xl mx-auto px-6 py-10">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div class="text-center">
+        <div class="text-3xl font-black text-primary-600">500+</div>
+        <div class="text-sm text-brand-gray mt-1">Stagiaires actifs</div>
+      </div>
+      <div class="text-center">
+        <div class="text-3xl font-black text-primary-600">98%</div>
+        <div class="text-sm text-brand-gray mt-1">Taux de satisfaction</div>
+      </div>
+      <div class="text-center">
+        <div class="text-3xl font-black text-primary-600">1200+</div>
+        <div class="text-sm text-brand-gray mt-1">Missions accomplies</div>
+      </div>
+      <div class="text-center">
+        <div class="text-3xl font-black text-primary-600">24/7</div>
+        <div class="text-sm text-brand-gray mt-1">Disponibilité</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 4. FONCTIONNALITES PRINCIPALES                               -->
+<!-- ============================================================ -->
+<section id="features" class="w-full py-24 bg-slate-50">
   <div class="max-w-7xl mx-auto px-6">
-    <div class="text-center space-y-4 mb-16">
-      <h2 class="text-4xl lg:text-5xl font-black text-brand-dark">
-        Une Solution Interactive <span class="text-primary-600">&</span> Complète
+
+    <!-- Section header -->
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-50 border border-primary-200 rounded-full text-primary-700 text-xs font-semibold uppercase tracking-wider mb-4">
+        Fonctionnalités
+      </span>
+      <h2 class="text-3xl lg:text-4xl font-black text-brand-dark leading-tight">
+        Tout ce dont vous avez besoin
       </h2>
-      <p class="text-lg text-brand-gray max-w-2xl mx-auto">
-        Découvrez comment nous dynamisons l'engagement de nos collaborateurs avec des outils modernes et performants.
+      <p class="text-brand-gray mt-4 leading-relaxed">
+        Une suite complète d'outils pour le suivi d'engagement, la gamification et l'authentification biométrique.
       </p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="bg-white border border-slate-100 rounded-xl p-8 hover:shadow-lg hover:border-primary-100 hover:-translate-y-0.5 transition-all duration-300 group">
-        <div class="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary-100 transition-colors">
-          <i class="fa-solid fa-clipboard-check text-xl text-primary-600"></i>
+    <!-- 3 main features - large cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+      <div class="bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-primary-100 hover:-translate-y-1 transition-all duration-300 group">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center mb-6 shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/30 transition-shadow">
+          <i class="fa-solid fa-clipboard-check text-xl text-white"></i>
         </div>
-        <h3 class="text-lg font-bold text-brand-dark mb-2">Suivi Automatisé</h3>
-        <p class="text-brand-gray text-sm leading-relaxed">Automatisation complète du cycle de vie des missions, de la création à la validation finale.</p>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Suivi de Missions</h3>
+        <p class="text-brand-gray text-sm leading-relaxed mb-5">Automatisation complète du cycle de vie des missions, de la création à la validation finale avec tableaux de bord en temps réel.</p>
+        <div class="flex items-center gap-2 text-primary-600 text-sm font-semibold group-hover:gap-3 transition-all">
+          En savoir plus <i class="fa-solid fa-arrow-right text-xs"></i>
+        </div>
       </div>
 
-      <div class="bg-white border border-slate-100 rounded-xl p-8 hover:shadow-lg hover:border-primary-100 hover:-translate-y-0.5 transition-all duration-300 group">
-        <div class="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary-100 transition-colors">
-          <i class="fa-solid fa-gamepad text-xl text-primary-600"></i>
+      <div class="bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-primary-100 hover:-translate-y-1 transition-all duration-300 group">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-6 shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/30 transition-shadow">
+          <i class="fa-solid fa-trophy text-xl text-white"></i>
         </div>
-        <h3 class="text-lg font-bold text-brand-dark mb-2">Gamification</h3>
-        <p class="text-brand-gray text-sm leading-relaxed">Système de points, badges et classements pour motiver et engager les stagiaires.</p>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Gamification</h3>
+        <p class="text-brand-gray text-sm leading-relaxed mb-5">Points, badges, classements et niveaux pour motiver et engager les stagiaires dans leur parcours professionnel.</p>
+        <div class="flex items-center gap-2 text-amber-600 text-sm font-semibold group-hover:gap-3 transition-all">
+          En savoir plus <i class="fa-solid fa-arrow-right text-xs"></i>
+        </div>
       </div>
 
-      <div class="bg-white border border-slate-100 rounded-xl p-8 hover:shadow-lg hover:border-primary-100 hover:-translate-y-0.5 transition-all duration-300 group">
-        <div class="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary-100 transition-colors">
-          <i class="fa-solid fa-face-smile text-xl text-primary-600"></i>
+      <div class="bg-white rounded-2xl p-8 border border-slate-100 hover:shadow-xl hover:border-primary-100 hover:-translate-y-1 transition-all duration-300 group">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/30 transition-shadow">
+          <i class="fa-solid fa-face-smile text-xl text-white"></i>
         </div>
-        <h3 class="text-lg font-bold text-brand-dark mb-2">Authentification FaceID</h3>
-        <p class="text-brand-gray text-sm leading-relaxed">Connexion sécurisée et moderne grâce à la reconnaissance faciale biométrique.</p>
-      </div>
-
-      <div class="bg-white border border-slate-100 rounded-xl p-8 hover:shadow-lg hover:border-primary-100 hover:-translate-y-0.5 transition-all duration-300 group">
-        <div class="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary-100 transition-colors">
-          <i class="fa-solid fa-cloud text-xl text-primary-600"></i>
+        <h3 class="text-xl font-bold text-brand-dark mb-3">Authentification FaceID</h3>
+        <p class="text-brand-gray text-sm leading-relaxed mb-5">Connexion sécurisée par reconnaissance faciale IA avec détection de vivacité et anti-spoofing intégrés.</p>
+        <div class="flex items-center gap-2 text-emerald-600 text-sm font-semibold group-hover:gap-3 transition-all">
+          En savoir plus <i class="fa-solid fa-arrow-right text-xs"></i>
         </div>
-        <h3 class="text-lg font-bold text-brand-dark mb-2">Cloud Infrastructure & ITO</h3>
-        <p class="text-brand-gray text-sm leading-relaxed">Pilotez vos infrastructures · Cloud Privé, Public, Plateforme Traditionnelle.</p>
-      </div>
-
-      <div class="bg-white border border-slate-100 rounded-xl p-8 hover:shadow-lg hover:border-primary-100 hover:-translate-y-0.5 transition-all duration-300 group">
-        <div class="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary-100 transition-colors">
-          <i class="fa-solid fa-brain text-xl text-primary-600"></i>
-        </div>
-        <h3 class="text-lg font-bold text-brand-dark mb-2">Consulting, DATA & AI</h3>
-        <p class="text-brand-gray text-sm leading-relaxed">Maximisez vos insights · Plateformes Analytiques sur Site et Cloud.</p>
-      </div>
-
-      <div class="bg-white border border-slate-100 rounded-xl p-8 hover:shadow-lg hover:border-primary-100 hover:-translate-y-0.5 transition-all duration-300 group">
-        <div class="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary-100 transition-colors">
-          <i class="fa-solid fa-code text-xl text-primary-600"></i>
-        </div>
-        <h3 class="text-lg font-bold text-brand-dark mb-2">Custom Apps & EAS</h3>
-        <p class="text-brand-gray text-sm leading-relaxed">Digitalisez et modernisez votre patrimoine · Intégration, Migration, TMA/TRA.</p>
-      </div>
-
-      <div class="bg-white border border-slate-100 rounded-xl p-8 hover:shadow-lg hover:border-primary-100 hover:-translate-y-0.5 transition-all duration-300 group">
-        <div class="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary-100 transition-colors">
-          <i class="fa-solid fa-file-shield text-xl text-primary-600"></i>
-        </div>
-        <h3 class="text-lg font-bold text-brand-dark mb-2">Insurance Software & BPS</h3>
-        <p class="text-brand-gray text-sm leading-relaxed">Gérez l'ensemble du cycle de vie de l'assurance avec une suite globale complète.</p>
-      </div>
-
-      <div class="bg-white border border-slate-100 rounded-xl p-8 hover:shadow-lg hover:border-primary-100 hover:-translate-y-0.5 transition-all duration-300 group">
-        <div class="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary-100 transition-colors">
-          <i class="fa-solid fa-laptop-code text-xl text-primary-600"></i>
-        </div>
-        <h3 class="text-lg font-bold text-brand-dark mb-2">Modern Workplace</h3>
-        <p class="text-brand-gray text-sm leading-relaxed">Libérez le potentiel de vos utilisateurs · Digital Workplace, Automation, User-Centric.</p>
-      </div>
-
-      <div class="bg-white border border-slate-100 rounded-xl p-8 hover:shadow-lg hover:border-primary-100 hover:-translate-y-0.5 transition-all duration-300 group">
-        <div class="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary-100 transition-colors">
-          <i class="fa-solid fa-shield text-xl text-primary-600"></i>
-        </div>
-        <h3 class="text-lg font-bold text-brand-dark mb-2">Sécurité & SOC</h3>
-        <p class="text-brand-gray text-sm leading-relaxed">Assurez et sécurisez votre performance · Données, Applications, Infrastructure.</p>
       </div>
     </div>
 
-    <!-- CLIENTS -->
-    <div class="mt-20">
-      <p class="text-center text-brand-gray text-sm font-semibold uppercase tracking-widest mb-8">Ils nous font confiance</p>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-brand-dark font-bold text-sm hover:border-primary-200 hover:shadow-sm transition-all">Client 1</div>
-        <div class="h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-brand-dark font-bold text-sm hover:border-primary-200 hover:shadow-sm transition-all">Client 2</div>
-        <div class="h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-brand-dark font-bold text-sm hover:border-primary-200 hover:shadow-sm transition-all">Client 3</div>
-        <div class="h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-brand-dark font-bold text-sm hover:border-primary-200 hover:shadow-sm transition-all">Client 4</div>
+    <!-- Secondary features - compact grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div class="bg-white rounded-xl p-5 border border-slate-100 text-center hover:shadow-md hover:border-primary-100 transition-all group">
+        <i class="fa-solid fa-cloud text-primary-500 text-lg mb-3 block"></i>
+        <span class="text-xs font-bold text-brand-dark">Cloud & ITO</span>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-slate-100 text-center hover:shadow-md hover:border-primary-100 transition-all group">
+        <i class="fa-solid fa-brain text-primary-500 text-lg mb-3 block"></i>
+        <span class="text-xs font-bold text-brand-dark">DATA & IA</span>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-slate-100 text-center hover:shadow-md hover:border-primary-100 transition-all group">
+        <i class="fa-solid fa-code text-primary-500 text-lg mb-3 block"></i>
+        <span class="text-xs font-bold text-brand-dark">Custom Apps</span>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-slate-100 text-center hover:shadow-md hover:border-primary-100 transition-all group">
+        <i class="fa-solid fa-shield text-primary-500 text-lg mb-3 block"></i>
+        <span class="text-xs font-bold text-brand-dark">Sécurité SOC</span>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-slate-100 text-center hover:shadow-md hover:border-primary-100 transition-all group">
+        <i class="fa-solid fa-laptop-code text-primary-500 text-lg mb-3 block"></i>
+        <span class="text-xs font-bold text-brand-dark">Workplace</span>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-slate-100 text-center hover:shadow-md hover:border-primary-100 transition-all group">
+        <i class="fa-solid fa-file-shield text-primary-500 text-lg mb-3 block"></i>
+        <span class="text-xs font-bold text-brand-dark">Insurance</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- SECTION CTA FOOTER -->
-<section class="w-full py-24 bg-gradient-to-b from-[#0f172a] to-[#1e3a5f]">
-  <div class="max-w-3xl mx-auto px-6 text-center space-y-8">
-    <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 border border-white/20 rounded-full text-white/70 text-sm font-semibold">
-      <span class="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse"></span>
-      Plateforme disponible dès maintenant
-    </div>
-    <h2 class="text-4xl lg:text-5xl font-black text-white leading-tight">Prêt à Rejoindre<br>l'Aventure ?</h2>
-    <p class="text-lg text-white/70 max-w-lg mx-auto">Commencez votre suivi d'engagement interactif dès maintenant avec notre plateforme révolutionnaire.</p>
-    <a routerLink="/register"
-       class="inline-flex items-center gap-2.5 px-12 py-4 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-500 hover:shadow-2xl hover:shadow-primary-500/30 hover:-translate-y-0.5 transition-all duration-300">
-      <i class="fa-solid fa-rocket text-sm"></i>
-      Créer un Compte Maintenant
-    </a>
-  </div>
-</section>
+<!-- ============================================================ -->
+<!-- 5. VIDEO DE PRESENTATION                                     -->
+<!-- ============================================================ -->
+<section id="video" class="w-full py-24 bg-white">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
 
-<!-- FOOTER -->
-<footer>
-  <div class="bg-white border-t border-slate-100">
-    <div class="max-w-7xl mx-auto px-6 py-14">
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
-        <div class="md:col-span-5 space-y-4">
+      <!-- Left text -->
+      <div class="lg:col-span-2 space-y-6">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-50 border border-primary-200 rounded-full text-primary-700 text-xs font-semibold uppercase tracking-wider">
+          <i class="fa-solid fa-play text-[10px]"></i>
+          Présentation
+        </span>
+        <h2 class="text-3xl font-black text-brand-dark leading-tight">
+          Découvrez DXC Technology
+        </h2>
+        <p class="text-brand-gray leading-relaxed">
+          DXC Technology accompagne les organisations dans leur transformation digitale. Notre plateforme met l'accent sur le suivi, la gamification et l'authentification faciale.
+        </p>
+        <div class="space-y-3 pt-2">
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
+            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-check text-primary-600 text-xs"></i>
             </div>
-            <span class="text-brand-dark font-black text-xl tracking-tight">EngageTrack<span class="text-primary-600">.</span></span>
+            <span class="text-sm text-brand-dark font-medium">Microservices Spring Boot</span>
           </div>
-          <p class="text-brand-gray text-sm max-w-sm leading-relaxed">L'excellence au service de l'engagement et de la réussite de nos talents DXC Technology.</p>
-          <div class="flex items-center gap-2.5">
-            <span class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-slate-50 border border-slate-100 hover:bg-primary-50 hover:border-primary-200 text-brand-gray hover:text-primary-600 transition-all cursor-pointer">
-              <i class="fa-brands fa-linkedin-in text-sm"></i>
-            </span>
-            <span class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-slate-50 border border-slate-100 hover:bg-primary-50 hover:border-primary-200 text-brand-gray hover:text-primary-600 transition-all cursor-pointer">
-              <i class="fa-brands fa-github text-sm"></i>
-            </span>
-            <span class="inline-flex w-9 h-9 items-center justify-center rounded-lg bg-slate-50 border border-slate-100 hover:bg-primary-50 hover:border-primary-200 text-brand-gray hover:text-primary-600 transition-all cursor-pointer">
-              <i class="fa-solid fa-globe text-sm"></i>
-            </span>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-check text-primary-600 text-xs"></i>
+            </div>
+            <span class="text-sm text-brand-dark font-medium">IA Faciale avec FastAPI</span>
           </div>
-        </div>
-
-        <div class="md:col-span-3 space-y-3">
-          <h4 class="text-brand-dark font-bold text-sm uppercase tracking-wider">Navigation</h4>
-          <ul class="space-y-2.5">
-            <li><a class="text-brand-gray text-sm hover:text-brand-dark transition-colors" routerLink="/">Accueil</a></li>
-            <li><a class="text-brand-gray text-sm hover:text-brand-dark transition-colors" routerLink="/login">Connexion</a></li>
-            <li><a class="text-brand-gray text-sm hover:text-brand-dark transition-colors" routerLink="/register">Inscription</a></li>
-          </ul>
-        </div>
-
-        <div class="md:col-span-4 space-y-3">
-          <h4 class="text-brand-dark font-bold text-sm uppercase tracking-wider">Technologie</h4>
-          <ul class="space-y-2.5">
-            <li class="flex items-center gap-2.5 text-brand-gray text-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0"></span>FastAPI (IA & Vision)</li>
-            <li class="flex items-center gap-2.5 text-brand-gray text-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0"></span>Spring Boot (Microservices)</li>
-            <li class="flex items-center gap-2.5 text-brand-gray text-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0"></span>Angular (Dashboard)</li>
-          </ul>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-check text-primary-600 text-xs"></i>
+            </div>
+            <span class="text-sm text-brand-dark font-medium">Dashboard Angular moderne</span>
+          </div>
         </div>
       </div>
 
-      <div class="mt-12 pt-6 border-t border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <p class="text-brand-gray text-sm">© 2026 DXC Technology Platform. Tous droits réservés.</p>
-        <div class="flex gap-5 text-sm text-brand-gray">
-          <a class="hover:text-brand-dark transition-colors" routerLink="/">Mentions légales</a>
-          <a class="hover:text-brand-dark transition-colors" routerLink="/">Confidentialité</a>
+      <!-- Right video -->
+      <div class="lg:col-span-3">
+        <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/20">
+          <div class="relative w-full" style="padding-top: 56.25%;">
+            <iframe
+              class="absolute inset-0 w-full h-full"
+              [src]="getSafeYoutubeUrl('https://www.youtube-nocookie.com/embed/e30Vpub8QgQ?start=42&rel=0')"
+              title="Présentation DXC"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 6. CONFIANCE CLIENTS                                         -->
+<!-- ============================================================ -->
+<section class="w-full py-16 bg-slate-50 border-y border-slate-100">
+  <div class="max-w-5xl mx-auto px-6">
+    <p class="text-center text-brand-gray text-xs font-semibold uppercase tracking-[0.2em] mb-10">Ils nous font confiance</p>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-6 items-center">
+      <div class="h-20 rounded-xl bg-white border border-slate-100 flex items-center justify-center px-5 hover:border-primary-200 hover:shadow-md transition-all">
+        <img src="partenariat/Logo-DXC-CDG.jpg" alt="DXC CDG" class="max-h-14 max-w-full object-contain" />
+      </div>
+      <div class="h-20 rounded-xl bg-white border border-slate-100 flex items-center justify-center px-5 hover:border-primary-200 hover:shadow-md transition-all">
+        <img src="partenariat/ONCF.png" alt="ONCF" class="max-h-14 max-w-full object-contain" />
+      </div>
+      <div class="h-20 rounded-xl bg-white border border-slate-100 flex items-center justify-center px-5 hover:border-primary-200 hover:shadow-md transition-all">
+        <img src="partenariat/ORANGE.png" alt="Orange" class="max-h-14 max-w-full object-contain" />
+      </div>
+      <div class="h-20 rounded-xl bg-white border border-slate-100 flex items-center justify-center px-5 hover:border-primary-200 hover:shadow-md transition-all">
+        <img src="partenariat/ACCOR.png" alt="Accor" class="max-h-14 max-w-full object-contain" />
+      </div>
+      <div class="h-20 rounded-xl bg-white border border-slate-100 flex items-center justify-center px-5 hover:border-primary-200 hover:shadow-md transition-all">
+        <img src="partenariat/LOGO ROYAL.png" alt="Royal" class="max-h-14 max-w-full object-contain" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 7. CTA                                                       -->
+<!-- ============================================================ -->
+<section class="w-full py-24 bg-gradient-to-br from-[#0f172a] to-[#1e3a5f] relative overflow-hidden">
+  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-3xl"></div>
+  <div class="relative z-10 max-w-3xl mx-auto px-6 text-center space-y-8">
+    <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 border border-white/15 rounded-full text-white/60 text-xs font-semibold uppercase tracking-wider">
+      <span class="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse"></span>
+      Disponible maintenant
+    </span>
+    <h2 class="text-4xl lg:text-5xl font-black text-white leading-tight">
+      Prêt à rejoindre<br>l'aventure ?
+    </h2>
+    <p class="text-lg text-white/60 max-w-md mx-auto">
+      Commencez votre suivi d'engagement interactif et transformez votre expérience de stage.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4 pt-2">
+      <a routerLink="/register"
+         class="px-10 py-4 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-400 hover:shadow-2xl hover:shadow-primary-500/30 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2.5 text-sm">
+        <i class="fa-solid fa-rocket"></i>
+        Créer un Compte
+      </a>
+      <a routerLink="/login"
+         class="px-10 py-4 bg-white/10 border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-all duration-300 flex items-center gap-2.5 text-sm">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        Se Connecter
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 8. FOOTER                                                    -->
+<!-- ============================================================ -->
+<footer class="bg-white border-t border-slate-100">
+  <div class="max-w-7xl mx-auto px-6 py-14">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
+
+      <!-- Brand -->
+      <div class="md:col-span-5 space-y-4">
+        <div class="flex items-center gap-2.5">
+          <img src="favicon.ico" alt="StagiaireDXC" class="w-9 h-9 object-contain" />
+          <span class="text-brand-dark font-black text-lg tracking-tight">Stagiaire<span class="text-primary-600">DXC</span></span>
+        </div>
+        <p class="text-brand-gray text-sm max-w-sm leading-relaxed">
+          L'excellence au service de l'engagement et de la réussite de nos talents DXC Technology.
+        </p>
+        <div class="flex items-center gap-2">
+          <a class="w-9 h-9 inline-flex items-center justify-center rounded-lg bg-slate-50 border border-slate-100 hover:bg-primary-50 hover:border-primary-200 text-brand-gray hover:text-primary-600 transition-all cursor-pointer">
+            <i class="fa-brands fa-linkedin-in text-sm"></i>
+          </a>
+          <a class="w-9 h-9 inline-flex items-center justify-center rounded-lg bg-slate-50 border border-slate-100 hover:bg-primary-50 hover:border-primary-200 text-brand-gray hover:text-primary-600 transition-all cursor-pointer">
+            <i class="fa-brands fa-github text-sm"></i>
+          </a>
+          <a class="w-9 h-9 inline-flex items-center justify-center rounded-lg bg-slate-50 border border-slate-100 hover:bg-primary-50 hover:border-primary-200 text-brand-gray hover:text-primary-600 transition-all cursor-pointer">
+            <i class="fa-solid fa-globe text-sm"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="md:col-span-3 space-y-3">
+        <h4 class="text-brand-dark font-bold text-xs uppercase tracking-wider">Navigation</h4>
+        <ul class="space-y-2.5">
+          <li><a class="text-brand-gray text-sm hover:text-primary-600 transition-colors" routerLink="/">Accueil</a></li>
+          <li><a class="text-brand-gray text-sm hover:text-primary-600 transition-colors" routerLink="/login">Connexion</a></li>
+          <li><a class="text-brand-gray text-sm hover:text-primary-600 transition-colors" routerLink="/register">Inscription</a></li>
+        </ul>
+      </div>
+
+      <!-- Tech stack -->
+      <div class="md:col-span-4 space-y-3">
+        <h4 class="text-brand-dark font-bold text-xs uppercase tracking-wider">Stack Technique</h4>
+        <ul class="space-y-2.5">
+          <li class="flex items-center gap-2.5 text-brand-gray text-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0"></span>FastAPI &mdash; IA & Vision</li>
+          <li class="flex items-center gap-2.5 text-brand-gray text-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0"></span>Spring Boot &mdash; Microservices</li>
+          <li class="flex items-center gap-2.5 text-brand-gray text-sm"><span class="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0"></span>Angular &mdash; Dashboard</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-12 pt-6 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="text-brand-gray text-xs">&copy; 2026 DXC Technology Platform. Tous droits réservés.</p>
+      <div class="flex gap-5 text-xs text-brand-gray">
+        <a class="hover:text-primary-600 transition-colors" routerLink="/">Mentions légales</a>
+        <a class="hover:text-primary-600 transition-colors" routerLink="/">Confidentialité</a>
       </div>
     </div>
   </div>

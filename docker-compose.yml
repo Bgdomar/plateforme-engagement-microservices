@@ -81,7 +81,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-identity:5432/identity_db
       SPRING_DATASOURCE_USERNAME: identity_user
       SPRING_DATASOURCE_PASSWORD: identity_pass
-      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
       JWT_SECRET: YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==
       APP_UPLOAD_PATH: /app/assets/images
@@ -95,6 +95,36 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - plateforme-engagement-network
+
+  facial-ai-service:
+    build:
+      context: ./epic-1-authentication/PFE_FACIAL_AI
+      dockerfile: Dockerfile
+    container_name: facial-ai-service
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: postgres-identity
+      DB_PORT: 5432
+      DB_NAME: identity_db
+      DB_USER: identity_user
+      DB_PASSWORD: identity_pass
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      EMBEDDING_TOLERANCE: 0.75
+      LIVENESS_BLINKS_REQUIRED: 2
+    depends_on:
+      postgres-identity:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
     networks:
       - plateforme-engagement-network
 
@@ -157,6 +187,110 @@ services:
       - plateforme-engagement-network
 
 
+  # ===== POSTGRESQL CHAT =====
+  postgres-chat:
+    image: postgres:16-alpine
+    container_name: postgres-chat
+    restart: always
+    environment:
+      POSTGRES_DB: chat_db
+      POSTGRES_USER: chat_user
+      POSTGRES_PASSWORD: chat_pass
+    ports:
+      - "5438:5432"
+    volumes:
+      - pg_chat_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chat_user -d chat_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - plateforme-engagement-network
+
+  # ===== CHAT SERVICE =====
+  chat-service:
+    build:
+      context: ./epic-6-chat/backend/chat-service
+      dockerfile: Dockerfile
+    container_name: chat-service
+    restart: always
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_APPLICATION_NAME: chat-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-chat:5432/chat_db
+      SPRING_DATASOURCE_USERNAME: chat_user
+      SPRING_DATASOURCE_PASSWORD: chat_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
+      SERVER_PORT: 8083
+    depends_on:
+      postgres-chat:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - plateforme-engagement-network
+
+  # ===== POSTGRESQL NOTIFICATION =====
+  postgres-notification:
+    image: postgres:16-alpine
+    container_name: postgres-notification
+    restart: always
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: notification_user
+      POSTGRES_PASSWORD: notification_pass
+    ports:
+      - "5439:5432"
+    volumes:
+      - pg_notification_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notification_user -d notification_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - plateforme-engagement-network
+
+  # ===== NOTIFICATION SERVICE =====
+  notification-service:
+    build:
+      context: ./epic-7-notifications/backend/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    restart: always
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_APPLICATION_NAME: notification-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-notification:5432/notification_db
+      SPRING_DATASOURCE_USERNAME: notification_user
+      SPRING_DATASOURCE_PASSWORD: notification_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
+      SERVER_PORT: 8084
+    depends_on:
+      postgres-notification:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - plateforme-engagement-network
+
   # ===== API GATEWAY =====
   api-gateway:
     build:
@@ -174,7 +308,13 @@ services:
         condition: service_healthy
       identity-service:
         condition: service_healthy
+      facial-ai-service:
+        condition: service_healthy
       team-mission-service:
+        condition: service_healthy
+      chat-service:
+        condition: service_healthy
+      notification-service:
         condition: service_healthy
 
     healthcheck:
@@ -205,6 +345,8 @@ volumes:
   pg_team_data: # Nouveau volume pour team-mission-service
   team_images:
   kafka_data:
+  pg_chat_data:
+  pg_notification_data:
 
 
 networks:

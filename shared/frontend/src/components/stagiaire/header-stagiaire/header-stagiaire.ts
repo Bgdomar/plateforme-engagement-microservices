@@ -3,14 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
-import {environment} from '../../../environments/environment';
-
-interface Notification {
-  id: number;
-  message: string;
-  time: string;
-  read: boolean;
-}
+import { NotificationService, NotificationDTO } from '../../../services/notification.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-header-stagiaire',
@@ -35,16 +29,17 @@ export class HeaderStagiaireComponent implements OnInit, OnDestroy {
   isDropdownOpen = false;
   isNotifOpen = false;
 
-  notifications: Notification[] = [];
+  notifications: NotificationDTO[] = [];
   unreadCount: number = 0;
 
   private routerSub: Subscription | undefined;
+  private notifSub: Subscription | undefined;
 
-  // ✅ Injection de ChangeDetectorRef
   constructor(
     private router: Router,
     public authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -61,6 +56,8 @@ export class HeaderStagiaireComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routerSub?.unsubscribe();
+    this.notifSub?.unsubscribe();
+    this.notificationService.stopPolling();
   }
 
   private loadUserData(): void {
@@ -93,12 +90,20 @@ export class HeaderStagiaireComponent implements OnInit, OnDestroy {
   }
 
   private loadNotifications(): void {
-    this.notifications = [
-      { id: 1, message: 'Votre livrable a ete valide avec 18/20 !', time: 'Il y a 10 min', read: false },
-      { id: 2, message: 'Nouveau badge debloque : Premiere mission', time: 'Il y a 1h', read: false },
-      { id: 3, message: "Vous avez ete ajoute a l'equipe Alpha", time: 'Il y a 3h', read: true },
-    ];
-    this.unreadCount = this.notifications.filter(n => !n.read).length;
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
+    const uid = Number(userId);
+    this.notificationService.startPolling(uid, 30000);
+    this.notifSub = this.notificationService.notifications.subscribe(notifs => {
+      this.notifications = notifs;
+      this.unreadCount = notifs.filter(n => !n.read).length;
+      this.cdr.detectChanges();
+    });
+  }
+
+  getTimeAgo(dateStr: string): string {
+    return this.notificationService.getTimeAgo(dateStr);
   }
 
   onImageError(): void {
@@ -126,9 +131,11 @@ export class HeaderStagiaireComponent implements OnInit, OnDestroy {
   }
 
   markAllRead(): void {
-    this.notifications = this.notifications.map(n => ({ ...n, read: true }));
-    this.unreadCount = 0;
-    this.cdr.detectChanges();
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+    this.notificationService.markAllAsRead(Number(userId)).subscribe(() => {
+      this.cdr.detectChanges();
+    });
   }
 
   @HostListener('document:click', ['$event'])

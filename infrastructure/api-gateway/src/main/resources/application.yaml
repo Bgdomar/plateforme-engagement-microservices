@@ -8,7 +8,7 @@ spring:
   cloud:
     gateway:
       codecs:
-        max-in-memory-size: 5MB
+        max-in-memory-size: 12MB
 
       discovery:
         locator:
@@ -33,6 +33,11 @@ spring:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
       routes:
+        - id: chat-uploads
+          uri: lb://chat-service
+          predicates:
+            - Path=/uploads/chat/**
+
         # Identity Service
         - id: identity-service
           uri: lb://identity-service
@@ -45,9 +50,24 @@ spring:
             - Path=/api/equipes/**,/api/stagiaires-equipes/**,/api/missions/**
 
         - id: facial-ai-service
-          uri: http://host.docker.internal:8000   # ← Pour accéder à localhost depuis Docker
+          uri: http://facial-ai-service:8000
           predicates:
               - Path=/facial-ai/**
+
+        - id: chat-service
+          uri: lb://chat-service
+          predicates:
+            - Path=/api/chat/**
+
+        - id: chat-websocket
+          uri: lb:ws://chat-service
+          predicates:
+            - Path=/ws/**
+
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
 
 eureka:
   client:

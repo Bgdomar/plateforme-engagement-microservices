@@ -178,16 +178,18 @@ export class FaceAuthComponent implements OnInit, OnDestroy {
       if (frame) {
         this.captureFramesList.push(frame);
         this.framesCollected = this.captureFramesList.length;
-        this.captureProgress = Math.round((frameIndex + 1) / this.FRAMES_TO_CAPTURE * 100);
+        frameIndex++;
+        this.captureProgress = Math.round(frameIndex / this.FRAMES_TO_CAPTURE * 100);
         this.cdr.detectChanges();
-      }
 
-      frameIndex++;
-
-      if (frameIndex < this.FRAMES_TO_CAPTURE) {
-        setTimeout(captureFrame, frameInterval);
+        if (frameIndex < this.FRAMES_TO_CAPTURE) {
+          setTimeout(captureFrame, frameInterval);
+        } else {
+          this.onCaptureComplete();
+        }
       } else {
-        this.onCaptureComplete();
+        // Video not ready yet — retry this slot after a short delay
+        setTimeout(captureFrame, 50);
       }
     };
 

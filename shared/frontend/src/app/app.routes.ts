@@ -18,6 +18,7 @@ import { TeamListComponent } from '../components/encadrant/teams/team-list/team-
 import { TeamCreateComponent } from '../components/encadrant/teams/team-create/team-create.component';
 import { TeamDetailComponent } from '../components/encadrant/teams/team-detail/team-detail.component';
 import { TeamEditComponent } from '../components/encadrant/teams/team-edit/team-edit.component';
+import { ChatComponent } from '../components/chat/chat.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -49,6 +50,10 @@ export const routes: Routes = [
       { path: 'admin/users', component: UsersListComponent, canActivate: [adminGuard] },
     ]
   },
+
+  // Chat routes
+  { path: 'chat/stagiaire', component: ChatComponent, canActivate: [authGuard, stagiaireGuard] },
+  { path: 'chat/encadrant', component: ChatComponent, canActivate: [authGuard, encadrantGuard] },
 
   // ✅ Wildcard TOUJOURS en dernier
   { path: '**', redirectTo: '' },

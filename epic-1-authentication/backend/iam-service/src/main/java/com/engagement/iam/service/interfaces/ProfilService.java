@@ -15,4 +15,5 @@ public interface ProfilService {
     void deleteAvatar(Long userId);
     List<StagiaireInfo> getAllStagiaires();
     StagiaireInfo getStagiaireInfo(Long userId);
+    List<ProfilResponse> getAllContacts();
 }

@@ -1,6 +1,5 @@
 package com.engagement.iam.entity;
 
-import com.engagement.iam.entity.Utilisateur;
 import com.engagement.iam.entity.enums.StatutDemande;
 import jakarta.persistence.*;
 import lombok.*;

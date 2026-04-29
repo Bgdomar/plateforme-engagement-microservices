@@ -1,6 +1,6 @@
 package com.engagement.iam.service.implimentaion;
 
-
+import com.engagement.iam.client.NotificationClient;
 import com.engagement.iam.dto.*;
 import com.engagement.iam.entity.*;
 import com.engagement.iam.entity.enums.StatutCompte;
@@ -13,8 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,6 +27,7 @@ public class DemandeInscriptionService {
     private final DemandeInscriptionRepository demandeRepo;
     private final UtilisateurRepository utilisateurRepo;
     private final ProfilUtilisateurRepository profilRepo;
+    private final NotificationClient notificationClient;
     private final StagiaireRepository infoStagiaireRepo;
     private final EncadrantRepository infoEncadrantRepo;
     private final StagiaireDemandeRepository infoStagiaireDemandeRepo;
@@ -78,8 +77,28 @@ public class DemandeInscriptionService {
             createUserProfile(demande, utilisateur);
             log.info("✅ Profil utilisateur créé pour userId: {}", utilisateur.getId());
 
+            // Notifier l'utilisateur que son compte est validé
+            notificationClient.send(
+                    utilisateur.getId(),
+                    "Compte validé ✓",
+                    "Bienvenue ! Votre demande d'inscription a été approuvée. Vous pouvez maintenant vous connecter.",
+                    "SYSTEM"
+            );
+
         } else {
             demande.setStatut(StatutDemande.REFUSEE);
+
+            // Notifier l'utilisateur que sa demande est refusée
+            Utilisateur utilisateur = demande.getUtilisateur();
+            String motif = (req.getCommentaire() != null && !req.getCommentaire().isBlank())
+                    ? " Motif : " + req.getCommentaire()
+                    : "";
+            notificationClient.send(
+                    utilisateur.getId(),
+                    "Demande refusée",
+                    "Votre demande d'inscription a été refusée." + motif,
+                    "SYSTEM"
+            );
         }
 
         return toResponse(demandeRepo.save(demande));
@@ -125,6 +144,24 @@ public class DemandeInscriptionService {
         String role = d.getUtilisateur() != null ? d.getUtilisateur().getTypeCompte().name() : null;
         String email = d.getUtilisateur() != null ? d.getUtilisateur().getEmail() : null;
 
+        String nom = d.getNom();
+        String prenom = d.getPrenom();
+        String avatarUrl = d.getAvatarUrl();
+
+        // Si la demande est validée, utiliser les données actuelles du profil
+        if (d.getStatut() == StatutDemande.VALIDEE && d.getUtilisateur() != null) {
+            ProfilUtilisateur profil = profilRepo
+                    .findByUtilisateurId(d.getUtilisateur().getId())
+                    .orElse(null);
+            if (profil != null) {
+                nom = profil.getNom();
+                prenom = profil.getPrenom();
+                if (profil.getAvatarUrl() != null) {
+                    avatarUrl = profil.getAvatarUrl();
+                }
+            }
+        }
+
         String niveauEtudes = null, filiere = null, etablissement = null;
         String departement = null, specialite = null;
 
@@ -145,8 +182,8 @@ public class DemandeInscriptionService {
 
         return DemandeInscriptionResponse.builder()
                 .id(d.getId())
-                .nom(d.getNom())
-                .prenom(d.getPrenom())
+                .nom(nom)
+                .prenom(prenom)
                 .email(email)
                 .role(role)
                 .statut(d.getStatut())
@@ -158,7 +195,7 @@ public class DemandeInscriptionService {
                 .etablissement(etablissement)
                 .departement(departement)
                 .specialite(specialite)
-                .urlImage(d.getAvatarUrl())
+                .urlImage(avatarUrl)
                 .build();
     }
 

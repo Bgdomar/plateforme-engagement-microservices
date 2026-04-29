@@ -16,7 +16,7 @@ import { filter } from 'rxjs/operators';
   `,
   styles: [`
     .content-with-navbar {
-      padding-top: 120px;
+      padding-top: 72px;
     }
   `]
 })
@@ -30,8 +30,14 @@ export class App implements OnInit {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      const publicRoutes = ['/', '/login', '/register', '/face-auth'];
-      this.showNavbar = publicRoutes.includes(event.urlAfterRedirects) || event.urlAfterRedirects === '';
+      const url = event.urlAfterRedirects;
+      const hasOwnHeader = url === '/' || url === '' ||
+        url.startsWith('/dashboard') ||
+        url.startsWith('/stagiaire') ||
+        url.startsWith('/encadrant') ||
+        url.startsWith('/missions') ||
+        url.startsWith('/chat');
+      this.showNavbar = !hasOwnHeader;
     });
   }
 
