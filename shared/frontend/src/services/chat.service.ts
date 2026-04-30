@@ -81,6 +81,14 @@ export class ChatService {
     return this.http.post<void>(`${this.baseUrl}/messages/read?conversationId=${conversationId}&userId=${userId}`, {});
   }
 
+  deleteMessage(messageId: number, userId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/messages/${messageId}?userId=${userId}`);
+  }
+
+  deleteConversation(conversationId: number, userId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/conversations/${conversationId}?userId=${userId}`);
+  }
+
   uploadFile(conversationId: number, senderId: number, senderName: string, file: File): Observable<MessageDTO> {
     const formData = new FormData();
     formData.append('file', file);

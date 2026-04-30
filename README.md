@@ -16,13 +16,9 @@ plateforme-engagement/
 │   └── backend/
 │       └── team-mission-service/       # Spring Boot — CRUD équipes, missions, livrables
 │
-├── epic-6-chat/                        # Messagerie temps réel
+├── epic-3-communication/               # Chat + Notifications (service unifié)
 │   └── backend/
-│       └── chat-service/               # Spring Boot — WebSocket (STOMP), messages, upload fichiers/images
-│
-├── epic-7-notifications/               # Notifications in-app
-│   └── backend/
-│       └── notification-service/       # Spring Boot — CRUD notifications, polling
+│       └── communication-service/      # Spring Boot — Chat WebSocket, messages, fichiers, notifications
 │
 ├── infrastructure/                     # Services d'infrastructure
 │   ├── api-gateway/                    # Spring Cloud Gateway (:8080)
@@ -64,7 +60,7 @@ plateforme-engagement/
 | API Gateway    | Spring Cloud Gateway (reactive)                          |
 | Discovery      | Netflix Eureka                                           |
 | Messaging      | Apache Kafka (KRaft), WebSocket (STOMP + SockJS)         |
-| Bases de données| PostgreSQL 16 (× 4 instances), pgvector                 |
+| Bases de données| PostgreSQL 16 (× 3 instances), pgvector                 |
 | AI/ML          | DeepFace (FaceNet), MediaPipe Face Detection             |
 | Conteneurs     | Docker, Docker Compose                                   |
 
@@ -88,15 +84,13 @@ docker compose up -d --build
 | API Gateway                 | 8080  |
 | IAM Service (identity)      | 8081  |
 | Team-Mission Service        | 8082  |
-| Chat Service                | 8083  |
-| Notification Service        | 8084  |
+| Communication Service       | 8083  |
 | Facial AI Service (FastAPI) | 8000  |
 | Eureka Discovery            | 8761  |
 | Kafka                       | 29092 |
 | PostgreSQL (identity)       | 5436  |
 | PostgreSQL (teams)          | 5437  |
-| PostgreSQL (chat)           | 5438  |
-| PostgreSQL (notifications)  | 5439  |
+| PostgreSQL (communication)  | 5438  |
 
 ## ✨ Fonctionnalités principales
 

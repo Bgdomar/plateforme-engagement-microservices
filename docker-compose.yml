@@ -187,103 +187,51 @@ services:
       - plateforme-engagement-network
 
 
-  # ===== POSTGRESQL CHAT =====
-  postgres-chat:
+  # ===== POSTGRESQL COMMUNICATION (Chat + Notifications) =====
+  postgres-communication:
     image: postgres:16-alpine
-    container_name: postgres-chat
+    container_name: postgres-communication
     restart: always
     environment:
-      POSTGRES_DB: chat_db
-      POSTGRES_USER: chat_user
-      POSTGRES_PASSWORD: chat_pass
+      POSTGRES_DB: communication_db
+      POSTGRES_USER: communication_user
+      POSTGRES_PASSWORD: communication_pass
     ports:
       - "5438:5432"
     volumes:
-      - pg_chat_data:/var/lib/postgresql/data
+      - pg_communication_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chat_user -d chat_db"]
+      test: ["CMD-SHELL", "pg_isready -U communication_user -d communication_db"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - plateforme-engagement-network
 
-  # ===== CHAT SERVICE =====
-  chat-service:
+  # ===== COMMUNICATION SERVICE (Chat + Notifications) =====
+  communication-service:
     build:
-      context: ./epic-6-chat/backend/chat-service
+      context: ./epic-3-communication/backend/communication-service
       dockerfile: Dockerfile
-    container_name: chat-service
+    container_name: communication-service
     restart: always
     ports:
       - "8083:8083"
     environment:
-      SPRING_APPLICATION_NAME: chat-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-chat:5432/chat_db
-      SPRING_DATASOURCE_USERNAME: chat_user
-      SPRING_DATASOURCE_PASSWORD: chat_pass
+      SPRING_APPLICATION_NAME: communication-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-communication:5432/communication_db
+      SPRING_DATASOURCE_USERNAME: communication_user
+      SPRING_DATASOURCE_PASSWORD: communication_pass
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
       SERVER_PORT: 8083
     depends_on:
-      postgres-chat:
+      postgres-communication:
         condition: service_healthy
       discovery-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    networks:
-      - plateforme-engagement-network
-
-  # ===== POSTGRESQL NOTIFICATION =====
-  postgres-notification:
-    image: postgres:16-alpine
-    container_name: postgres-notification
-    restart: always
-    environment:
-      POSTGRES_DB: notification_db
-      POSTGRES_USER: notification_user
-      POSTGRES_PASSWORD: notification_pass
-    ports:
-      - "5439:5432"
-    volumes:
-      - pg_notification_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U notification_user -d notification_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - plateforme-engagement-network
-
-  # ===== NOTIFICATION SERVICE =====
-  notification-service:
-    build:
-      context: ./epic-7-notifications/backend/notification-service
-      dockerfile: Dockerfile
-    container_name: notification-service
-    restart: always
-    ports:
-      - "8084:8084"
-    environment:
-      SPRING_APPLICATION_NAME: notification-service
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-notification:5432/notification_db
-      SPRING_DATASOURCE_USERNAME: notification_user
-      SPRING_DATASOURCE_PASSWORD: notification_pass
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka
-      SERVER_PORT: 8084
-    depends_on:
-      postgres-notification:
-        condition: service_healthy
-      discovery-service:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -312,9 +260,7 @@ services:
         condition: service_healthy
       team-mission-service:
         condition: service_healthy
-      chat-service:
-        condition: service_healthy
-      notification-service:
+      communication-service:
         condition: service_healthy
 
     healthcheck:
@@ -345,8 +291,7 @@ volumes:
   pg_team_data: # Nouveau volume pour team-mission-service
   team_images:
   kafka_data:
-  pg_chat_data:
-  pg_notification_data:
+  pg_communication_data:
 
 
 networks:

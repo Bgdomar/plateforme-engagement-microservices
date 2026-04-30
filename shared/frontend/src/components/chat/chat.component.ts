@@ -58,6 +58,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   groupName = '';
   selectedMembers: Set<number> = new Set();
 
+  contextMenuMsg: MessageDTO | null = null;
+  contextMenuPos = { x: 0, y: 0 };
+  showDeleteConvConfirm = false;
+
   private subs: Subscription[] = [];
   private typingTimeout: any = null;
   private pollingInterval: any = null;
@@ -511,5 +515,57 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   backToList(): void {
     this.showMobileConversations = true;
     this.selectedConversation = null;
+  }
+
+  // ── Delete ──
+
+  onMessageContextMenu(event: MouseEvent, msg: MessageDTO): void {
+    if (!this.isMyMessage(msg)) return;
+    event.preventDefault();
+    this.contextMenuMsg = msg;
+    this.contextMenuPos = { x: event.clientX, y: event.clientY };
+  }
+
+  closeContextMenu(): void {
+    this.contextMenuMsg = null;
+  }
+
+  deleteMessage(msg: MessageDTO): void {
+    if (!this.currentUser) return;
+    this.chatService.deleteMessage(msg.id, this.currentUser.id).subscribe({
+      next: () => {
+        this.messages = this.messages.filter(m => m.id !== msg.id);
+        this.contextMenuMsg = null;
+      },
+      error: () => {
+        alert('Erreur lors de la suppression du message');
+        this.contextMenuMsg = null;
+      }
+    });
+  }
+
+  confirmDeleteConversation(): void {
+    this.showDeleteConvConfirm = true;
+  }
+
+  cancelDeleteConversation(): void {
+    this.showDeleteConvConfirm = false;
+  }
+
+  deleteConversation(): void {
+    if (!this.selectedConversation || !this.currentUser) return;
+    const convId = this.selectedConversation.id;
+    this.chatService.deleteConversation(convId, this.currentUser.id).subscribe({
+      next: () => {
+        this.conversations = this.conversations.filter(c => c.id !== convId);
+        this.selectedConversation = null;
+        this.messages = [];
+        this.showDeleteConvConfirm = false;
+      },
+      error: () => {
+        alert('Erreur lors de la suppression de la discussion');
+        this.showDeleteConvConfirm = false;
+      }
+    });
   }
 }
