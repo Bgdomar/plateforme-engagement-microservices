@@ -2,7 +2,7 @@
 
 A microservices-based engagement platform built with Spring Boot, Angular, and Python (FastAPI).
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 plateforme-engagement/
@@ -85,7 +85,7 @@ plateforme-engagement/
 | AI/ML          | face_recognition (dlib), MediaPipe Face Detection|
 | Containers     | Docker, Docker Compose                           |
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Create the Docker network (first time only)
@@ -101,7 +101,7 @@ docker compose up -d --build
 # MinIO:      http://localhost:9001
 ```
 
-## 📌 Service Ports
+##  Service Ports
 
 | Service                 | Port |
 |------------------------|------|
@@ -117,6 +117,6 @@ docker compose up -d --build
 | MinIO API              | 9000 |
 | MinIO Console          | 9001 |
 
-## 📐 Architecture
+##  Architecture
 
 See [docs/architecture/README.md](docs/architecture/README.md) for full architecture documentation.
