@@ -36,6 +36,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
   niveauEtudes = '';
   filiere = '';
   etablissement = '';
+  dateDebutStage = '';
+  dateFinStage = '';
 
   // Champs encadrant
   departement = '';
@@ -153,8 +155,22 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }
 
     if (this.userType === 'stagiaire') {
-      if (!this.niveauEtudes || !this.filiere || !this.etablissement) {
-        this.error = 'Veuillez remplir tous les champs du stagiaire';
+      if (!this.niveauEtudes || !this.filiere || !this.etablissement || !this.dateDebutStage || !this.dateFinStage) {
+        this.error = 'Veuillez remplir tous les champs du stagiaire, y compris les dates de stage';
+        return false;
+      }
+
+      // Valider que la date de fin est après la date de début
+      if (new Date(this.dateDebutStage) >= new Date(this.dateFinStage)) {
+        this.error = 'La date de fin de stage doit être postérieure à la date de début';
+        return false;
+      }
+
+      // Valider que les dates ne sont pas dans le passé (date de début)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (new Date(this.dateDebutStage) < today) {
+        this.error = 'La date de début de stage ne peut pas être dans le passé';
         return false;
       }
     } else {
@@ -589,7 +605,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
         ...(this.userType.toLowerCase() === 'stagiaire' ? {
           niveauEtudes: this.niveauEtudes,
           filiere: this.filiere,
-          etablissement: this.etablissement
+          etablissement: this.etablissement,
+          dateDebutStage: this.dateDebutStage,
+          dateFinStage: this.dateFinStage
         } : {
           departement: this.departement,
           specialite: this.poste
@@ -645,7 +663,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
         ...(this.userType.toLowerCase() === 'stagiaire' ? {
           niveauEtudes: this.niveauEtudes,
           filiere: this.filiere,
-          etablissement: this.etablissement
+          etablissement: this.etablissement,
+          dateDebutStage: this.dateDebutStage,
+          dateFinStage: this.dateFinStage
         } : {
           departement: this.departement,
           specialite: this.poste

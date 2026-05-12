@@ -58,6 +58,7 @@
 .stat-card.suspended::before { background: #f59e0b; color: #f59e0b; }
 .stat-card.inactive::before { background: #ef4444; color: #ef4444; }
 .stat-card.pending::before { background: #8b5cf6; color: #8b5cf6; }
+.stat-card.archived::before { background: #94a3b8; color: #94a3b8; }
 
 .stat-icon {
   width: 48px;
@@ -94,6 +95,11 @@
   color: #8b5cf6;
 }
 
+.stat-card.archived .stat-icon {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
 .stat-icon svg {
   width: 24px;
   height: 24px;
@@ -115,6 +121,7 @@
 .stat-card.suspended .stat-value { color: #f59e0b; }
 .stat-card.inactive .stat-value { color: #ef4444; }
 .stat-card.pending .stat-value { color: #8b5cf6; }
+.stat-card.archived .stat-value { color: #64748b; }
 
 .stat-label {
   font-size: 0.75rem;
@@ -1038,4 +1045,115 @@
   .warning-box svg {
     margin: 0 auto;
   }
+}
+
+/* ── Archivage styles ── */
+.archived-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 9999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+
+.avatar-archived {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.stage-dates {
+  color: #3182ce;
+  font-size: 0.72rem;
+  margin-top: 0.15rem;
+}
+
+/* ── Bouton bleu calendrier ── */
+.btn-blue {
+  background: linear-gradient(135deg, #ebf8ff, #bee3f8);
+  color: #2b6cb0;
+  border: 1px solid #90cdf4;
+}
+
+.btn-blue:hover {
+  background: linear-gradient(135deg, #bee3f8, #90cdf4);
+  border-color: #63b3ed;
+}
+
+/* ── Modal icon bleu ── */
+.modal-icon-blue {
+  background: linear-gradient(135deg, #ebf8ff, #bee3f8);
+  color: #2b6cb0;
+}
+
+/* ── Bouton confirmer bleu ── */
+.btn-confirm-blue {
+  background: linear-gradient(135deg, #3182ce, #2b6cb0) !important;
+  color: white !important;
+}
+
+.btn-confirm-blue:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2b6cb0, #2c5282) !important;
+}
+
+/* ── Formulaire dates stage dans modal ── */
+.stage-dates-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.form-label-modal {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.4rem;
+}
+
+.date-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #2d3748;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #4299e1;
+  background: white;
+}
+
+.stage-dates-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ebf8ff;
+  border: 1px solid #bee3f8;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.82rem;
+  color: #2b6cb0;
+  margin-bottom: 0.5rem;
+}
+
+.stage-dates-note {
+  font-size: 0.78rem;
+  color: #718096;
+  background: #fffbeb;
+  border: 1px solid #fbd38d;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  margin-top: 0.5rem;
 }

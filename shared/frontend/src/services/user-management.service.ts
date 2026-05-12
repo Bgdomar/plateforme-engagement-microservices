@@ -19,11 +19,19 @@ export interface UserInfo {
   etablissement?: string;
   departement?: string;
   specialite?: string;
+  archived?: boolean;
+  dateDebutStage?: string;
+  dateFinStage?: string;
 }
 
 export interface UpdateStatutRequest {
   statut: 'ACTIF' | 'SUSPENDU' | 'DESACTIVE';
   motif?: string;
+}
+
+export interface UpdateStageDatesRequest {
+  dateDebutStage: string;
+  dateFinStage: string;
 }
 
 @Injectable({
@@ -46,5 +54,9 @@ export class UserManagementService {
 
   updateUserStatut(userId: number, request: UpdateStatutRequest): Observable<UserInfo> {
     return this.http.patch<UserInfo>(`${environment.apiUrl}/api/admin/inscriptions/users/${userId}/statut`, request, { headers: this.getHeaders() });
+  }
+
+  updateStageDates(userId: number, request: UpdateStageDatesRequest): Observable<UserInfo> {
+    return this.http.patch<UserInfo>(`${environment.apiUrl}/api/admin/inscriptions/users/${userId}/stage-dates`, request, { headers: this.getHeaders() });
   }
 }

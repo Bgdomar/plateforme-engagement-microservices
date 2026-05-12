@@ -62,6 +62,17 @@ public class DemandeInscriptionController {
     }
 
     /**
+     * PATCH /api/admin/users/{userId}/stage-dates
+     * Modifie les dates de stage d'un stagiaire existant
+     */
+    @PatchMapping("/users/{userId}/stage-dates")
+    public ResponseEntity<UserInfoResponse> updateStageDates(
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdateStageDatesRequest request) {
+        return ResponseEntity.ok(demandeService.updateStageDates(userId, request));
+    }
+
+    /**
      * DELETE /api/admin/inscriptions
      * Supprime plusieurs demandes (uniquement celles qui ne sont pas en attente)
      */

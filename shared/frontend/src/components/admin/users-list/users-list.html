@@ -71,6 +71,20 @@
           <span class="stat-label">En attente</span>
         </div>
       </div>
+
+      <div class="stat-card archived" (click)="filterArchived = 'ARCHIVES'; onFilterChange()">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="21 8 21 21 3 21 3 8"/>
+            <rect x="1" y="3" width="22" height="5"/>
+            <line x1="10" y1="12" x2="14" y2="12"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.archives }}</span>
+          <span class="stat-label">Archivés</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -113,6 +127,15 @@
           <option value="SUSPENDU">Suspendus</option>
           <option value="DESACTIVE">Désactivés</option>
           <option value="EN_ATTENTE">En attente</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Archivage :</label>
+        <select [(ngModel)]="filterArchived" (change)="onFilterChange()">
+          <option value="TOUS">Tous</option>
+          <option value="ACTIF_SEULEMENT">Non archivés</option>
+          <option value="ARCHIVES">Archivés (stage terminé)</option>
         </select>
       </div>
 
@@ -165,11 +188,17 @@
       <tbody>
       <tr *ngFor="let user of filteredUsers">
         <td class="user-cell">
-          <div class="user-avatar">{{ initiales(user.prenom, user.nom) }}</div>
+          <div class="user-avatar" [class.avatar-archived]="user.archived">{{ initiales(user.prenom, user.nom) }}</div>
           <div class="user-info">
-            <div class="user-name">{{ user.prenom }} {{ user.nom }}</div>
+            <div class="user-name">
+              {{ user.prenom }} {{ user.nom }}
+              <span *ngIf="user.archived" class="archived-badge">🗃️ Archivé</span>
+            </div>
             <div class="user-details" *ngIf="user.typeCompte === 'STAGIAIRE'">
               {{ user.filiere || '' }} {{ user.niveauEtudes ? '— ' + user.niveauEtudes : '' }}
+            </div>
+            <div class="user-details stage-dates" *ngIf="user.typeCompte === 'STAGIAIRE' && user.dateDebutStage">
+               {{ formatDateOpt(user.dateDebutStage) }} → {{ formatDateOpt(user.dateFinStage) }}
             </div>
             <div class="user-details" *ngIf="user.typeCompte === 'ENCADRANT'">
               {{ user.departement || '' }} {{ user.specialite ? '— ' + user.specialite : '' }}
@@ -216,6 +245,21 @@
                 </ng-container>
               </svg>
               <span>{{ action.label }}</span>
+            </button>
+
+            <!-- Bouton dates de stage (stagiaires uniquement) -->
+            <button
+              *ngIf="user.typeCompte === 'STAGIAIRE'"
+              class="btn-action btn-blue"
+              (click)="openStageDatesModal(user)"
+              title="Définir/modifier les dates de stage">
+              <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>{{ user.dateDebutStage ? 'Modifier dates' : 'Ajouter dates' }}</span>
             </button>
           </div>
         </td>
@@ -323,6 +367,84 @@
         [disabled]="actionInProgress">
         <span *ngIf="!actionInProgress">Confirmer</span>
         <span *ngIf="actionInProgress" class="spinner-small"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Dates de Stage -->
+<div class="modal-overlay" *ngIf="showStageDatesModal" (click)="closeStageDatesModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon modal-icon-blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <h2>{{ stageDatesUser?.dateDebutStage ? 'Modifier' : 'Définir' }} la période de stage</h2>
+      <button class="modal-close" (click)="closeStageDatesModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="stageDatesUser">
+      <div class="user-preview">
+        <div class="user-avatar-large">{{ initiales(stageDatesUser.prenom, stageDatesUser.nom) }}</div>
+        <div class="user-details">
+          <div class="user-name">{{ stageDatesUser.prenom }} {{ stageDatesUser.nom }}</div>
+          <div class="user-email">{{ stageDatesUser.email }}</div>
+          <div class="user-role">{{ stageDatesUser.etablissement || 'Stagiaire' }}</div>
+        </div>
+      </div>
+
+      <div class="stage-dates-info" *ngIf="stageDatesUser.dateDebutStage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>Période actuelle : {{ formatDateOpt(stageDatesUser.dateDebutStage) }} → {{ formatDateOpt(stageDatesUser.dateFinStage) }}</span>
+      </div>
+
+      <div class="stage-dates-form">
+        <div class="form-group">
+          <label class="form-label-modal">Date de début du stage *</label>
+          <input
+            type="date"
+            [(ngModel)]="newDateDebutStage"
+            class="date-input"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label-modal">Date de fin du stage *</label>
+          <input
+            type="date"
+            [(ngModel)]="newDateFinStage"
+            class="date-input"
+          />
+        </div>
+      </div>
+
+      <p class="stage-dates-note">
+        ⚠️ Si la date de fin est dans le futur, le compte sera réactivé automatiquement s'il était archivé.
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeStageDatesModal()" [disabled]="stageDatesActionInProgress">
+        Annuler
+      </button>
+      <button
+        class="btn-confirm btn-confirm-blue"
+        (click)="confirmStageDates()"
+        [disabled]="stageDatesActionInProgress || !newDateDebutStage || !newDateFinStage">
+        <span *ngIf="!stageDatesActionInProgress">Enregistrer</span>
+        <span *ngIf="stageDatesActionInProgress" class="spinner-small"></span>
       </button>
     </div>
   </div>

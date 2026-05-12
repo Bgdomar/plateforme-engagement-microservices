@@ -2,6 +2,7 @@ package com.engagement.iam.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "info_stagiaire_demande")
@@ -28,4 +29,10 @@ public class InfoStagiaireDemande {
 
     @Column(length = 150)
     private String etablissement;
+
+    @Column(name = "date_debut_stage")
+    private LocalDate dateDebutStage;
+
+    @Column(name = "date_fin_stage")
+    private LocalDate dateFinStage;
 }

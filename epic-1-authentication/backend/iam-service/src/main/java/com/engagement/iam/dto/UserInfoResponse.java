@@ -6,6 +6,7 @@ import com.engagement.iam.entity.enums.TypeCompte;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -20,11 +21,14 @@ public class UserInfoResponse {
     private StatutCompte statut;
     private LocalDateTime dateCreation;
     private LocalDateTime derniereConnexion;
+    private boolean archived;
 
     // Champs spécifiques stagiaire
     private String niveauEtudes;
     private String filiere;
     private String etablissement;
+    private LocalDate dateDebutStage;
+    private LocalDate dateFinStage;
 
     // Champs spécifiques encadrant
     private String departement;

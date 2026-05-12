@@ -6,7 +6,8 @@ import { RouterModule } from '@angular/router';
 import {
   UserManagementService,
   UserInfo,
-  UpdateStatutRequest
+  UpdateStatutRequest,
+  UpdateStageDatesRequest
 } from '../../../services/user-management.service';
 import {HeaderAdminComponent} from '../header-admin/header-admin';
 
@@ -34,6 +35,7 @@ export class UsersListComponent implements OnInit {
 
   filterRole: 'TOUS' | 'STAGIAIRE' | 'ENCADRANT' = 'TOUS';
   filterStatut: 'TOUS' | 'ACTIF' | 'SUSPENDU' | 'DESACTIVE' | 'EN_ATTENTE' = 'TOUS';
+  filterArchived: 'TOUS' | 'ACTIF_SEULEMENT' | 'ARCHIVES' = 'TOUS';
   searchTerm = '';
 
   showStatutModal = false;
@@ -45,6 +47,12 @@ export class UsersListComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
   showToast = false;
+
+  showStageDatesModal = false;
+  stageDatesUser: UserInfo | null = null;
+  newDateDebutStage = '';
+  newDateFinStage = '';
+  stageDatesActionInProgress = false;
 
   constructor(private userService: UserManagementService) {}
 
@@ -74,11 +82,15 @@ export class UsersListComponent implements OnInit {
     this.filteredUsers = this.users.filter((user) => {
       const matchRole = this.filterRole === 'TOUS' || user.typeCompte === this.filterRole;
       const matchStatut = this.filterStatut === 'TOUS' || user.statut === this.filterStatut;
+      const matchArchived =
+        this.filterArchived === 'TOUS' ||
+        (this.filterArchived === 'ARCHIVES' && user.archived === true) ||
+        (this.filterArchived === 'ACTIF_SEULEMENT' && !user.archived);
       const searchLower = this.searchTerm.toLowerCase();
       const matchSearch =
         !searchLower ||
         `${user.nom} ${user.prenom} ${user.email}`.toLowerCase().includes(searchLower);
-      return matchRole && matchStatut && matchSearch;
+      return matchRole && matchStatut && matchArchived && matchSearch;
     });
   }
 
@@ -194,6 +206,7 @@ export class UsersListComponent implements OnInit {
       enAttente: this.users.filter((u) => u.statut === 'EN_ATTENTE').length,
       stagiaires: this.users.filter((u) => u.typeCompte === 'STAGIAIRE').length,
       encadrants: this.users.filter((u) => u.typeCompte === 'ENCADRANT').length,
+      archives: this.users.filter((u) => u.archived === true).length,
     };
   }
 
@@ -263,6 +276,68 @@ export class UsersListComponent implements OnInit {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
+    });
+  }
+
+  formatDateOpt(dateStr: string | undefined): string {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  openStageDatesModal(user: UserInfo): void {
+    this.stageDatesUser = user;
+    this.newDateDebutStage = user.dateDebutStage ? user.dateDebutStage.substring(0, 10) : '';
+    this.newDateFinStage = user.dateFinStage ? user.dateFinStage.substring(0, 10) : '';
+    this.showStageDatesModal = true;
+  }
+
+  closeStageDatesModal(): void {
+    this.showStageDatesModal = false;
+    this.stageDatesUser = null;
+    this.newDateDebutStage = '';
+    this.newDateFinStage = '';
+  }
+
+  confirmStageDates(): void {
+    if (!this.stageDatesUser) return;
+    if (!this.newDateDebutStage || !this.newDateFinStage) {
+      this.showToastMessage('Veuillez remplir les deux dates', 'error');
+      return;
+    }
+    if (new Date(this.newDateDebutStage) >= new Date(this.newDateFinStage)) {
+      this.showToastMessage('La date de fin doit être postérieure à la date de début', 'error');
+      return;
+    }
+
+    this.stageDatesActionInProgress = true;
+    const request: UpdateStageDatesRequest = {
+      dateDebutStage: this.newDateDebutStage,
+      dateFinStage: this.newDateFinStage
+    };
+
+    this.userService.updateStageDates(this.stageDatesUser.id, request).subscribe({
+      next: (updatedUser: UserInfo) => {
+        const index = this.users.findIndex((u) => u.id === updatedUser.id);
+        if (index !== -1) this.users[index] = updatedUser;
+        this.applyFilters();
+        this.showToastMessage(
+          `Dates de stage mises à jour pour ${this.stageDatesUser!.prenom} ${this.stageDatesUser!.nom}`,
+          'success'
+        );
+        this.closeStageDatesModal();
+        this.stageDatesActionInProgress = false;
+      },
+      error: (err: any) => {
+        this.showToastMessage(
+          err?.error?.message || 'Erreur lors de la mise à jour des dates',
+          'error'
+        );
+        this.stageDatesActionInProgress = false;
+      }
     });
   }
 

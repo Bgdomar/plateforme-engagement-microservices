@@ -212,8 +212,8 @@
 
 /* Colonne formulaire */
 .form-column {
-  padding: 3rem 3.5rem;
-  max-height: 85vh;
+  padding: 1.5rem 2.5rem;
+  max-height: 92vh;
   overflow-y: auto;
   animation: fadeIn 0.8s ease-out 0.2s both;
 }
@@ -338,7 +338,7 @@
 
 .step-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.2rem;
 }
 
 .step-header h2 {
@@ -470,12 +470,12 @@
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .form-group {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1rem;
 }
 
 .form-label {
@@ -581,10 +581,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 1.25rem 1.75rem;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 3px dashed #cbd5e0;
+  border: 2px dashed #cbd5e0;
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.4s ease;
@@ -1737,4 +1737,49 @@
 .skip-actions .btn-secondary:first-child:hover {
   background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
   border-color: #a0aec0;
+}
+
+/* ── Section Période de Stage ── */
+.stage-period-section {
+  margin-top: 1.25rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #ebf8ff 0%, #e6fffa 100%);
+  border: 1.5px solid #90cdf4;
+  border-radius: 10px;
+}
+
+.stage-period-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #2b6cb0;
+  margin-bottom: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.stage-period-header svg {
+  stroke: #3182ce;
+  flex-shrink: 0;
+}
+
+.stage-period-info {
+  font-size: 0.78rem;
+  color: #4a5568;
+  margin-bottom: 0.9rem;
+  line-height: 1.4;
+}
+
+/* ── Section archivé dans admin ── */
+.archived-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #fff5f5;
+  color: #c53030;
+  border: 1px solid #feb2b2;
+  border-radius: 9999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
 }

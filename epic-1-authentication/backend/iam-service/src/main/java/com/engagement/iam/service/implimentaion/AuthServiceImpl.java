@@ -82,9 +82,15 @@ public class AuthServiceImpl implements AuthService {
     /**
      * Validate user account status and throw appropriate exception if not ACTIVE
      * @param user Utilisateur to validate
-     * @throws RuntimeException if account status is not ACTIVE
+     * @throws RuntimeException if account status is not ACTIVE or if archived
      */
     private void validateAccountStatus(Utilisateur user) {
+        // Vérifier d'abord si le compte est archivé
+        if (user.isArchived()) {
+            log.warn("❌ Tentative de connexion d'un compte archivé: {}", user.getEmail());
+            throw new RuntimeException("Votre compte a été désactivé car votre période de stage est terminée.");
+        }
+
         switch (user.getStatut()) {
             case EN_ATTENTE:
                 log.warn("❌ Tentative de connexion d'un compte en attente: {}", user.getEmail());

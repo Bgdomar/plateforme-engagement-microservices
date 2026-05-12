@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -38,6 +40,8 @@ public class DemandeInscriptionRequest {
     private String niveauEtudes;
     private String filiere;
     private String etablissement;
+    private LocalDate dateDebutStage;
+    private LocalDate dateFinStage;
 
     // Encadrant
     private String departement;

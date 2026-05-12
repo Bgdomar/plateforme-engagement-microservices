@@ -45,4 +45,8 @@ public class Utilisateur {
 
     @Column(name = "derniere_connexion")
     private LocalDateTime derniereConnexion;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean archived = false;
 }

@@ -123,6 +123,8 @@ public class DemandeInscriptionService {
                     .niveauEtudes(infoDemande != null ? infoDemande.getNiveauEtudes() : null)
                     .filiere(infoDemande != null ? infoDemande.getFiliere() : null)
                     .etablissement(infoDemande != null ? infoDemande.getEtablissement() : null)
+                    .dateDebutStage(infoDemande != null ? infoDemande.getDateDebutStage() : null)
+                    .dateFinStage(infoDemande != null ? infoDemande.getDateFinStage() : null)
                     .build();
             infoStagiaireRepo.save(info);
             log.info("✅ Données stagiaire créées pour profil: {}", profil.getId());
@@ -250,6 +252,60 @@ public class DemandeInscriptionService {
     }
 
     /**
+     * Met à jour les dates de stage d'un stagiaire existant
+     */
+    @Transactional
+    public UserInfoResponse updateStageDates(Long userId, UpdateStageDatesRequest request) {
+        if (request.getDateFinStage().isBefore(request.getDateDebutStage())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La date de fin doit être postérieure à la date de début"
+            );
+        }
+
+        Utilisateur utilisateur = utilisateurRepo.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Utilisateur introuvable avec l'ID: " + userId
+                ));
+
+        if (utilisateur.getTypeCompte() != TypeCompte.STAGIAIRE) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cet utilisateur n'est pas un stagiaire"
+            );
+        }
+
+        Stagiaire stagiaire = stagiaireRepo.findByProfilUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Profil stagiaire introuvable pour l'utilisateur ID: " + userId
+                ));
+
+        stagiaire.setDateDebutStage(request.getDateDebutStage());
+        stagiaire.setDateFinStage(request.getDateFinStage());
+
+        // Si la date de fin est dans le futur, réactiver le compte si archivé
+        if (request.getDateFinStage().isAfter(java.time.LocalDate.now())) {
+            stagiaire.setArchived(false);
+            utilisateur.setArchived(false);
+            if (utilisateur.getStatut() == StatutCompte.DESACTIVE) {
+                utilisateur.setStatut(StatutCompte.ACTIF);
+            }
+            utilisateurRepo.save(utilisateur);
+        }
+
+        stagiaireRepo.save(stagiaire);
+
+        log.info("✅ Dates de stage mises à jour pour {} : {} → {}",
+                utilisateur.getEmail(),
+                request.getDateDebutStage(),
+                request.getDateFinStage());
+
+        return buildUserInfoResponse(utilisateur);
+    }
+
+    /**
      * Valide que la transition de statut est autorisée
      */
     private void validateStatutTransition(StatutCompte ancien, StatutCompte nouveau) {
@@ -293,6 +349,7 @@ public class DemandeInscriptionService {
                 .email(utilisateur.getEmail())
                 .typeCompte(utilisateur.getTypeCompte())
                 .statut(utilisateur.getStatut())
+                .archived(utilisateur.isArchived())
                 .dateCreation(utilisateur.getDateCreation())
                 .derniereConnexion(utilisateur.getDerniereConnexion());
 
@@ -306,7 +363,9 @@ public class DemandeInscriptionService {
                 stagiaireRepo.findByProfilUserId(utilisateur.getId()).ifPresent(stagiaire -> {
                     builder.niveauEtudes(stagiaire.getNiveauEtudes())
                             .filiere(stagiaire.getFiliere())
-                            .etablissement(stagiaire.getEtablissement());
+                            .etablissement(stagiaire.getEtablissement())
+                            .dateDebutStage(stagiaire.getDateDebutStage())
+                            .dateFinStage(stagiaire.getDateFinStage());
                 });
             } else if (utilisateur.getTypeCompte() == TypeCompte.ENCADRANT) {
                 encadrantRepo.findByProfilUserId(utilisateur.getId()).ifPresent(encadrant -> {

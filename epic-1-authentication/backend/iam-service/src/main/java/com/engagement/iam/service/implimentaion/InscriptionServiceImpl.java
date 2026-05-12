@@ -133,6 +133,8 @@ public class InscriptionServiceImpl implements InscriptionService {
                     .niveauEtudes(request.getNiveauEtudes())
                     .filiere(request.getFiliere())
                     .etablissement(request.getEtablissement())
+                    .dateDebutStage(request.getDateDebutStage())
+                    .dateFinStage(request.getDateFinStage())
                     .build();
             infoStagiaireDemandeRepo.save(info);
             log.info("✅ InfoStagiaireDemande sauvegardé pour demande ID: {}", demande.getId());
