@@ -47,12 +47,7 @@ spring:
         - id: team-mission-service
           uri: lb://team-mission-service
           predicates:
-            - Path=/api/equipes/**,/api/stagiaires-equipes/**,/api/missions/**
-
-        - id: facial-ai-service
-          uri: http://facial-ai-service:8000
-          predicates:
-              - Path=/facial-ai/**
+            - Path=/api/equipes/**,/api/stagiaires-equipes/**,/api/sujets/**,/api/backlog/**,/api/missions/**,/api/taches/**,/api/livrables/**,/api/evaluations/**
 
         - id: chat-service
           uri: lb://communication-service

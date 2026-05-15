@@ -98,36 +98,6 @@ services:
     networks:
       - plateforme-engagement-network
 
-  facial-ai-service:
-    build:
-      context: ./epic-1-authentication/PFE_FACIAL_AI
-      dockerfile: Dockerfile
-    container_name: facial-ai-service
-    restart: always
-    ports:
-      - "8000:8000"
-    environment:
-      DB_HOST: postgres-identity
-      DB_PORT: 5432
-      DB_NAME: identity_db
-      DB_USER: identity_user
-      DB_PASSWORD: identity_pass
-      APP_HOST: 0.0.0.0
-      APP_PORT: 8000
-      EMBEDDING_TOLERANCE: 0.75
-      LIVENESS_BLINKS_REQUIRED: 2
-    depends_on:
-      postgres-identity:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
-    networks:
-      - plateforme-engagement-network
-
   postgres-team:
     image: postgres:16-alpine  # ← PostgreSQL normal, pas pgvector
     container_name: postgres-team
@@ -160,6 +130,7 @@ services:
       - "8085:8082"
     volumes:
       - team_images:/app/assets/images
+      - team-mission-uploads:/app/uploads/livrables
     environment:
       SPRING_APPLICATION_NAME: team-mission-service
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-team:5432/team_db
@@ -256,8 +227,7 @@ services:
         condition: service_healthy
       identity-service:
         condition: service_healthy
-      facial-ai-service:
-        condition: service_healthy
+
       team-mission-service:
         condition: service_healthy
       communication-service:
@@ -292,6 +262,8 @@ volumes:
   team_images:
   kafka_data:
   pg_communication_data:
+  team-mission-uploads:
+    driver: local
 
 
 networks:

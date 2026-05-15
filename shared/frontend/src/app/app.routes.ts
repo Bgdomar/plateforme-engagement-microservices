@@ -8,16 +8,34 @@ import { HomeComponent } from '../components/home/home.component';
 import { ProfileComponent } from '../components/profile/profile.component';
 import { ProfilStagiaireComponent } from '../components/stagiaire/profil-stagiaire/profil-stagiaire';
 import { DashboardStagiaireComponent } from '../components/stagiaire/dashboard-stagiaire/dashboard-stagiaire';
-import { MissionsStagiaireComponent } from '../components/stagiaire/missions-stagiaire/missions-stagiaire.component';
 import { DashboardEncadrantComponent } from '../components/encadrant/dashboard-encadrant/dashboard-encadrant';
 import { UsersListComponent } from '../components/admin/users-list/users-list';
 import { DashboardAdminComponent } from '../components/admin/dashboard-admin/dashboard-admin';
 
-import { ProfilEncadrantComponent } from '../components/encadrant/profil-encadrant/profil-encadrant';
-import { TeamListComponent } from '../components/encadrant/teams/team-list/team-list.component';
-import { TeamCreateComponent } from '../components/encadrant/teams/team-create/team-create.component';
-import { TeamDetailComponent } from '../components/encadrant/teams/team-detail/team-detail.component';
-import { TeamEditComponent } from '../components/encadrant/teams/team-edit/team-edit.component';
+// Équipes (Encadrant - consultation uniquement)
+import { EquipeListComponent } from '../components/encadrant/equipes/equipe-list/equipe-list.component';
+import { EquipeDetailComponent } from '../components/encadrant/equipes/equipe-detail/equipe-detail.component';
+
+import {SubjectListComponent} from  '../components/encadrant/subjects/subject-list/subject-list.component';
+import  {SubjectCreateComponent} from '../components/encadrant/subjects/subject-create/subject-create.component';
+import {SubjectDetailComponent} from  '../components/encadrant/subjects/subject-detail/subject-detail.component';
+import {SubjectEditComponent} from  '../components/encadrant/subjects/subject-edit/subject-edit.component'
+
+// Stagiaire
+import { SujetsDisponiblesComponent } from '../components/stagiaire/sujets-disponibles/sujets-disponibles.component';
+import { MonEquipeComponent } from '../components/stagiaire/mon-equipe/mon-equipe.component';
+
+import { BacklogListComponent } from '../components/stagiaire/backlog_equipe/backlog-list/backlog-list.component';
+import { BacklogCreateComponent } from '../components/stagiaire/backlog_equipe/backlog-create/backlog-create.component';
+import { BacklogEditComponent } from '../components/stagiaire/backlog_equipe/backlog-edit/backlog-edit.component';
+import { BacklogDetailComponent } from '../components/stagiaire/backlog_equipe/backlog-detail/backlog-detail.component';
+
+import { MissionListComponent } from '../components/stagiaire/mission_equipe/mission-list/mission-list.component';
+import { MissionCreateComponent } from '../components/stagiaire/mission_equipe/mission-create/mission-create.component';
+import { MissionDetailComponent } from '../components/stagiaire/mission_equipe/mission-detail/mission-detail.component';
+import { MissionEditComponent } from '../components/stagiaire/mission_equipe/mission-edit/mission-edit.component';
+import { EvaluationTacheComponent } from '../components/encadrant/tache/evaluation-tache/evaluation-tache.component';
+import  {TachesEvaluationListComponent} from '../components/encadrant/tache/taches-evaluation-list/taches-evaluation-list.component'
 import { ChatComponent } from '../components/chat/chat.component';
 
 export const routes: Routes = [
@@ -27,17 +45,7 @@ export const routes: Routes = [
   { path: 'face-auth', component: FaceAuthComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'stagiaire/profil', component: ProfilStagiaireComponent, canActivate: [authGuard, stagiaireGuard] },
-  { path: 'encadrant/profil', component: ProfilEncadrantComponent, canActivate: [authGuard, encadrantGuard] },
-  { path: 'encadrant/teams', component: TeamListComponent, canActivate: [authGuard, encadrantGuard] },
-  { path: 'encadrant/teams/create', component: TeamCreateComponent, canActivate: [authGuard, encadrantGuard] },
-  { path: 'encadrant/teams/:id', component: TeamDetailComponent, canActivate: [authGuard, encadrantGuard] },
-  { path: 'encadrant/teams/edit/:id', component: TeamEditComponent, canActivate: [authGuard, encadrantGuard] },
-  // Ajoutez cette route dans vos routes existantes
-  {
-    path: 'missions',
-    component: MissionsStagiaireComponent,
-    canActivate: [authGuard, stagiaireGuard]
-  },
+
   // ✅ Une seule route dashboard avec enfants
   {
     path: 'dashboard',
@@ -50,6 +58,94 @@ export const routes: Routes = [
       { path: 'admin/users', component: UsersListComponent, canActivate: [adminGuard] },
     ]
   },
+
+  {
+    path: 'encadrant/subjects',
+    component: SubjectListComponent,
+    canActivate: [authGuard, encadrantGuard]
+  },
+  {
+    path: 'encadrant/subjects/create',
+    component: SubjectCreateComponent,
+    canActivate: [authGuard, encadrantGuard]
+  },
+  {
+    path: 'encadrant/subjects/:id',
+    component: SubjectDetailComponent,
+    canActivate: [authGuard, encadrantGuard]
+  },
+  {
+    path: 'encadrant/subjects/edit/:id',
+    component: SubjectEditComponent,
+    canActivate: [authGuard, encadrantGuard]
+  },
+
+  {
+    path: 'encadrant/equipes',
+    component: EquipeListComponent,
+    canActivate: [authGuard, encadrantGuard]
+  },
+  {
+    path: 'encadrant/equipes/:id',
+    component: EquipeDetailComponent,
+    canActivate: [authGuard, encadrantGuard]
+  },
+
+  {
+    path: 'encadrant/evaluation',
+    component: TachesEvaluationListComponent,
+    canActivate: [authGuard, encadrantGuard]
+  },
+  {
+    path: 'encadrant/evaluation/tache/:id',
+    component: EvaluationTacheComponent,
+    canActivate: [authGuard, encadrantGuard]
+  },
+
+  // ==================== STAGIAIRE ====================
+  {
+    path: 'stagiaire/sujets',
+    component: SujetsDisponiblesComponent,
+    canActivate: [authGuard, stagiaireGuard]
+  },
+  {
+    path: 'stagiaire/mon-equipe',
+    component: MonEquipeComponent,
+    canActivate: [authGuard, stagiaireGuard]
+  },
+  {
+    path: 'stagiaire/equipe/:id',
+    component: EquipeDetailComponent,
+    canActivate: [authGuard, stagiaireGuard]
+  },
+
+  // Backlog (Stagiaire)
+  {
+    path: 'stagiaire/backlog',
+    component: BacklogListComponent,
+    canActivate: [authGuard, stagiaireGuard]
+  },
+  {
+    path: 'stagiaire/backlog/create',
+    component: BacklogCreateComponent,
+    canActivate: [authGuard, stagiaireGuard]
+  },
+  {
+    path: 'stagiaire/backlog/edit/:id',
+    component: BacklogEditComponent,
+    canActivate: [authGuard, stagiaireGuard]
+  },
+  {
+    path: 'stagiaire/backlog/tache/:id',
+    component: BacklogDetailComponent,
+    canActivate: [authGuard, stagiaireGuard]
+  },
+
+  { path: 'stagiaire/missions', component: MissionListComponent },
+  { path: 'stagiaire/missions/create', component: MissionCreateComponent },
+  { path: 'stagiaire/missions/:id', component: MissionDetailComponent },
+  { path: 'stagiaire/missions/edit/:id', component: MissionEditComponent },
+
 
   // Chat routes
   { path: 'chat/stagiaire', component: ChatComponent, canActivate: [authGuard, stagiaireGuard] },

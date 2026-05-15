@@ -1,4 +1,3 @@
-// EvaluationResponse.java
 package com.engagement.tm.dto;
 
 import lombok.Builder;
@@ -11,7 +10,8 @@ import java.time.LocalDateTime;
 public class EvaluationResponse {
     private Long id;
     private String commentaire;
-    private Integer pointsAttribues;
+    private Integer note;
+    private Long tacheId;
+    private Long encadrantId;
     private LocalDateTime dateEvaluation;
-    private Long evaluateurId;
 }

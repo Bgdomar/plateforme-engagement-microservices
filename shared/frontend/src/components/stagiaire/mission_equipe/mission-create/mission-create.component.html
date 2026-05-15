@@ -1,0 +1,77 @@
+<app-header-stagiaire></app-header-stagiaire>
+<div class="mission-create-container">
+  <div class="form-wrapper">
+    <div class="form-header">
+      <button routerLink="/stagiaire/missions" class="back-btn">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Retour aux missions
+      </button>
+      <h1 class="form-title">Créer une mission</h1>
+      <p class="form-subtitle" *ngIf="equipe">Équipe : {{ equipe.nom }}</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="mission-form">
+      <div class="form-group">
+        <label class="form-label">Titre de la mission <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="missionRequest.titre" name="titre" class="form-input" placeholder="Ex: Sprint 1 - Fonctionnalités principales" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea [(ngModel)]="missionRequest.description" name="description" rows="4" class="form-textarea" placeholder="Décrivez les objectifs de cette mission..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label class="form-label">Date limite <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="missionRequest.deadline" name="deadline" class="form-input" [min]="today" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Sélectionner les tâches <span class="required">*</span></label>
+        <div class="selection-actions" *ngIf="tachesDisponibles.length > 0">
+          <button type="button" class="btn-sm" (click)="selectAll()">Tout sélectionner</button>
+          <button type="button" class="btn-sm" (click)="deselectAll()">Tout désélectionner</button>
+        </div>
+
+        <div *ngIf="tachesDisponibles.length === 0" class="empty-taches">
+          <p>Aucune tâche disponible dans le backlog.</p>
+          <button type="button" class="btn-link" routerLink="/stagiaire/backlog/create">Créer une tâche</button>
+        </div>
+
+        <div *ngFor="let tache of tachesDisponibles" class="tache-checkbox">
+          <label>
+            <input type="checkbox" [checked]="isSelected(tache.id)" (change)="toggleTacheSelection(tache.id)">
+            <div class="tache-info">
+              <strong>{{ tache.titre }}</strong>
+              <p>{{ tache.description | slice:0:80 }}{{ tache.description.length > 80 ? '...' : '' }}</p>
+              <div class="tache-badges">
+                <span class="badge" [class]="getPrioriteClass(tache.priorite)">{{ getPrioriteLabel(tache.priorite) }}</span>
+                <span class="badge level">{{ tache.niveau }}</span>
+                <span class="badge estimation" *ngIf="tache.estimationJours">{{ tache.estimationJours }} jour(s)</span>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" routerLink="/stagiaire/missions" class="btn-cancel">Annuler</button>
+        <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">Créer la mission</span>
+          <span *ngIf="isSubmitting" class="loading-spinner"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

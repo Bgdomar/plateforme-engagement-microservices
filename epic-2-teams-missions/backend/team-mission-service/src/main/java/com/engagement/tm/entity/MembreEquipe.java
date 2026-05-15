@@ -5,7 +5,6 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.*;
 
 @Entity
 @Table(name = "membre_equipe", uniqueConstraints = {
@@ -28,11 +27,6 @@ public class MembreEquipe {
 
     @Column(name = "stagiaire_id", nullable = false)
     private Long stagiaireId;
-
-    // Ajoutez cette relation dans MembreEquipe.java
-    @OneToMany(mappedBy = "membreEquipe", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Mission> missions = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "date_ajout", updatable = false)

@@ -1,0 +1,94 @@
+<app-header-stagiaire></app-header-stagiaire>
+<div class="backlog-create-container">
+  <div class="form-wrapper">
+    <div class="form-header">
+      <button routerLink="/stagiaire/backlog" class="back-btn">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Retour au backlog
+      </button>
+      <h1 class="form-title">Ajouter une tâche au backlog</h1>
+      <p class="form-subtitle" *ngIf="equipe">Équipe : {{ equipe.nom }}</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="backlog-form">
+      <div class="form-group">
+        <label class="form-label">
+          Titre de la tâche <span class="required">*</span>
+        </label>
+        <input type="text"
+               [(ngModel)]="tacheRequest.titre"
+               name="titre"
+               class="form-input"
+               placeholder="Ex: Implémenter l'authentification, Créer le formulaire d'inscription..."
+               required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          Description <span class="required">*</span>
+        </label>
+        <textarea [(ngModel)]="tacheRequest.description"
+                  name="description"
+                  rows="5"
+                  class="form-textarea"
+                  placeholder="Décrivez la tâche en détail..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label class="form-label">
+            Niveau <span class="required">*</span>
+          </label>
+          <select [(ngModel)]="tacheRequest.niveau" name="niveau" class="form-select">
+            <option *ngFor="let niveau of niveaux" [value]="niveau.value">
+              {{ niveau.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group half">
+          <label class="form-label">
+            Priorité <span class="required">*</span>
+          </label>
+          <select [(ngModel)]="tacheRequest.priorite" name="priorite" class="form-select">
+            <option *ngFor="let priorite of priorites" [value]="priorite.value">
+              {{ priorite.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Ajoutez ce nouveau champ -->
+        <div class="form-group">
+          <label class="form-label">
+            Estimation (en jours)
+          </label>
+          <input type="number"
+                 [(ngModel)]="tacheRequest.estimationJours"
+                 name="estimationJours"
+                 class="form-input"
+                 min="0"
+                 step="0.5"
+                 placeholder="Ex: 2, 3.5, 5...">
+          <small style="color: #64748b; font-size: 0.75rem;">Optionnel - Estimation de la durée nécessaire</small>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" routerLink="/stagiaire/backlog" class="btn-cancel">Annuler</button>
+        <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">Créer la tâche</span>
+          <span *ngIf="isSubmitting" class="loading-spinner"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

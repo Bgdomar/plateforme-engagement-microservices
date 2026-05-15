@@ -1,8 +1,8 @@
-// Livrable.java
 package com.engagement.tm.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -19,19 +19,25 @@ public class Livrable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nom_fichier", length = 255)
+    @Column(length = 500)
     private String nomFichier;
 
-    @Column(name = "lien_url", length = 500)
+    @Column(length = 1000)
     private String lienURL;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "date_soumission")
-    private LocalDateTime dateSoumission;
+    @Column(name = "tache_id", nullable = false)
+    private Long tacheId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mission_id", nullable = false)
-    private Mission mission;
+    @Column(name = "stagiaire_id", nullable = false)
+    private Long stagiaireId;
+
+    @Column(name = "equipe_id", nullable = false)
+    private Long equipeId;
+
+    @CreationTimestamp
+    @Column(name = "date_soumission", updatable = false)
+    private LocalDateTime dateSoumission;
 }

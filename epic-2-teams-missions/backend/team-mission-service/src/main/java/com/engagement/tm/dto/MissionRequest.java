@@ -1,7 +1,5 @@
-// MissionRequest.java
 package com.engagement.tm.dto;
 
-import com.engagement.tm.entity.NiveauMission;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -10,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,10 +21,9 @@ public class MissionRequest {
 
     private String description;
 
+    @NotNull(message = "La deadline est obligatoire")
     private LocalDate deadline;
 
-    private NiveauMission niveau;
-
-    @NotNull(message = "L'ID du membre (stagiaire) est obligatoire")
-    private Long membreEquipeId;  // ID du MembreEquipe (relation)
+    @NotNull(message = "La liste des tâches est obligatoire")
+    private List<Long> tacheIds; // IDs des tâches à ajouter depuis le backlog
 }

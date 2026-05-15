@@ -1,0 +1,287 @@
+<app-header-encadrant></app-header-encadrant>
+<div class="evaluation-container">
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement de la tâche...</p>
+  </div>
+
+  <div *ngIf="!isLoading && tache" class="evaluation-wrapper">
+    <div class="evaluation-header">
+      <button class="back-btn" (click)="goBack()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Retour à la liste des tâches
+      </button>
+      <h1 class="page-title">Évaluation de la tâche</h1>
+    </div>
+
+    <!-- Messages Toast -->
+    <div *ngIf="successMessage" class="success-message">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Informations de l'équipe -->
+    <div class="info-card" *ngIf="equipe">
+      <h3>🏢 Équipe</h3>
+      <p><strong>Nom:</strong> {{ equipe.nom }}</p>
+      <p><strong>Stagiaires:</strong> {{ equipe.nbMembres }} membre(s)</p>
+      <p><strong>Encadrant:</strong> {{ equipe.encadrantId === encadrantId ? 'Vous' : '#' + equipe.encadrantId }}</p>
+    </div>
+
+    <!-- Informations de la tâche -->
+    <div class="tache-card" [class]="getStatutClass(tache.statut)">
+      <div class="tache-header">
+        <h2 class="tache-title">{{ tache.titre }}</h2>
+        <div class="statut-badge" [class]="getStatutClass(tache.statut)">
+          {{ getStatutLabel(tache.statut) }}
+        </div>
+      </div>
+
+      <div class="tache-description">
+        <h3>📝 Description</h3>
+        <p>{{ tache.description }}</p>
+      </div>
+
+      <div class="tache-meta">
+        <div class="meta-row">
+          <span class="meta-label">📊 Niveau:</span>
+          <span class="meta-value">{{ getNiveauLabel(tache.niveau) }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">⚡ Priorité:</span>
+          <span class="meta-value" [class]="getPrioriteClass(tache.priorite)">{{ getPrioriteLabel(tache.priorite) }}</span>
+        </div>
+        <div class="meta-row" *ngIf="tache.estimationJours">
+          <span class="meta-label">⏱️ Estimation:</span>
+          <span class="meta-value">{{ tache.estimationJours }} jour(s)</span>
+        </div>
+        <div class="meta-row" *ngIf="tache.assigneId">
+          <span class="meta-label">👨‍💻 Assignée à :</span>
+          <span class="meta-value">{{ getStagiaireNom(tache.assigneId) }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">📅 Créée par :</span>
+          <span class="meta-value">{{ getStagiaireNom(tache.creeParId) }}</span>
+        </div>
+        <div class="meta-row" *ngIf="tache.dateDebut">
+          <span class="meta-label">🚀 Démarrée le:</span>
+          <span class="meta-value">{{ getFormattedDate(tache.dateDebut) }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">📅 Créée le:</span>
+          <span class="meta-value">{{ getFormattedDate(tache.dateCreation) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Livrables soumis -->
+    <div class="livrables-section">
+      <h3>📎 Livrables soumis</h3>
+      <div *ngIf="livrables.length === 0" class="empty-livrables">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="32" height="32">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <p>Aucun livrable n'a encore été soumis pour cette tâche.</p>
+      </div>
+      <div *ngFor="let livrable of livrables" class="livrable-item">
+        <div class="livrable-header">
+          <span class="livrable-date">📅 {{ getFormattedDate(livrable.dateSoumission) }}</span>
+        </div>
+        <div class="livrable-content">
+          <p *ngIf="livrable.description"><strong>📝 Description:</strong> {{ livrable.description }}</p>
+          <p *ngIf="livrable.lienURL">
+            <strong>🔗 Lien:</strong>
+            <a [href]="livrable.lienURL" target="_blank" rel="noopener noreferrer">{{ livrable.lienURL }}</a>
+          </p>
+          <p *ngIf="livrable.nomFichier">
+            <strong>📁 Fichier:</strong>
+            <button class="btn-download" (click)="telechargerFichier(livrable.nomFichier)">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              {{ livrable.nomFichier }}
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dernier livrable -->
+    <div class="dernier-livrable" *ngIf="getDernierLivrable()">
+      <h3>⭐ Dernier livrable soumis</h3>
+      <div class="livrable-preview">
+        <p><strong>📅 Soumis le:</strong> {{ getFormattedDate(getDernierLivrable()!.dateSoumission) }}</p>
+        <p *ngIf="getDernierLivrable()!.description"><strong>📝 Description:</strong> {{ getDernierLivrable()!.description }}</p>
+        <div class="livrable-links">
+          <a *ngIf="getDernierLivrable()!.lienURL" [href]="getDernierLivrable()!.lienURL" target="_blank" class="btn-link">
+            🔗 Voir le livrable en ligne
+          </a>
+          <button *ngIf="getDernierLivrable()!.nomFichier" class="btn-download" (click)="telechargerFichier(getDernierLivrable()!.nomFichier)">
+            📥 Télécharger le fichier
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historique des évaluations -->
+    <div class="evaluations-history" *ngIf="toutesEvaluations.length > 0">
+      <h3>📜 Historique des évaluations</h3>
+      <div *ngFor="let eval of toutesEvaluations; let i = index" class="history-item">
+        <div class="history-header">
+          <span class="history-date">📅 {{ getFormattedDate(eval.dateEvaluation) }}</span>
+          <span *ngIf="eval.note !== null" class="history-note" [class]="getNoteColor(eval.note)">
+            Note: {{ eval.note }}/100 - {{ getNoteLabel(eval.note) }}
+          </span>
+          <span *ngIf="eval.note === null" class="history-refus">
+            ❌ Refusé - À refaire
+          </span>
+          <span class="history-number" *ngIf="toutesEvaluations.length > 1">
+            #{{ i + 1 }}
+          </span>
+        </div>
+        <div class="history-commentaire" *ngIf="eval.commentaire">
+          <strong>💬 Commentaire:</strong> {{ eval.commentaire }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicateur de réévaluation -->
+    <div class="info-message info-reevaluation" *ngIf="isReevaluation()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p>Cette tâche a déjà été refusée une fois. Vous évaluez maintenant le nouveau livrable soumis par le stagiaire.</p>
+    </div>
+
+    <!-- Formulaire d'évaluation (si tâche complétée) -->
+    <div class="evaluation-section" *ngIf="tache.statut === 'COMPLETEE'">
+      <h3>✏️ Évaluer la tâche</h3>
+
+      <div class="info-message" *ngIf="evaluationExistante && evaluationExistante.note !== null">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <p>Cette tâche a déjà été évaluée et ne peut plus être modifiée.</p>
+      </div>
+
+      <!-- Choix du type d'évaluation (visible seulement si pas déjà évaluée) -->
+      <div class="evaluation-choice" *ngIf="!evaluationExistante || evaluationExistante.note === null">
+        <div class="choice-card" [class.active]="evaluationChoice === 'valider'" (click)="evaluationChoice = 'valider'">
+          <div class="choice-icon">✅</div>
+          <h4>Valider la tâche</h4>
+          <p>La tâche est conforme et répond aux exigences</p>
+        </div>
+        <div class="choice-card" [class.active]="evaluationChoice === 'refaire'" (click)="evaluationChoice = 'refaire'">
+          <div class="choice-icon">🔄</div>
+          <h4>Demander une refonte</h4>
+          <p>La tâche nécessite des corrections</p>
+        </div>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="evaluation-form" *ngIf="!evaluationExistante || evaluationExistante.note === null">
+        <!-- Note (visible uniquement si validation) -->
+        <div class="form-group" *ngIf="evaluationChoice === 'valider'">
+          <label>📊 Note (0 - 100) <span class="required">*</span></label>
+          <div class="note-input">
+            <input type="range" [(ngModel)]="evaluationForm.note" name="note" min="0" max="100" step="1" class="note-slider">
+            <div class="note-value" [class]="getNoteColor(evaluationForm.note || 0)">
+              {{ evaluationForm.note || 0 }}/100
+              <span class="note-label">{{ getNoteLabel(evaluationForm.note || 0) }}</span>
+            </div>
+          </div>
+          <div class="note-scale">
+            <span>0</span>
+            <span>20</span>
+            <span>40</span>
+            <span>60</span>
+            <span>80</span>
+            <span>100</span>
+          </div>
+        </div>
+
+        <!-- Commentaire -->
+        <div class="form-group">
+          <label>💬 Commentaire <span class="required" *ngIf="evaluationChoice === 'refaire'">*</span></label>
+          <textarea [(ngModel)]="evaluationForm.commentaire" name="commentaire"
+                    rows="5" class="form-textarea"
+                    placeholder="Donnez un retour détaillé sur le travail du stagiaire..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="goBack()">Annuler</button>
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting || !canSubmit()">
+            <span *ngIf="!isSubmitting">
+              {{ evaluationChoice === 'valider' ? '✅ Valider la tâche' : '🔄 Demander une refonte' }}
+            </span>
+            <span *ngIf="isSubmitting" class="loading-spinner"></span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Message si déjà évaluée -->
+      <div class="already-evaluated" *ngIf="evaluationExistante && evaluationExistante.note !== null">
+        <div class="result-card" [class]="getNoteColor(evaluationExistante.note)">
+          <div class="result-note">
+            <span class="note-big">{{ evaluationExistante.note }}</span>
+            <span class="note-max">/100</span>
+            <span class="note-badge" [class]="getNoteColor(evaluationExistante.note)">
+              {{ getNoteLabel(evaluationExistante.note) }}
+            </span>
+          </div>
+          <div class="result-commentaire" *ngIf="evaluationExistante.commentaire">
+            <strong>💬 Commentaire:</strong>
+            <p>{{ evaluationExistante.commentaire }}</p>
+          </div>
+          <div class="result-date">
+            <small>📅 Évalué le {{ getFormattedDate(evaluationExistante.dateEvaluation) }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message si la tâche n'est pas encore complétée -->
+    <div class="info-message" *ngIf="tache.statut !== 'COMPLETEE' && tache.statut !== 'VALIDEE' && tache.statut !== 'REFAIRE'">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p>Cette tâche n'a pas encore été complétée par le stagiaire. Vous pourrez l'évaluer une fois qu'un livrable aura été soumis.</p>
+    </div>
+
+    <!-- Message si déjà validée -->
+    <div class="info-message" *ngIf="tache.statut === 'VALIDEE'">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p>Cette tâche a déjà été validée et ne peut plus être évaluée.</p>
+    </div>
+
+    <div class="info-message" *ngIf="tache.statut === 'REFAIRE' && (!evaluationExistante || evaluationExistante.note !== null)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+      <p>Cette tâche a été marquée comme "À refaire". Le stagiaire doit soumettre un nouveau livrable pour être réévalué.</p>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !tache && !errorMessage" class="empty-state">
+    <div class="empty-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+    </div>
+    <h3 class="empty-title">Tâche introuvable</h3>
+    <p class="empty-text">La tâche que vous recherchez n'existe pas ou vous n'avez pas les droits pour y accéder.</p>
+    <button class="btn-primary" (click)="goBack()">Retour à la liste</button>
+  </div>
+</div>
