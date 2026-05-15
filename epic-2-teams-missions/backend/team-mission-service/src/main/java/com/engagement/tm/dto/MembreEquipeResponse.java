@@ -10,5 +10,8 @@ import java.time.LocalDateTime;
 public class MembreEquipeResponse {
     private Long id;
     private Long stagiaireId;
+    private String stagiaireNom;
+    private String stagiairePrenom;
+    private String stagiaireEmail;
     private LocalDateTime dateAjout;
 }

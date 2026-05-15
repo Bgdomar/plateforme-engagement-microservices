@@ -1,4 +1,3 @@
-// Evaluation.java
 package com.engagement.tm.entity;
 
 import jakarta.persistence.*;
@@ -23,17 +22,15 @@ public class Evaluation {
     @Column(columnDefinition = "TEXT")
     private String commentaire;
 
-    @Column(name = "points_attribues")
-    private Integer pointsAttribues;
+    private Integer note; // 0-100
+
+    @Column(name = "tache_id", nullable = false)
+    private Long tacheId;
+
+    @Column(name = "encadrant_id", nullable = false)
+    private Long encadrantId;
 
     @CreationTimestamp
     @Column(name = "date_evaluation", updatable = false)
     private LocalDateTime dateEvaluation;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mission_id", nullable = false)
-    private Mission mission;
-
-    @Column(name = "evaluateur_id")
-    private Long evaluateurId;
 }

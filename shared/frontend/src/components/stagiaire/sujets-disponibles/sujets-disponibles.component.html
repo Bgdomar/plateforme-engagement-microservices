@@ -1,0 +1,85 @@
+<app-header-stagiaire></app-header-stagiaire>
+<div class="sujets-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Sujets disponibles</h1>
+      <p class="page-subtitle">Choisissez un sujet pour vous inscrire</p>
+    </div>
+  </div>
+
+  <!-- Message déjà inscrit -->
+  <div *ngIf="dejaInscrit" class="alert alert-info">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <div>
+      <strong>Vous êtes déjà inscrit à un sujet</strong>
+      <p>Vous ne pouvez vous inscrire qu'à un seul sujet à la fois.</p>
+      <button class="btn-link" (click)="voirMonEquipe()">Voir mon équipe</button>
+    </div>
+  </div>
+
+  <!-- Message de succès -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    {{ successMessage }}
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des sujets disponibles...</p>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!isLoading && subjects.length === 0 && !dejaInscrit" class="empty-state">
+    <div class="empty-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+    </div>
+    <h3 class="empty-title">Aucun sujet disponible</h3>
+    <p class="empty-text">Aucun sujet n'est actuellement ouvert. Revenez plus tard.</p>
+  </div>
+
+  <!-- Subjects Grid -->
+  <div *ngIf="!isLoading && subjects.length > 0 && !dejaInscrit" class="subjects-grid">
+    <div *ngFor="let subject of subjects" class="subject-card">
+      <div class="subject-header">
+        <div class="subject-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <span class="badge badge-open">Ouvert</span>
+      </div>
+
+      <h3 class="subject-title">{{ subject.titre }}</h3>
+      <p class="subject-description">{{ subject.description | slice:0:120 }}{{ subject.description.length > 120 ? '...' : '' }}</p>
+
+      <div class="subject-footer">
+        <div class="subject-date">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          {{ getFormattedDate(subject.dateCreation) }}
+        </div>
+        <button class="btn-subscribe"
+                (click)="inscrire(subject.id, subject.titre)"
+                [disabled]="isSubscribing">
+          {{ isSubscribing ? 'Inscription...' : 'S\'inscrire' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

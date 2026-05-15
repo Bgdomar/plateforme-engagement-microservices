@@ -1,0 +1,54 @@
+<app-header-stagiaire></app-header-stagiaire>
+<div class="mission-edit-container">
+  <div class="form-wrapper">
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement...</p>
+    </div>
+
+    <div *ngIf="!isLoading && mission">
+      <div class="form-header">
+        <button routerLink="/stagiaire/missions" class="back-btn">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Retour aux missions
+        </button>
+        <h1 class="form-title">Modifier la mission</h1>
+        <p class="form-subtitle">{{ mission.titre }}</p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="mission-form">
+        <div class="form-group">
+          <label class="form-label">Titre de la mission <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="missionRequest.titre" name="titre" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea [(ngModel)]="missionRequest.description" name="description" rows="5" class="form-textarea"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Date limite <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="missionRequest.deadline" name="deadline" class="form-input" [min]="today" required>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" routerLink="/stagiaire/missions" class="btn-cancel">Annuler</button>
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+            <span *ngIf="!isSubmitting">Enregistrer</span>
+            <span *ngIf="isSubmitting" class="loading-spinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -89,14 +89,21 @@ export class ProfilStagiaireComponent implements OnInit {
   isCapturing: boolean = false;
   facialError: string = '';
   facialSuccess: string = '';
+  captureProgress: number = 0;       // 0-100 pour la barre de progression
+  captureStatus: string = '';        // message affiché pendant la capture
   private facialStream: MediaStream | null = null;
+  private captureInterval: any = null;
+
+  // Constantes de capture
+  private readonly FRAMES_REQUIRED = 30;   // 30 frames ~ 3 secondes à 10fps
+  private readonly CAPTURE_FPS     = 10;   // interval = 100ms
 
 
   constructor(
-    private cdr: ChangeDetectorRef,
-    private http: HttpClient,
-    private facialAIService: FacialAIService,
-  @Inject(PLATFORM_ID) private platformId: Object,
+      private cdr: ChangeDetectorRef,
+      private http: HttpClient,
+      private facialAIService: FacialAIService,
+      @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 
   ngOnInit(): void {
@@ -133,20 +140,20 @@ export class ProfilStagiaireComponent implements OnInit {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     this.http
-      .get<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}`, { headers })
-      .subscribe({
-        next: (data) => {
-          this.mapProfilToView(data);
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('Erreur chargement profil :', err);
-          this.loadError = 'Impossible de charger le profil. Veuillez réessayer.';
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        },
-      });
+        .get<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}`, { headers })
+        .subscribe({
+          next: (data) => {
+            this.mapProfilToView(data);
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Erreur chargement profil :', err);
+            this.loadError = 'Impossible de charger le profil. Veuillez réessayer.';
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          },
+        });
   }
 
   private mapProfilToView(data: ProfilResponse): void {
@@ -159,8 +166,8 @@ export class ProfilStagiaireComponent implements OnInit {
 
     if (data.avatar) {
       this.currentPhoto = data.avatar.startsWith('http')
-        ? data.avatar
-        : `http://localhost:8080${data.avatar}`;
+          ? data.avatar
+          : `http://localhost:8080${data.avatar}`;
     } else {
       this.currentPhoto = null;
     }
@@ -262,24 +269,24 @@ export class ProfilStagiaireComponent implements OnInit {
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     this.http
-      .post<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}/avatar`, formData, {
-        headers,
-      })
-      .subscribe({
-        next: (data) => {
-          this.currentPhoto = data.avatar
-            ? data.avatar.startsWith('http')
-              ? data.avatar
-              : `http://localhost:8080${data.avatar}`
-            : null;
-          this.pendingFile = null;
-          this.pendingPhoto = null;
-          this.modalOpen = false;
-          this.cdr.detectChanges();
-          this.showToast('Photo de profil mise à jour !');
-        },
-        error: () => this.showToast("Erreur lors de l'upload."),
-      });
+        .post<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}/avatar`, formData, {
+          headers,
+        })
+        .subscribe({
+          next: (data) => {
+            this.currentPhoto = data.avatar
+                ? data.avatar.startsWith('http')
+                    ? data.avatar
+                    : `http://localhost:8080${data.avatar}`
+                : null;
+            this.pendingFile = null;
+            this.pendingPhoto = null;
+            this.modalOpen = false;
+            this.cdr.detectChanges();
+            this.showToast('Photo de profil mise à jour !');
+          },
+          error: () => this.showToast("Erreur lors de l'upload."),
+        });
   }
 
   removePhoto(): void {
@@ -289,19 +296,19 @@ export class ProfilStagiaireComponent implements OnInit {
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     this.http
-      .delete<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}/avatar`, { headers })
-      .subscribe({
-        next: () => {
-          this.currentPhoto = null;
-          this.pendingPhoto = null;
-          this.pendingFile = null;
-          this.syncInitiales();
-          this.modalOpen = false;
-          this.cdr.detectChanges();
-          this.showToast('Photo supprimée.');
-        },
-        error: () => this.showToast('Erreur lors de la suppression.'),
-      });
+        .delete<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}/avatar`, { headers })
+        .subscribe({
+          next: () => {
+            this.currentPhoto = null;
+            this.pendingPhoto = null;
+            this.pendingFile = null;
+            this.syncInitiales();
+            this.modalOpen = false;
+            this.cdr.detectChanges();
+            this.showToast('Photo supprimée.');
+          },
+          error: () => this.showToast('Erreur lors de la suppression.'),
+        });
   }
 
   private syncInitiales(): void {
@@ -335,18 +342,18 @@ export class ProfilStagiaireComponent implements OnInit {
     }
 
     this.http
-      .put<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}`, payload, { headers })
-      .subscribe({
-        next: (data) => {
-          this.mapProfilToView(data);
-          this.cdr.detectChanges();
-          this.showToast('Modifications enregistrées !');
-        },
-        error: (err) => {
-          console.error('Erreur sauvegarde :', err);
-          this.showToast('Erreur lors de la sauvegarde.');
-        },
-      });
+        .put<ProfilResponse>(`${environment.apiUrl}/api/profil/${userId}`, payload, { headers })
+        .subscribe({
+          next: (data) => {
+            this.mapProfilToView(data);
+            this.cdr.detectChanges();
+            this.showToast('Modifications enregistrées !');
+          },
+          error: (err) => {
+            console.error('Erreur sauvegarde :', err);
+            this.showToast('Erreur lors de la sauvegarde.');
+          },
+        });
   }
 
   saveNotifications(): void {
@@ -358,11 +365,11 @@ export class ProfilStagiaireComponent implements OnInit {
     const payload = { notifInApp: this.notifInApp, notifEmail: this.notifEmail };
 
     this.http
-      .put<any>(`${environment.apiUrl}/api/profil/${userId}/notifications`, payload, { headers })
-      .subscribe({
-        next: () => this.showToast('Préférences de notifications enregistrées !'),
-        error: () => this.showToast('Erreur lors de la sauvegarde des notifications.'),
-      });
+        .put<any>(`${environment.apiUrl}/api/profil/${userId}/notifications`, payload, { headers })
+        .subscribe({
+          next: () => this.showToast('Préférences de notifications enregistrées !'),
+          error: () => this.showToast('Erreur lors de la sauvegarde des notifications.'),
+        });
   }
 
   // ── Toast ─────────────────────────────────────────────────────
@@ -378,78 +385,124 @@ export class ProfilStagiaireComponent implements OnInit {
   }
 
   startFacialCamera(): void {
-    this.facialError = '';
+    this.facialError   = '';
     this.facialSuccess = '';
+    this.captureStatus = '';
+    this.captureProgress = 0;
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
-      .then(stream => {
-        this.facialStream = stream;
-        this.isCameraActive = true;
-        setTimeout(() => {
-          if (this.facialVideo && this.facialVideo.nativeElement) {
-            this.facialVideo.nativeElement.srcObject = stream;
-          }
-        }, 100);
-      })
-      .catch(err => {
-        console.error('❌ Erreur caméra:', err);
-        this.facialError = 'Impossible d\'accéder à la caméra. Vérifiez les permissions.';
-      });
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+    })
+        .then(stream => {
+          this.facialStream = stream;
+          this.isCameraActive = true;
+          this.cdr.detectChanges();
+          // Petit délai pour que le DOM affiche la balise <video> avant srcObject
+          setTimeout(() => {
+            if (this.facialVideo?.nativeElement) {
+              this.facialVideo.nativeElement.srcObject = stream;
+            }
+          }, 150);
+        })
+        .catch(err => {
+          console.error('❌ Erreur caméra:', err);
+          this.facialError = 'Impossible d\'accéder à la caméra. Vérifiez les permissions.';
+          this.cdr.detectChanges();
+        });
   }
 
   stopFacialCamera(): void {
+    // Stopper un éventuel intervalle de capture en cours
+    if (this.captureInterval) {
+      clearInterval(this.captureInterval);
+      this.captureInterval = null;
+    }
     if (this.facialStream) {
       this.facialStream.getTracks().forEach(track => track.stop());
       this.facialStream = null;
     }
-    this.isCameraActive = false;
+    this.isCameraActive   = false;
+    this.isCapturing      = false;
+    this.captureProgress  = 0;
+    this.captureStatus    = '';
   }
 
-// Remplacer la méthode captureFace existante par celle-ci
+  /**
+   * Lance l'acquisition de FRAMES_REQUIRED frames à CAPTURE_FPS.
+   * Le backend exige >= 20 frames avec 2 clignements détectés (liveness).
+   */
   captureFace(): void {
-    if (!this.facialVideo || !this.facialVideo.nativeElement) {
+    if (!this.facialVideo?.nativeElement) {
       this.facialError = 'Caméra non disponible';
       return;
     }
 
-    this.isCapturing = true;
-    this.facialError = '';
-
     const video = this.facialVideo.nativeElement;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext('2d');
-
-    if (!ctx) {
-      this.facialError = 'Erreur lors de la capture';
-      this.isCapturing = false;
+    if (video.readyState < 2) {
+      this.facialError = 'La caméra n\'est pas encore prête. Patientez un instant.';
       return;
     }
 
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    this.isCapturing     = true;
+    this.facialError     = '';
+    this.facialSuccess   = '';
+    this.captureProgress = 0;
+    this.captureStatus   = 'Clignez des yeux naturellement…';
+    this.cdr.detectChanges();
 
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        this.facialError = 'Erreur lors de la conversion de l\'image';
-        this.isCapturing = false;
-        return;
+    const frames: Blob[] = [];
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth  || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d')!;
+
+    const captureOneFrame = (): Promise<Blob | null> =>
+        new Promise(resolve => {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.85);
+        });
+
+    const intervalMs = Math.round(1000 / this.CAPTURE_FPS);
+
+    this.captureInterval = setInterval(async () => {
+      const blob = await captureOneFrame();
+      if (blob) {
+        frames.push(blob);
+        this.captureProgress = Math.round((frames.length / this.FRAMES_REQUIRED) * 100);
+        this.captureStatus   =
+            frames.length < this.FRAMES_REQUIRED
+                ? `Capture… ${frames.length}/${this.FRAMES_REQUIRED} — clignez des yeux`
+                : 'Envoi au serveur…';
+        this.cdr.detectChanges();
       }
-      // ✅ La seule modification : mettre le blob dans un tableau
-      this.registerFace([blob]);
-    }, 'image/jpeg', 0.9);
+
+      if (frames.length >= this.FRAMES_REQUIRED) {
+        clearInterval(this.captureInterval);
+        this.captureInterval = null;
+        this.sendFramesToBackend(frames);
+      }
+    }, intervalMs);
   }
 
-// registerFace reste identique, elle reçoit maintenant un tableau
-  private registerFace(frames: Blob[]): void {
-    const userEmail = localStorage.getItem('user_email') || this.email;
+  /** Envoie les frames au backend via registerFace (POST /facial-ai/register) */
+  private sendFramesToBackend(frames: Blob[]): void {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      this.facialError  = 'Session introuvable. Veuillez vous reconnecter.';
+      this.isCapturing  = false;
+      this.cdr.detectChanges();
+      return;
+    }
 
-    this.facialAIService.registerFace(userEmail, frames).subscribe({
+    console.log(`📤 Envoi de ${frames.length} frames pour userId=${userId}`);
+
+    this.facialAIService.registerFace(userId, frames).subscribe({
       next: (response) => {
         console.log('✅ Visage enregistré:', response);
         this.hasFacialRecognition = true;
-        this.facialSuccess = 'Reconnaissance faciale activée avec succès !';
-        this.isCapturing = false;
+        this.facialSuccess  = `Reconnaissance faciale activée ! (${response.blinks ?? '?'} clignement(s) détecté(s))`;
+        this.isCapturing    = false;
+        this.captureProgress = 100;
         this.stopFacialCamera();
         this.showFacialSetup = false;
         localStorage.setItem('has_facial_recognition', 'true');
@@ -457,8 +510,17 @@ export class ProfilStagiaireComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Erreur enregistrement visage:', error);
-        this.facialError = error.message || 'Erreur lors de l\'enregistrement du visage';
-        this.isCapturing = false;
+        const detail = error?.error?.detail;
+        if (detail?.code === 'LIVENESS_FAILED') {
+          this.facialError = `Vivacité insuffisante — ${detail.blinks ?? 0} clignement(s) détecté(s). Réessayez en clignant normalement.`;
+        } else if (detail?.code === 'EMBEDDING_FAILED') {
+          this.facialError = 'Aucun visage clair détecté. Améliorez l\'éclairage et recentrez votre visage.';
+        } else {
+          this.facialError = error.message || 'Erreur lors de l\'enregistrement du visage.';
+        }
+        this.isCapturing     = false;
+        this.captureProgress = 0;
+        this.captureStatus   = '';
         this.cdr.detectChanges();
       }
     });

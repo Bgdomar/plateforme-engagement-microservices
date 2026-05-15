@@ -1,0 +1,81 @@
+<app-header-encadrant *ngIf="isEncadrant"></app-header-encadrant>
+<app-header-stagiaire *ngIf="!isEncadrant"></app-header-stagiaire>
+
+<div class="equipe-detail-container">
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement...</p>
+  </div>
+
+  <div *ngIf="!isLoading && equipe" class="detail-wrapper">
+    <div class="detail-header">
+      <button class="back-btn" (click)="goBack()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Retour
+      </button>
+    </div>
+
+    <div class="equipe-card">
+      <div class="equipe-header">
+        <div class="equipe-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </div>
+        <div class="equipe-info">
+          <h1 class="equipe-nom">{{ equipe.nom }}</h1>
+          <p class="equipe-sujet">Sujet : {{ equipe.sujetTitre }}</p>
+        </div>
+      </div>
+
+      <div class="equipe-stats">
+        <div class="stat">
+          <span class="stat-label">Statut</span>
+          <span class="badge" [class]="getStatutClass(equipe.statut)">
+            {{ getStatutLabel(equipe.statut) }}
+          </span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Membres</span>
+          <span class="stat-value">{{ equipe.nbMembres }}/4</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Créée le</span>
+          <span class="stat-value">{{ getFormattedDate(equipe.dateCreation) }}</span>
+        </div>
+      </div>
+
+      <div class="membres-section">
+        <h2 class="section-title">Membres de l'équipe</h2>
+
+        <div *ngIf="equipe.membres.length === 0" class="empty-members">
+          <p>Aucun membre dans cette équipe</p>
+        </div>
+
+        <div class="membres-grid">
+          <div *ngFor="let membre of equipe.membres" class="membre-card">
+            <div class="membre-avatar">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+            </div>
+            <div class="membre-info">
+              <h3 class="membre-nom">{{ getStagiaireNom(membre.stagiaireId) }}</h3>
+              <p class="membre-date">Ajouté le {{ getFormattedDate(membre.dateAjout) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="error-state">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-primary" (click)="goBack()">Retour</button>
+  </div>
+</div>

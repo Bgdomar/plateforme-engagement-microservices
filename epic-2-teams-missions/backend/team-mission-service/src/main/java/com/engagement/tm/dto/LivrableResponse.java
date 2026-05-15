@@ -1,4 +1,3 @@
-// LivrableResponse.java
 package com.engagement.tm.dto;
 
 import lombok.Builder;
@@ -13,5 +12,7 @@ public class LivrableResponse {
     private String nomFichier;
     private String lienURL;
     private String description;
+    private Long tacheId;
+    private Long stagiaireId;
     private LocalDateTime dateSoumission;
 }

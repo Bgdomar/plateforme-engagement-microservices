@@ -1,14 +1,9 @@
 package com.engagement.tm.controller;
 
-import com.engagement.tm.dto.AjouterMembreRequest;
-import com.engagement.tm.dto.EquipeRequest;
 import com.engagement.tm.dto.EquipeResponse;
-import com.engagement.tm.dto.MembreEquipeResponse;
 import com.engagement.tm.service.interfaces.EquipeService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,59 +16,47 @@ import java.util.List;
 @Slf4j
 public class EquipeController {
 
-    private final EquipeService equipeService;  // Injection de l'interface
+    private final EquipeService equipeService;
 
-    @PostMapping
-    @PreAuthorize("hasRole('ENCADRANT')")
-    public ResponseEntity<EquipeResponse> creerEquipe(@Valid @RequestBody EquipeRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(equipeService.creerEquipe(request));
+    /**
+     * 🎯 INSCRIPTION AUTOMATIQUE (Stagiaire)
+     */
+    @PostMapping("/inscrire")
+    @PreAuthorize("hasRole('STAGIAIRE')")
+    public ResponseEntity<EquipeResponse> inscrireStagiaire(
+            @RequestParam Long sujetId,
+            @RequestParam Long stagiaireId) {
+        log.info("🎯 Inscription du stagiaire {} au sujet {}", stagiaireId, sujetId);
+        return ResponseEntity.ok(equipeService.inscrireStagiaire(sujetId, stagiaireId));
     }
 
-    @PostMapping("/{equipeId}/membres")
-    @PreAuthorize("hasRole('ENCADRANT')")
-    public ResponseEntity<MembreEquipeResponse> ajouterMembre(
-            @PathVariable Long equipeId,
-            @Valid @RequestBody AjouterMembreRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(equipeService.ajouterMembre(equipeId, request));
-    }
-
-    @DeleteMapping("/{equipeId}/membres/{stagiaireId}")
-    @PreAuthorize("hasRole('ENCADRANT')")
-    public ResponseEntity<Void> supprimerMembre(
-            @PathVariable Long equipeId,
-            @PathVariable Long stagiaireId) {
-        equipeService.supprimerMembre(equipeId, stagiaireId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/{equipeId}")
-    @PreAuthorize("hasRole('ENCADRANT')")
-    public ResponseEntity<Void> supprimerEquipe(@PathVariable Long equipeId) {
-        equipeService.supprimerEquipe(equipeId);
-        return ResponseEntity.noContent().build();
-    }
-
+    /**
+     * 📋 CONSULTATION (Encadrant) - Voir les équipes de ses sujets
+     */
     @GetMapping("/encadrant/{encadrantId}")
     @PreAuthorize("hasRole('ENCADRANT')")
     public ResponseEntity<List<EquipeResponse>> consulterEquipesParEncadrant(@PathVariable Long encadrantId) {
+        log.info("📋 Consultation des équipes pour l'encadrant {}", encadrantId);
         return ResponseEntity.ok(equipeService.consulterEquipesParEncadrant(encadrantId));
     }
 
-    @GetMapping("/{equipeId}")
-    @PreAuthorize("hasAnyRole('ENCADRANT', 'STAGIAIRE')")
-    public ResponseEntity<EquipeResponse> consulterEquipeParId(@PathVariable Long equipeId) {
-        return ResponseEntity.ok(equipeService.consulterEquipeParId(equipeId));
-    }
-
+    /**
+     * 📋 CONSULTATION (Stagiaire) - Voir son équipe
+     */
     @GetMapping("/stagiaire/{stagiaireId}")
     @PreAuthorize("hasRole('STAGIAIRE')")
     public ResponseEntity<List<EquipeResponse>> consulterEquipesParStagiaire(@PathVariable Long stagiaireId) {
+        log.info("📋 Consultation des équipes pour le stagiaire {}", stagiaireId);
         return ResponseEntity.ok(equipeService.consulterEquipesParStagiaire(stagiaireId));
     }
 
-    @GetMapping
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
-    public ResponseEntity<List<EquipeResponse>> consulterToutesLesEquipes() {
-        return ResponseEntity.ok(equipeService.consulterToutesLesEquipes());
+    /**
+     * 📋 DÉTAIL d'une équipe
+     */
+    @GetMapping("/{equipeId}")
+    @PreAuthorize("hasAnyRole('ENCADRANT', 'STAGIAIRE')")
+    public ResponseEntity<EquipeResponse> consulterEquipeParId(@PathVariable Long equipeId) {
+        log.info("📋 Consultation de l'équipe {}", equipeId);
+        return ResponseEntity.ok(equipeService.consulterEquipeParId(equipeId));
     }
 }

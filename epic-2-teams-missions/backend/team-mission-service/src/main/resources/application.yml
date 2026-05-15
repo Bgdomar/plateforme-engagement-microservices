@@ -38,3 +38,10 @@ management:
 
 jwt:
   secret: ${JWT_SECRET:YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDY3cThyOXMwdTF2MnczeDR5NXo2YTdiOGM5ZA==}
+
+
+  # Configuration des uploads
+  app:
+    upload:
+      path: ${UPLOAD_PATH:/app/uploads/livrables}
+      url-prefix: /api/livrables/download/

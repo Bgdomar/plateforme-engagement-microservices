@@ -1,0 +1,57 @@
+<app-header-encadrant></app-header-encadrant>
+<div class="subject-create-container">
+  <div class="form-wrapper">
+    <div class="form-header">
+      <button routerLink="/encadrant/subjects" class="back-btn">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Retour
+      </button>
+      <h1 class="form-title">Publier un nouveau sujet</h1>
+      <p class="form-subtitle">Décrivez le projet ou la mission que vous proposez</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="subject-form">
+      <div class="form-group">
+        <label class="form-label">
+          Titre du sujet <span class="required">*</span>
+        </label>
+        <input type="text"
+               [(ngModel)]="subjectRequest.titre"
+               name="titre"
+               class="form-input"
+               placeholder="Ex: Développement d'une application mobile, Analyse des données..."
+               required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          Description <span class="required">*</span>
+        </label>
+        <textarea [(ngModel)]="subjectRequest.description"
+                  name="description"
+                  rows="6"
+                  class="form-textarea"
+                  placeholder="Décrivez en détail le sujet, les objectifs, les technologies à utiliser..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" routerLink="/encadrant/subjects" class="btn-cancel">
+          Annuler
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">Publier le sujet</span>
+          <span *ngIf="isSubmitting" class="loading-spinner"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

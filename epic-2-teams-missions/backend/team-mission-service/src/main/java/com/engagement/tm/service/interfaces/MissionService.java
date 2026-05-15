@@ -1,34 +1,23 @@
-// MissionService.java
 package com.engagement.tm.service.interfaces;
 
 import com.engagement.tm.dto.MissionRequest;
 import com.engagement.tm.dto.MissionResponse;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface MissionService {
 
-    MissionResponse creerMission(MissionRequest request);
+    MissionResponse creerMission(Long equipeId, Long stagiaireId, MissionRequest request);
 
-    MissionResponse modifierMission(Long missionId, MissionRequest request);
+    MissionResponse modifierMission(Long equipeId, Long missionId, Long stagiaireId, MissionRequest request);
 
-    void supprimerMission(Long missionId);
-
-    MissionResponse demarrerMission(Long missionId, Long stagiaireId);
-
-    MissionResponse consulterMissionParId(Long missionId);
-
-    List<MissionResponse> consulterMissionsParMembre(Long membreEquipeId);
-
-    List<MissionResponse> consulterMissionsParStagiaire(Long stagiaireId);
+    void supprimerMission(Long equipeId, Long missionId, Long stagiaireId);
 
     List<MissionResponse> consulterMissionsParEquipe(Long equipeId);
 
-    // Ajoutez ces méthodes dans MissionServiceImpl.java
-    @Transactional
-    MissionResponse terminerMission(Long missionId, Long stagiaireId);
+    MissionResponse consulterMissionParId(Long equipeId, Long missionId);
 
-    @Transactional
-    MissionResponse annulerMission(Long missionId, Long stagiaireId);
+    MissionResponse ajouterTachesMission(Long equipeId, Long missionId, Long stagiaireId, List<Long> tacheIds);
+
+    MissionResponse retirerTacheMission(Long equipeId, Long missionId, Long tacheId, Long stagiaireId);
 }

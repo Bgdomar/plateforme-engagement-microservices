@@ -1,29 +1,20 @@
 package com.engagement.tm.service.interfaces;
 
-import com.engagement.tm.dto.AjouterMembreRequest;
-import com.engagement.tm.dto.EquipeRequest;
 import com.engagement.tm.dto.EquipeResponse;
-import com.engagement.tm.dto.MembreEquipeResponse;
 
 import java.util.List;
 
 public interface EquipeService {
 
-    EquipeResponse creerEquipe(EquipeRequest request);
+    // UNIQUEMENT POUR L'INSCRIPTION AUTOMATIQUE
+    EquipeResponse inscrireStagiaire(Long sujetId, Long stagiaireId);
 
-    MembreEquipeResponse ajouterMembre(Long equipeId, AjouterMembreRequest request);
-
-    void supprimerMembre(Long equipeId, Long stagiaireId);
-
-    void supprimerEquipe(Long equipeId);
-
+    // POUR LA CONSULTATION (encadrant)
     List<EquipeResponse> consulterEquipesParEncadrant(Long encadrantId);
 
-    EquipeResponse consulterEquipeParId(Long equipeId);
-
+    // POUR LA CONSULTATION (stagiaire)
     List<EquipeResponse> consulterEquipesParStagiaire(Long stagiaireId);
 
-    List<EquipeResponse> consulterToutesLesEquipes();
-
-    EquipeResponse updateEquipe(Long equipeId, EquipeRequest request);
+    // DÉTAIL D'UNE ÉQUIPE
+    EquipeResponse consulterEquipeParId(Long equipeId);
 }

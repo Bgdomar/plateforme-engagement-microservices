@@ -1,0 +1,93 @@
+<app-header-encadrant></app-header-encadrant>
+<div class="subject-list-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes Sujets</h1>
+      <p class="page-subtitle">Publiez et gérez vos sujets de projet</p>
+    </div>
+    <button routerLink="/encadrant/subjects/create" class="btn-primary">
+      <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Nouveau sujet
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement de vos sujets...</p>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!isLoading && subjects.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+    </div>
+    <h3 class="empty-title">Aucun sujet</h3>
+    <p class="empty-text">Publiez votre premier sujet pour commencer</p>
+    <button routerLink="/encadrant/subjects/create" class="btn-primary mt-4">
+      Publier un sujet
+    </button>
+  </div>
+
+  <!-- Subjects Grid -->
+  <div *ngIf="!isLoading && subjects.length > 0" class="subjects-grid">
+    <div *ngFor="let subject of subjects" class="subject-card">
+      <div class="subject-card-header">
+        <div class="subject-info">
+          <h3 class="subject-title">{{ subject.titre }}</h3>
+          <span class="badge" [class]="getStatutClass(subject.statut)">
+            {{ getStatutLabel(subject.statut) }}
+          </span>
+        </div>
+        <div class="subject-actions">
+          <button (click)="editSubject(subject.id)" class="icon-btn" title="Modifier">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+          </button>
+          <button (click)="confirmDelete(subject)" class="icon-btn delete" title="Supprimer">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <p class="subject-description">{{ subject.description | slice:0:120 }}{{ subject.description.length > 120 ? '...' : '' }}</p>
+
+      <div class="subject-footer">
+        <div class="subject-date">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          {{ getFormattedDate(subject.dateCreation) }}
+        </div>
+        <button (click)="viewSubject(subject.id)" class="btn-view">
+          Voir les détails
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div *ngIf="showDeleteModal" class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Supprimer le sujet</h3>
+        <button class="modal-close" (click)="cancelDelete()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer le sujet <strong>{{ subjectToDelete?.titre }}</strong> ?</p>
+        <p class="text-warning">Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancelDelete()">Annuler</button>
+        <button class="btn-danger" (click)="deleteSubject()">Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>

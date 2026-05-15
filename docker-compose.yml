@@ -130,6 +130,7 @@ services:
       - "8085:8082"
     volumes:
       - team_images:/app/assets/images
+      - team-mission-uploads:/app/uploads/livrables
     environment:
       SPRING_APPLICATION_NAME: team-mission-service
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-team:5432/team_db
@@ -155,6 +156,8 @@ services:
       start_period: 40s
     networks:
       - plateforme-engagement-network
+
+
 
 
   # ===== API GATEWAY =====
@@ -205,6 +208,8 @@ volumes:
   pg_team_data: # Nouveau volume pour team-mission-service
   team_images:
   kafka_data:
+  team-mission-uploads:
+    driver: local
 
 
 networks:

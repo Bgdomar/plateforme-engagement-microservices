@@ -1,0 +1,107 @@
+<app-header-stagiaire></app-header-stagiaire>
+<div class="mission-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Missions d'équipe</h1>
+      <p class="page-subtitle" *ngIf="equipe">
+        {{ equipe.nom }} • Gérez vos missions et suivez l'avancement des tâches
+      </p>
+    </div>
+    <button class="btn-primary" (click)="goToCreate()">
+      <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Nouvelle mission
+    </button>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des missions...</p>
+  </div>
+
+  <div *ngIf="!isLoading && missions.length === 0 && !errorMessage" class="empty-state">
+    <div class="empty-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+      </svg>
+    </div>
+    <h3 class="empty-title">Aucune mission</h3>
+    <p class="empty-text">Créez votre première mission en sélectionnant des tâches depuis le backlog.</p>
+    <button class="btn-primary mt-4" (click)="goToCreate()">Créer une mission</button>
+  </div>
+
+  <div *ngIf="!isLoading && missions.length > 0" class="missions-grid">
+    <div *ngFor="let mission of missions" class="mission-card" [class]="getDeadlineClass(mission.deadline)">
+      <div class="mission-header">
+        <h3 class="mission-title" (click)="viewMission(mission.id)">{{ mission.titre }}</h3>
+        <div class="mission-actions">
+          <button class="icon-btn" (click)="viewMission(mission.id)" title="Voir détails">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+          </button>
+          <button class="icon-btn delete" (click)="confirmDelete(mission)" title="Supprimer" *ngIf="canDeleteMission(mission)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="mission-description">{{ mission.description | slice:0:100 }}{{ mission.description.length > 100 ? '...' : '' }}</p>
+
+      <div class="mission-footer">
+        <div class="mission-meta">
+    <span class="meta-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+      </svg>
+      Créée par : {{ getStagiaireNom(mission.creeParId) }}
+    </span>
+          <span class="meta-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      </svg>
+      Deadline: {{ getFormattedDate(mission.deadline) }}
+    </span>
+          <span class="meta-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+      </svg>
+            {{ mission.taches.length }} tâche(s)
+    </span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getProgress(mission)"></div>
+        </div>
+        <button class="btn-view" (click)="viewMission(mission.id)">Voir détails</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Suppression -->
+  <div *ngIf="showDeleteModal" class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Supprimer la mission</h3>
+        <button class="modal-close" (click)="cancelDelete()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer la mission <strong>{{ missionToDelete?.titre }}</strong> ?</p>
+        <p class="text-warning">Cette action supprimera également toutes les tâches associées à cette mission.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancelDelete()">Annuler</button>
+        <button class="btn-danger" (click)="deleteMission()">Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>

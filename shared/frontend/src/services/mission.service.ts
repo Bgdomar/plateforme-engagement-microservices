@@ -1,4 +1,3 @@
-// services/mission.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -8,117 +7,105 @@ export interface MissionRequest {
   titre: string;
   description: string;
   deadline: string;
-  niveau: 'FACILE' | 'MOYEN' | 'DIFFICILE';
-  membreEquipeId: number;  // ← number au lieu de string
+  tacheIds: number[];
 }
+
+export interface TacheMissionResponse {
+  creeParId: number;
+  id: number;
+  titre: string;
+  description: string;
+  statut: string;
+  estimationJours?: number;
+  priorite?: string;  // ← AJOUTER
+  niveau?: string;    // ← AJOUTER
+  assigneId?: number;  // ← AJOUTER
+}
+
 export interface MissionResponse {
   id: number;
   titre: string;
   description: string;
-  statut: 'A_FAIRE' | 'EN_COURS' | 'TERMINEE' | 'ANNULEE';
   deadline: string;
-  niveau: 'FACILE' | 'MOYEN' | 'DIFFICILE';
-  dateCreation: string;
-  dateDebut: string | null;
-  dateMiseAJour: string;   // ← était string
-  membreEquipeId: number;  // ← était string
-  stagiaireId: number;     // ← était string
+  creeParId: number;
   equipeId: number;
-  livrables: LivrableResponse[];
-  evaluation: EvaluationResponse | null;
+  taches: TacheMissionResponse[];
+  dateCreation: string;
+  dateMiseAJour: string;
 }
 
-export interface LivrableResponse {
-  id: string;
-  nomFichier: string;
-  lienURL: string;
-  description: string;
-  dateSoumission: string;
-}
-
-export interface EvaluationResponse {
-  id: string;
-  commentaire: string;
-  pointsAttribues: number;
-  dateEvaluation: string;
-  evaluateurId: string;
-}
-
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class MissionService {
-  private apiUrl = environment.apiUrl;
+  private missionUrl = `${environment.apiUrl}/api/missions`;
 
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders({
-      Authorization: `Bearer ${token}`,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
     });
   }
 
-  // Créer une mission
-  createMission(request: MissionRequest): Observable<MissionResponse> {
-    return this.http.post<MissionResponse>(`${this.apiUrl}/api/missions`, request, {
-      headers: this.getHeaders(),
-    });
-  }
-
-  // Modifier une mission
-  updateMission(missionId: number, request: MissionRequest): Observable<MissionResponse> {
-    return this.http.put<MissionResponse>(`${this.apiUrl}/api/missions/${missionId}`, request, {
-      headers: this.getHeaders(),
-    });
-  }
-
-  // Supprimer une mission
-  deleteMission(missionId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/api/missions/${missionId}`, {
-      headers: this.getHeaders(),
-    });
-  }
-
-  // Démarrer une mission
-  demarrerMission(missionId: number, stagiaireId: number): Observable<MissionResponse> {
+  // ➕ Créer une mission avec tâches
+  creerMission(equipeId: number, stagiaireId: number, request: MissionRequest): Observable<MissionResponse> {
     return this.http.post<MissionResponse>(
-      `${this.apiUrl}/api/missions/${missionId}/demarrer?stagiaireId=${stagiaireId}`,
-      null,
+      `${this.missionUrl}/equipes/${equipeId}?stagiaireId=${stagiaireId}`,
+      request,
       { headers: this.getHeaders() }
     );
   }
 
-  // Terminer une mission
-  terminerMission(missionId: number, stagiaireId: number): Observable<MissionResponse> {
-    return this.http.post<MissionResponse>(
-      `${this.apiUrl}/api/missions/${missionId}/terminer?stagiaireId=${stagiaireId}`,
-      null,
+  // ✏️ Modifier une mission
+  modifierMission(equipeId: number, missionId: number, stagiaireId: number, request: MissionRequest): Observable<MissionResponse> {
+    return this.http.put<MissionResponse>(
+      `${this.missionUrl}/equipes/${equipeId}/${missionId}?stagiaireId=${stagiaireId}`,
+      request,
       { headers: this.getHeaders() }
     );
   }
 
-  // Annuler une mission
-  annulerMission(missionId: number, stagiaireId: number): Observable<MissionResponse> {
-    return this.http.post<MissionResponse>(
-      `${this.apiUrl}/api/missions/${missionId}/annuler?stagiaireId=${stagiaireId}`,
-      null,
+  // 🗑️ Supprimer une mission
+  supprimerMission(equipeId: number, missionId: number, stagiaireId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.missionUrl}/equipes/${equipeId}/${missionId}?stagiaireId=${stagiaireId}`,
       { headers: this.getHeaders() }
     );
   }
 
-  // Consulter une mission par ID
-  getMissionById(missionId: number): Observable<MissionResponse> {
-    return this.http.get<MissionResponse>(`${this.apiUrl}/api/missions/${missionId}`, {
-      headers: this.getHeaders(),
-    });
-  }
-
-  // Consulter mes missions (stagiaire connecté)
-  getMesMissions(stagiaireId: number): Observable<MissionResponse[]> {
+  // 👀 Liste des missions d'une équipe
+  getMissionsByEquipe(equipeId: number): Observable<MissionResponse[]> {
     return this.http.get<MissionResponse[]>(
-        `${this.apiUrl}/api/missions/mes-missions?stagiaireId=${stagiaireId}`,
-        { headers: this.getHeaders() }
+      `${this.missionUrl}/equipes/${equipeId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // 👀 Détail d'une mission
+  getMissionById(equipeId: number, missionId: number): Observable<MissionResponse> {
+    return this.http.get<MissionResponse>(
+      `${this.missionUrl}/equipes/${equipeId}/${missionId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // ➕ Ajouter des tâches à une mission existante
+  ajouterTachesMission(equipeId: number, missionId: number, stagiaireId: number, tacheIds: number[]): Observable<MissionResponse> {
+    return this.http.post<MissionResponse>(
+      `${this.missionUrl}/equipes/${equipeId}/${missionId}/taches?stagiaireId=${stagiaireId}`,
+      tacheIds,
+      { headers: this.getHeaders() }
+    );
+  }
+
+// Le service doit gérer le cas 204 (corps vide)
+  retirerTacheMission(
+    equipeId: number, missionId: number, tacheId: number, stagiaireId: number
+  ): Observable<MissionResponse | null> {
+    return this.http.delete<MissionResponse | null>(
+      `${this.missionUrl}/equipes/${equipeId}/${missionId}/taches/${tacheId}?stagiaireId=${stagiaireId}`,
+      { headers: this.getHeaders() }
     );
   }
 }

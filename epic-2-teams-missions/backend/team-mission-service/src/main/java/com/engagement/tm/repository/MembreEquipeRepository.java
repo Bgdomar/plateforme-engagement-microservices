@@ -17,10 +17,11 @@ public interface MembreEquipeRepository extends JpaRepository<MembreEquipe, Long
 
     Optional<MembreEquipe> findByEquipeIdAndStagiaireId(Long equipeId, Long stagiaireId);
 
-    // ✅ NOUVEAU : Vérifier si un stagiaire est déjà dans une équipe
     Optional<MembreEquipe> findByStagiaireId(Long stagiaireId);
 
-    // ✅ NOUVEAU : Récupérer tous les IDs des stagiaires déjà affectés
+    // ✅ AJOUTER CETTE MÉTHODE MANQUANTE
+    boolean existsByStagiaireId(Long stagiaireId);
+
     @Query("SELECT DISTINCT m.stagiaireId FROM MembreEquipe m")
     List<Long> findAllStagiaireIdsAffectes();
 
